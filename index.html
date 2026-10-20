@@ -1,0 +1,1241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Home Exercise Prescription</title>
+<meta name="description" content="Home exercise prescription tool for clinicians.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="./favicon-32.png">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="theme-color" content="#1e3a8a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HomeEx">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
+<style>body{padding-bottom:0}
+.app-booting{display:none}
+#bootLoader{text-align:center;padding:70px 20px;color:#98a2b3;font-size:14px}
+:root{--bg:#f6f8fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#2563eb;--primary-dark:#1d4ed8;--border:#e5e7eb;--danger:#dc2626;--success:#059669;--shadow:0 10px 30px rgba(16,24,40,.07);--radius:18px}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.app{min-height:100vh}
+header{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;padding:28px 20px 92px;min-height:190px}.header-inner{max-width:1180px;margin:auto;position:relative;z-index:2}.hero-slides{position:absolute;inset:0;z-index:0}.hero-slide{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:0;transition:opacity .8s ease}.hero-slide.active{opacity:1}.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.78),rgba(30,58,138,.58))}.brand{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.brand h1{font-size:28px;margin:0 0 7px}.brand p{margin:0;color:#e2e8f0}
+.admin-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:11px 17px;border-radius:12px}
+.tabs-wrap{position:sticky;top:0;z-index:50;margin:-58px auto 0;max-width:1180px;padding:0 20px}.tabs{display:flex;gap:8px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);padding:8px;border:1px solid var(--border);box-shadow:var(--shadow);border-radius:16px}
+.tab{flex:1;border:0;background:transparent;padding:13px 16px;border-radius:11px;font-weight:800;color:var(--muted)}.tab.active{background:#eff6ff;color:var(--primary)}
+main{max-width:1180px;margin:25px auto;padding:0 20px 70px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:15px;margin:25px 0 15px}.section-head h2{margin:0;font-size:23px}.section-head p{margin:6px 0 0;color:var(--muted)}
+.regions{display:flex;flex-wrap:wrap;gap:10px}.region{border:1px solid var(--border);background:#fff;padding:10px 14px;border-radius:999px;color:#344054;font-weight:600}.region.active{background:#2563eb;color:#fff;border-color:#2563eb}
+.search-panel{background:#fff;border:1px solid var(--border);border-radius:18px;padding:16px;margin:22px 0 10px;box-shadow:var(--shadow)}.search-row{display:flex;gap:10px;align-items:end}.search-field{flex:1}.search-field label{display:block;font-size:13px;font-weight:800;color:#344054;margin-bottom:7px}.search-field input{width:100%;border:1px solid #d0d5dd;border-radius:11px;padding:12px 13px}.search-field input::placeholder{color:#98a2b3}.search-help{font-size:12px;color:var(--muted);margin-top:7px}
+.exercise-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:20px}.exercise-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;box-shadow:0 5px 18px rgba(16,24,40,.04);position:relative}.exercise-card.selected{outline:3px solid #bfdbfe}
+.gallery{position:relative;background:#eef2f7}.exercise-image{display:block;width:100%;height:300px;object-fit:cover;background:#eef2f7}.gallery-arrow{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border:0;border-radius:50%;background:rgba(17,24,39,.68);color:#fff;font-size:25px;line-height:1}.gallery-arrow.left{left:12px}.gallery-arrow.right{right:12px}.image-counter{position:absolute;right:12px;bottom:12px;background:rgba(17,24,39,.78);color:#fff;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:800}
+.card-body{padding:17px}.card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.number-badge{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:34px;padding:0 10px;background:#111827;color:#fff;border-radius:10px;font-weight:800;font-size:14px}.card-title{font-size:21px;font-weight:800;margin:0 0 7px}.regions-check{display:flex;flex-wrap:wrap;gap:8px}
+.regions-check label{display:flex;align-items:center;gap:6px;border:1px solid var(--border);padding:8px 12px;border-radius:999px;font-size:13px;font-weight:600;color:#344054;cursor:pointer;background:#fff}
+.regions-check input{width:16px;height:16px;accent-color:var(--primary)}
+.badge{display:inline-block;font-size:11px;background:#eef2ff;color:#3730a3;padding:5px 8px;border-radius:999px;margin:2px 4px 2px 0}
+.description{color:#667085;line-height:1.65;font-size:14px;margin:13px 0}.card-actions{display:flex;gap:8px;align-items:center}.check{display:flex;align-items:center;gap:9px;font-weight:700;flex:1}.check input{width:20px;height:20px;accent-color:var(--primary)}.text-btn{border:1px solid var(--border);background:#fff;color:#344054;padding:9px 11px;border-radius:10px;text-decoration:none;font-size:13px}
+.video-btn{border:1px solid #fca5a5;background:#fef2f2;color:#b91c1c;padding:9px 11px;border-radius:10px;text-decoration:none;font-size:13px;font-weight:700}
+.empty{background:#fff;border:1px dashed #cbd5e1;border-radius:16px;padding:35px;text-align:center;color:var(--muted);grid-column:1/-1}
+.send-panel,.admin-panel,.modal-card{background:#fff;border:1px solid var(--border);border-radius:20px;box-shadow:var(--shadow)}.send-panel{padding:22px}.selected-list{display:grid;gap:12px;margin:18px 0}.selected-item{display:flex;gap:12px;padding:12px;border:1px solid var(--border);border-radius:13px;align-items:center}.selected-item img{width:78px;height:60px;border-radius:9px;object-fit:cover;background:#eef2f7}.selected-item strong{display:block}.selected-item small{color:var(--muted)}.send-actions{display:flex;flex-wrap:wrap;gap:10px}
+.btn{border:0;border-radius:11px;padding:11px 15px;font-weight:700}.btn-primary{background:var(--primary);color:#fff}.btn-primary:hover{background:var(--primary-dark)}.btn-green{background:#059669;color:#fff}.btn-dark{background:#111827;color:#fff}.btn-outline{background:#fff;color:#344054;border:1px solid var(--border)}.btn-danger{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}
+.admin-panel{padding:22px}.admin-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px;flex-wrap:wrap}.admin-list{display:grid;gap:10px}.admin-row{display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid var(--border);border-radius:14px;padding:12px}.admin-row .meta{display:flex;gap:12px;align-items:center}.admin-row img{width:75px;height:58px;object-fit:cover;border-radius:8px}.admin-row-actions{display:flex;gap:7px}.admin-number{background:#111827;color:#fff;border-radius:8px;padding:5px 8px;font-size:12px;font-weight:800;margin-right:7px}
+.modal{position:fixed;inset:0;background:rgba(15,23,42,.62);display:flex;align-items:center;justify-content:center;padding:20px;z-index:100}.modal-card{width:min(760px,100%);max-height:90vh;overflow:auto;padding:22px}.modal-head{display:flex;justify-content:space-between;align-items:center}.modal-head h3{margin:0}.close{border:0;background:#f2f4f7;border-radius:10px;width:36px;height:36px;font-size:22px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px}.field{display:flex;flex-direction:column;gap:7px}.field.full{grid-column:1/-1}.field label{font-size:13px;font-weight:700;color:#344054}.field input,.field textarea,.field select{border:1px solid #d0d5dd;border-radius:10px;padding:11px;background:#fff}.field textarea{min-height:105px;resize:vertical}.form-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}.login-box{max-width:420px;margin:20px auto}.login-box .field{margin-bottom:13px}.notice{padding:11px 13px;border-radius:10px;font-size:13px;margin-top:10px}.notice.error{background:#fef2f2;color:#b91c1c}.notice.ok{background:#ecfdf3;color:#047857}.footer{text-align:center;color:#98a2b3;font-size:12px;padding:25px}
+@media(max-width:700px){.brand{align-items:flex-start}.brand h1{font-size:21px}.admin-btn{font-size:12px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.tabs-wrap{padding:0 10px}.tabs{border-radius:13px}main{padding:0 12px 50px}.exercise-grid{grid-template-columns:1fr}.exercise-image{height:270px}.search-row{flex-direction:column;align-items:stretch}.search-row .btn{width:100%}.admin-row{align-items:flex-start;flex-direction:column}.admin-row-actions{width:100%}.admin-row-actions .btn{flex:1}}
+@media print{body{background:#fff}.no-print{display:none!important}#pdfArea{display:block!important}.send-panel{box-shadow:none;border:0}}
+</style>
+<style>
+.direct-only{display:none}
+body.direct-mode #adminBtn,
+body.direct-mode #adminTab,
+body.direct-mode #loginModal,
+body.direct-mode .tabbar,
+body.direct-mode #searchBox,
+body.direct-mode #regions{display:none!important}
+body.direct-mode .select-wrap,
+body.direct-mode input[type="checkbox"]{display:none!important}
+body.direct-mode .direct-only{display:block}
+body.direct-mode .tabs-wrap,body.direct-mode .search-panel,body.direct-mode .section-head:has(#clearFilters),body.direct-mode .check,body.direct-mode .footer #footerAdminBtn{display:none!important}
+.patient-hero{background:linear-gradient(135deg,#ecfdf5,#eff6ff);border:1px solid #bbf7d0;border-radius:16px;padding:16px 18px;margin:22px 0 6px;line-height:1.7}
+.patient-hero b{font-size:18px;display:block;margin-bottom:4px;color:#065f46}
+.patient-hero span{font-size:14px;color:#344054}
+</style>
+<style>
+.ad-slot{margin:10px 0 24px;min-height:0;border:1px solid rgba(148,163,184,.18);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 4px 18px rgba(15,23,42,.05);position:relative}
+.ad-slot img{display:block;width:100%;height:clamp(130px,20vw,260px);object-fit:cover}.ad-slot>a{display:block;text-decoration:none;position:relative}
+.ad-label{position:absolute;top:8px;right:10px;padding:3px 9px;font-size:10px;color:#fff;background:rgba(15,23,42,.55);border-radius:7px;backdrop-filter:blur(3px);z-index:1}
+.settings-grid{display:grid;gap:16px}
+.settings-card{margin-top:16px;border:1px solid var(--border);border-radius:16px;padding:18px;background:#fff}
+.settings-card h3{margin:0 0 5px;font-size:18px}
+.settings-card p{margin:0 0 12px;color:#667085;font-size:13px}
+.settings-textarea{min-height:110px;width:100%;resize:vertical}
+.footer a{color:#98a2b3;text-decoration:none}
+.footer a:hover{text-decoration:underline}
+@media(max-width:700px){.hero-slide{background-position:center}}
+</style>
+<style>
+/* HomeEx responsive hero */
+.hero-slides{position:absolute;inset:0;width:100%;height:100%;overflow:hidden}
+.hero-slide{position:absolute;inset:0;background-size:cover;background-position:center;opacity:0;transition:opacity .7s ease}
+.hero-slide.active{opacity:1}
+.hero-slides::after{content:"";position:absolute;inset:0;background:rgba(0,80,150,.28);pointer-events:none}
+@media(max-width:700px){.hero-slides{height:100%}.hero-slide{background-position:center}}
+.site-footer,.footer{padding:12px 8px 18px;text-align:center;font-size:12px;color:#98a2b3}
+.footer a{color:inherit;text-decoration:none}
+</style><style id="homeex-v15-6-ui-only">
+/* UI-only safety patch: do not alter app/Firebase logic */
+#footerAdminBtn{font-size:11px!important;opacity:.65!important}
+</style>
+<style id="homeex-pro">
+/* Pro / subscriptions / feature flags */
+.pro-btn{background:linear-gradient(135deg,#f59e0b,#d97706);border:0;color:#fff;padding:10px 15px;border-radius:12px;font-weight:800;white-space:nowrap}
+body.has-viewas{padding-bottom:70px}
+.templates{display:flex;flex-wrap:wrap;gap:10px}
+.template-chip{border:1px solid #c7d2fe;background:#eef2ff;color:#3730a3;padding:10px 14px;border-radius:999px;font-weight:700}
+.template-chip.locked{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+.dose-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.dose-row label{display:flex;align-items:center;gap:4px;font-size:12px;color:#667085;font-weight:600}
+.dose-row input{width:54px;border:1px solid #d0d5dd;border-radius:8px;padding:6px}
+.selected-item>div{flex:1}
+.pro-banner{background:#fff7ed;border:1px solid #fed7aa;color:#9a3412;border-radius:12px;padding:11px 13px;font-size:13px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.brand-box{border:1px solid var(--border);border-radius:13px;padding:12px;margin:14px 0}
+.brand-box .form-grid{margin-top:10px}
+.brand-head{display:flex;align-items:center;gap:12px}
+.brand-logo-mini{width:44px;height:44px;border-radius:10px;background:#f2f4f7 center/contain no-repeat;flex:0 0 auto;display:flex;align-items:center;justify-content:center;font-size:20px}
+.logo-pick{display:flex;gap:12px;align-items:center}
+.logo-preview{width:84px;height:84px;border:1px dashed #cbd5e1;border-radius:12px;background:#f8fafc center/contain no-repeat;display:flex;align-items:center;justify-content:center;font-size:11px;color:#98a2b3;flex:0 0 auto}
+.pro-status{border-radius:12px;padding:14px;margin:14px 0;font-size:14px;line-height:1.7}
+.pro-status.ok{background:#ecfdf3;color:#047857}.pro-status.bad{background:#fef2f2;color:#b91c1c}
+.code-row{display:flex;justify-content:space-between;gap:12px;border:1px solid var(--border);border-radius:12px;padding:11px;flex-wrap:wrap;align-items:center}
+.code-row code{font-weight:800;font-size:14px}
+.code-meta{font-size:12px;color:#667085;line-height:1.6}
+.code-actions{display:flex;gap:6px;flex-wrap:wrap}.code-actions .btn{padding:7px 10px;font-size:12px}
+.pill{display:inline-block;font-size:11px;font-weight:800;padding:3px 8px;border-radius:999px}
+.pill.warn{background:#fef3c7;color:#92400e}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.stat{border:1px solid var(--border);background:#fff;border-radius:12px;padding:10px;text-align:right;display:flex;flex-direction:column;gap:2px}
+.stat b{font-size:22px}.stat span{font-size:12px;color:#667085}
+.stat.ok b{color:#047857}.stat.warn b{color:#b45309}.stat.bad b{color:#b91c1c}
+.stat.active{outline:2px solid #2563eb;background:#eff6ff}
+.pill.ok{background:#dcfce7;color:#166534}.pill.bad{background:#fee2e2;color:#991b1b}.pill.wait{background:#e0e7ff;color:#3730a3}
+.feature-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f2f4f7;flex-wrap:wrap}
+.feature-row select{border:1px solid #d0d5dd;border-radius:9px;padding:8px}
+.pro-tag{display:inline-block;vertical-align:middle;font-size:11px;font-weight:800;letter-spacing:.5px;background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff;padding:3px 8px;border-radius:999px;margin-left:6px}
+.proto-filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:12px;scrollbar-width:thin}
+.proto-filter{flex:0 0 auto;border:1px solid var(--border);background:#fff;padding:8px 13px;border-radius:999px;font-weight:700;font-size:13px;color:#344054}
+.proto-filter.active{background:#111827;color:#fff;border-color:#111827}
+.proto-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px;margin-bottom:8px}
+.proto-card{position:relative;text-align:left;background:#fff;border:1px solid var(--border);border-radius:18px;padding:16px;box-shadow:0 5px 18px rgba(16,24,40,.05);display:flex;flex-direction:column;gap:9px;transition:transform .15s,box-shadow .15s}
+.proto-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.proto-top{display:flex;align-items:center;gap:10px}
+.proto-icon{width:42px;height:42px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:21px;background:#eff6ff;flex:0 0 auto}
+.proto-name{font-weight:800;font-size:16px;line-height:1.3}
+.proto-region{font-size:12px;color:var(--muted);font-weight:600}
+.proto-desc{font-size:13px;color:#475467;line-height:1.6;margin:0}
+.proto-meta{display:flex;flex-wrap:wrap;gap:6px}
+.proto-meta span{font-size:11px;font-weight:700;background:#f2f4f7;color:#344054;padding:4px 8px;border-radius:999px}
+.proto-ex{font-size:12px;color:var(--muted);line-height:1.5}
+.proto-card .btn{margin-top:auto}
+.proto-card.locked .proto-desc,.proto-card.locked .proto-ex{filter:blur(3px);user-select:none}
+.proto-card.locked .proto-top{padding-right:58px}
+.proto-lock{position:absolute;top:12px;right:12px;font-size:11px;font-weight:800;background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;padding:3px 8px;border-radius:999px}
+.viewas{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:90;background:#111827;color:#fff;border-radius:999px;padding:6px;display:flex;gap:4px;align-items:center;box-shadow:0 10px 30px rgba(0,0,0,.25);font-size:12px}
+.viewas span{padding:0 8px;color:#cbd5e1;font-weight:700}
+.viewas button{border:0;border-radius:999px;padding:8px 12px;background:transparent;color:#e5e7eb;font-weight:700;font-size:12px}
+.viewas button.active{background:#f59e0b;color:#fff}
+.toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:120;background:#059669;color:#fff;padding:11px 16px;border-radius:12px;font-weight:700;box-shadow:var(--shadow);font-size:14px}
+.home-pro{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:18px 0 6px;padding:16px 18px;border-radius:16px;background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;box-shadow:var(--shadow)}
+.home-pro-title{font-size:18px;font-weight:800;margin-bottom:4px}.home-pro-text{font-size:13px;color:#dbeafe;line-height:1.6}
+.home-pro .btn{background:#f59e0b;color:#fff;white-space:nowrap}
+body.direct-mode #homeProBanner{display:none!important}
+.offer-sub{color:#667085;margin:4px 0 12px;font-size:14px}
+.offer-list{list-style:none;padding:0;margin:0 0 16px;display:grid;gap:7px}
+.offer-list li{font-size:14px;line-height:1.5}
+.plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.plan{border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
+.plan.best{border:2px solid #f59e0b;background:#fffbeb}
+.plan b{display:block;font-size:15px}.plan .price{font-size:22px;font-weight:800;margin:6px 0;color:#1e3a8a}.plan small{color:#667085;font-size:12px}
+.plan .btn{width:100%;margin-top:10px}
+body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #footerProBtn{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+<div class="hero-slides" id="heroSlides"><div class="hero-overlay"></div></div>
+<div class="header-inner">
+<div class="brand">
+<div><h1 id="homeLink" style="cursor:pointer">Home Exercise Prescription</h1><p>Choose exercises, then send the prescription to your patient.</p></div>
+<div style="display:flex;gap:8px;align-items:center"><button class="pro-btn hidden" id="proOpenBtn">⭐ Pro</button><button class="admin-btn" id="adminOpenBtn">Admin</button></div>
+</div>
+</div>
+</header>
+
+<div class="tabs-wrap no-print"><div class="tabs">
+<button class="tab active" data-tab="exerciseTab">Exercise</button>
+<button class="tab hidden" data-tab="protocolsTab" id="protocolsTabBtn">Protocols</button>
+<button class="tab" data-tab="sendTab">Send <span id="selectedCount">(0)</span></button>
+</div></div>
+
+<div id="bootLoader">Loading…</div>
+<main id="appMain" class="app-booting">
+<section id="exerciseTab">
+<div class="direct-only patient-hero" dir="rtl"><b>💪 برنامج التمارين بتاعك</b><span>اعمل التمارين بالترتيب زي ما الأخصائي قالك. اضغط على الصورة أو الأسهم عشان تشوف باقي الصور، أو على Video لو موجود. ولو حسيت بألم زيادة، وقّف وكلّم الأخصائي.</span></div>
+<div class="search-panel no-print">
+<div class="search-row">
+<div class="search-field"><label for="exerciseSearch">Patient</label><input id="exerciseSearch" placeholder="Exercises number (e.g. 1, 4, 7)" inputmode="numeric"></div>
+<button class="btn btn-primary" id="searchBtn">Search</button>
+<button class="btn btn-outline" id="clearSearchBtn">Clear</button>
+</div>
+<div class="search-help">Write exercise numbers separated by commas or spaces. The results will appear in number order.</div>
+</div>
+
+<div id="homeProBanner" class="home-pro hidden" dir="rtl">
+<div><div class="home-pro-title">⭐ جديد: HomeEx Pro</div>
+<div class="home-pro-text">اكتب Sets و Reps لكل تمرين • اسم عيادتك ورقمك على الـ PDF • بروتوكولات جاهزة بضغطة واحدة</div></div>
+<button class="btn" type="button" id="homeProBtn">شوف العروض</button>
+</div>
+
+<div class="section-head"><div><h2>Body regions</h2><p>Select one or more areas to see suitable home exercises.</p></div><button class="btn btn-outline no-print" id="clearFilters">Clear</button></div>
+<div class="regions" id="regions"></div>
+
+<div id="adSlot" class="ad-slot" style="display:none"></div>
+<div class="section-head"><div><h2>Exercises</h2><p id="exerciseSummary">Loading...</p></div></div>
+<div class="exercise-grid" id="exerciseGrid"></div>
+</section>
+
+<section id="protocolsTab" class="hidden">
+<div class="section-head"><div><h2>Protocols <span class="pro-tag hidden" id="protoProTag">PRO</span></h2><p>Ready-made programs with dosage. One tap → ready to send.</p></div></div>
+<div id="adSlotProto" class="ad-slot" style="display:none"></div>
+<div class="proto-filters" id="protoFilters"></div>
+<div class="proto-grid" id="templatesList"></div>
+</section>
+
+<section id="sendTab" class="hidden">
+<div class="section-head"><div><h2>Send prescription</h2><p>The WhatsApp message will contain exercise numbers, names and descriptions.</p></div></div>
+<div class="send-panel" id="pdfArea">
+<div class="no-print">
+<div id="proBanner" class="pro-banner hidden"><span dir="rtl">🔒 مع <b>Pro</b>: Sets و Reps لكل تمرين، وبيانات عيادتك على الـ PDF، وبروتوكولات جاهزة.</span><button class="btn btn-dark" type="button" id="bannerProBtn">اعرف أكتر</button></div>
+<div class="field"><label for="patientName">Patient name (optional)</label><input id="patientName" placeholder="e.g. Ahmed Mohamed"></div>
+<div id="brandBox" class="brand-box hidden" dir="rtl">
+<div class="brand-head"><div class="brand-logo-mini" id="brandLogoMini"></div><div style="flex:1"><strong>بيانات عيادتك</strong><div id="brandSummary" class="code-meta"></div></div><button class="btn btn-outline" type="button" id="brandToggleBtn">تعديل</button></div>
+<div id="brandForm" class="hidden">
+<div class="form-grid">
+<div class="field"><label>اسم الأخصائي</label><input id="brandName" placeholder="د. ..."></div>
+<div class="field"><label>اسم العيادة</label><input id="brandClinic" placeholder="مثلاً: مركز الشفاء للعلاج الطبيعي"></div>
+<div class="field"><label>رقم التليفون</label><input id="brandPhone" inputmode="tel" dir="ltr" placeholder="01xxxxxxxxx"></div>
+<div class="field"><label>اللوجو</label>
+<div class="logo-pick"><div class="logo-preview" id="brandLogoPreview">لا يوجد</div>
+<div style="display:flex;flex-direction:column;gap:6px"><label class="btn btn-outline" style="text-align:center;cursor:pointer">📷 ارفع اللوجو<input type="file" id="brandLogoFile" accept="image/*" hidden></label><button type="button" class="btn btn-danger hidden" id="brandLogoRemove">شيل اللوجو</button></div></div>
+<small style="color:#667085">صورة من موبايلك أو جهازك. بنصغّرها تلقائياً.</small></div>
+</div>
+<div class="form-actions"><button class="btn btn-primary" type="button" id="brandSaveBtn">حفظ</button></div>
+<div class="code-meta">البيانات بتتحفظ على الجهاز ده، وبتظهر أوتوماتيك على كل PDF ورسالة واتساب.</div>
+</div>
+</div>
+</div>
+<div id="selectedList" class="selected-list"></div>
+<div class="send-actions no-print">
+<button class="btn btn-green" id="whatsappBtn">Send on WhatsApp</button>
+<button class="btn btn-dark" id="pdfBtn">Download PDF</button>
+<button class="btn btn-outline" id="backBtn">Back to exercises</button>
+</div>
+</div>
+</section>
+
+<section id="adminTab" class="hidden">
+<div class="section-head"><div><h2>Admin</h2><p>Add, edit, or delete exercises.</p></div></div>
+<div id="adminContent"></div>
+</section>
+</main>
+<div class="footer"><a href="mailto:ahmed4nassef@gmail.com">Contact Us</a></div>
+</div>
+
+<div class="modal hidden" id="loginModal">
+<div class="modal-card">
+<div class="modal-head"><h3>Admin login</h3><button class="close" data-close="loginModal">×</button></div>
+<div class="login-box" id="loginBox"></div>
+</div>
+</div>
+
+<div class="modal hidden" id="proModal">
+<div class="modal-card" style="width:min(620px,100%)">
+<div class="modal-head"><h3>⭐ HomeEx Pro</h3><button class="close" data-close="proModal">×</button></div>
+<div id="proStatus"></div>
+<div id="proOffer"></div>
+<div class="field" style="margin-top:16px"><label for="proCodeInput">معاك كود؟ اكتبه هنا</label><input id="proCodeInput" placeholder="HX-XXXX-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase"></div>
+<div class="form-actions"><button class="btn btn-primary" id="proActivateBtn">تفعيل</button></div>
+<div id="proNotice"></div>
+<p class="code-meta" style="margin-top:14px" dir="rtl">الكود بيشتغل على جهاز واحد بس. التجديد بيتم على نفس الكود.</p>
+</div>
+</div>
+
+<div class="modal hidden" id="exerciseModal">
+<div class="modal-card">
+<div class="modal-head"><h3 id="exerciseModalTitle">Add exercise</h3><button class="close" data-close="exerciseModal">×</button></div>
+<form id="exerciseForm">
+<input id="exerciseId" type="hidden">
+<div class="form-grid">
+<div class="field"><label>Exercise number</label><input id="fNumber" type="number" min="1" readonly><small style="display:block;margin-top:6px;color:#667085">Added automatically. You cannot change it.</small></div>
+<div class="field"><label>Exercise name</label><input id="fName" required></div>
+<div class="field full"><label>Body regions (select one or more)</label><div id="fRegionsGroup" class="regions-check"></div></div>
+<div class="field full"><label>Short description / instructions</label><textarea id="fDescription" required></textarea></div>
+<div class="field full">
+<label>Exercise images</label>
+<div id="imageInputs"></div>
+<div style="display:flex;gap:8px;align-items:center;margin-top:10px;flex-wrap:wrap">
+<button type="button" class="btn btn-outline" id="addImageBtn">+ Add another image</button>
+<span style="font-size:12px;color:#667085">Add as many images as you need. Google Drive share links are supported. Make sure the file is shared as “Anyone with the link”.</span>
+</div>
+</div>
+<div class="field full"><label>Video explanation URL</label><input id="fVideo" placeholder="https://youtube.com/..."></div>
+</div>
+<div class="form-actions"><button type="button" class="btn btn-outline" data-close="exerciseModal">Cancel</button><button class="btn btn-primary" type="submit">Save exercise</button></div>
+<div id="formNotice"></div>
+</form>
+</div>
+</div>
+
+<script type="module">
+/* Header/advertisement slider helpers */
+let homeexHeaderTimer=null;
+function homeexGetHeaderUrls(){
+  const el=document.getElementById("headerImagesInput");
+  return String(el?.value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);
+}
+function homeexStartHeaderSlider(urls,seconds){
+  const box=document.getElementById("heroSlides");
+  if(!box)return;
+  clearInterval(homeexHeaderTimer);
+  box.innerHTML="";
+  const arr=urls.filter(Boolean);
+  if(!arr.length){box.style.display="none";return;}
+  box.style.display="block";
+  arr.forEach((u,i)=>{
+    const d=document.createElement("div");
+    d.className="hero-slide"+(i===0?" active":"");
+    d.style.backgroundImage=`url("${u.replace(/"/g,'\\"')}")`;
+    box.appendChild(d);
+  });
+  if(arr.length>1){
+    let i=0;
+    homeexHeaderTimer=setInterval(()=>{
+      const s=box.querySelectorAll(".hero-slide");
+      if(!s.length)return;
+      s[i].classList.remove("active");
+      i=(i+1)%s.length;
+      s[i].classList.add("active");
+    },Math.max(2000,Number(seconds||4)*1000));
+  }
+}
+
+import {initializeApp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
+import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut,signInAnonymously} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
+import {getFirestore,collection,getDocs,addDoc,updateDoc,deleteDoc,doc,getDoc,setDoc,serverTimestamp,query,orderBy,Timestamp,increment} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+
+const firebaseConfig={
+apiKey:"AIzaSyDIDA8-KmZ9Pi5JHYjb8E2kgFQNF1_Zy70",
+authDomain:"homeex-b938a.firebaseapp.com",
+databaseURL:"https://homeex-b938a-default-rtdb.firebaseio.com",
+projectId:"homeex-b938a",
+storageBucket:"homeex-b938a.firebasestorage.app",
+messagingSenderId:"1045594278633",
+appId:"1:1045594278633:web:032994a69f62e5206dfe78",
+measurementId:"G-ZK5ZWBTNH7"
+};
+
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=getFirestore(app);
+const PLACEHOLDER_IMG="data:image/svg+xml;utf8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="800"><rect width="100%" height="100%" fill="#eef2f7"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="42" fill="#98a2b3">Exercise</text></svg>');
+window.PLACEHOLDER_IMG=PLACEHOLDER_IMG; // متاحة للـ inline onerror، لأن الـ module scope مش نفس الـ global scope
+let REGIONS=["Shoulder","Elbow","Wrist / Hand","Neck","Upper Back","Lower Back","Hip","Knee","Ankle / Foot","Core","Whole Body"];
+const fallbackExercises=[
+{number:1,id:"demo1",name:"Wall Shoulder Flexion",region:"Shoulder",description:"Stand facing a wall and slide your hands upward as far as comfortable. Move slowly and stay within a pain-free or tolerable range.",images:["https://images.unsplash.com/photo-1597452485669-2c7bb5fef90d8?auto=format&fit=crop&w=1200&q=85"],video:"https://www.youtube.com/results?search_query=wall+shoulder+flexion"},
+{number:2,id:"demo2",name:"Sit-to-Stand",region:"Knee",description:"Sit on a stable chair, lean slightly forward, stand up under control, then slowly sit back down. Keep the knees tracking over the feet.",images:["https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=85"],video:"https://www.youtube.com/results?search_query=sit+to+stand+exercise"},
+{number:3,id:"demo3",name:"Cat-Cow",region:"Lower Back",description:"On hands and knees, gently alternate between rounding the spine and extending it. Keep the movement slow and comfortable.",images:["https://images.unsplash.com/photo-1603988363607-e1e4a66962c6?auto=format&fit=crop&w=1200&q=85"],video:"https://www.youtube.com/results?search_query=cat+cow+exercise"}
+];
+
+let exercises=[],selectedIds=new Set(),activeRegions=new Set(),currentUser=null,isAdmin=false,searchNumbers=null,adminCheckError="",adminRawRole=null;
+let patientMediaLink=window.location.href.split("#")[0];
+let directExerciseNumbers=null,heroImageLinks=[],adImageLinks=[],heroTimer=null,adTimer=null,headerIntervalSeconds=4,adIntervalSeconds=5;
+const galleryIndex=new Map();
+// Feature flags (settings/main.features). "off" = hidden for everyone, "all" = everyone, "pro" = subscribers + admin.
+let FEATURES={subscriptions:"off",templates:"off",dosage:"off",branding:"off",exAd:"on",protoAd:"on"};
+let TEMPLATES=[],proActive=false,proInfo=null,codesCache=null;
+// Sales page shown inside the Pro window (settings/main.proPage) — editable from Admin.
+let PRO_PAGE={
+headline:"وفّر وقتك واظهر باحترافية أكتر قدام كل مريض",
+features:["تحديد Sets و Reps و Hold وعدد المرات في اليوم لكل تمرين","اسمك واسم العيادة ورقمك واللوجو على كل PDF ورسالة واتساب","بروتوكولات جاهزة: ضغطة واحدة تختار البرنامج كله","كل المزايا الجديدة أول ما تنزل"],
+plans:[{name:"شهري",price:"150 جنيه",note:"في الشهر"},{name:"سنوي",price:"1500 جنيه",note:"شهرين ببلاش",best:true}],
+whatsapp:""
+};
+const dosage=new Map();
+const PRO_KEY="homeex_pro_code",BRAND_KEY="homeex_brand";
+const $=id=>document.getElementById(id);
+
+function driveToImageUrl(url){
+if(!url)return"";
+const raw=String(url).trim();
+
+// Google Drive sharing links -> image thumbnail.
+// This works better than /uc?export=view for browser <img> elements.
+let m=raw.match(/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/);
+if(m)return`https://drive.google.com/thumbnail?id=${m[1]}&sz=w1600`;
+
+m=raw.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+if(m && /drive\.google\.com/i.test(raw))
+  return`https://drive.google.com/thumbnail?id=${m[1]}&sz=w1600`;
+
+m=raw.match(/drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/);
+if(m)return`https://drive.google.com/thumbnail?id=${m[1]}&sz=w1600`;
+
+return raw;
+}
+function escapeHtml(s=""){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
+function exerciseNumber(e){return Number(e.number)||999999;}
+function exerciseRegions(e){
+if(Array.isArray(e.regions)&&e.regions.length)return e.regions;
+if(e.region)return[e.region];
+return[];
+}
+function sortedExercises(list){return [...list].sort((a,b)=>exerciseNumber(a)-exerciseNumber(b));}
+function imageList(e){return(e.images||[]).map(driveToImageUrl).filter(Boolean);}
+function filteredExercises(){
+let list=[...exercises];
+if(searchNumbers&&searchNumbers.size)list=list.filter(e=>searchNumbers.has(exerciseNumber(e)));
+if(directExerciseNumbers)list=list.filter(e=>directExerciseNumbers.includes(exerciseNumber(e)));
+if(activeRegions.size)list=list.filter(e=>exerciseRegions(e).some(r=>activeRegions.has(r)));
+return sortedExercises(list);
+}
+function renderRegions(){
+$("regions").innerHTML=REGIONS.map(r=>`<button class="region ${activeRegions.has(r)?"active":""}" data-region="${escapeHtml(r)}">${escapeHtml(r)}</button>`).join("");
+document.querySelectorAll(".region").forEach(btn=>btn.onclick=()=>{let r=btn.dataset.region;activeRegions.has(r)?activeRegions.delete(r):activeRegions.add(r);renderRegions();renderExercises();});
+}
+function renderExercises(){
+const list=filteredExercises();
+$("exerciseSummary").textContent=searchNumbers?`${list.length} matching exercise${list.length===1?"":"s"} • sorted by number`:`${list.length} exercise${list.length===1?"":"s"} available`;
+if(!list.length){$("exerciseGrid").innerHTML=`<div class="empty">${searchNumbers?"No exercises match those numbers.":"No exercises found for the selected body region."}</div>`;return;}
+$("exerciseGrid").innerHTML=list.map(e=>{
+const imgs=imageList(e),idx=Math.min(galleryIndex.get(e.id)||0,Math.max(imgs.length-1,0));galleryIndex.set(e.id,idx);
+const selected=selectedIds.has(e.id),src=imgs[idx]||PLACEHOLDER_IMG,count=imgs.length;
+return `<article class="exercise-card ${selected?"selected":""}">
+<div class="gallery">
+<img class="exercise-image" src="${escapeHtml(src)}" alt="${escapeHtml(e.name)}" onerror="this.onerror=null;this.src=window.PLACEHOLDER_IMG">
+${count>1?`<button class="gallery-arrow left" data-prev="${escapeHtml(e.id)}" aria-label="Previous image">‹</button><button class="gallery-arrow right" data-next="${escapeHtml(e.id)}" aria-label="Next image">›</button>`:""}
+${count?`<div class="image-counter">${idx+1} / ${count}</div>`:""}
+</div>
+<div class="card-body">
+<div class="card-top"><div><h3 class="card-title">${escapeHtml(e.name)}</h3>${exerciseRegions(e).map(r=>`<span class="badge">${escapeHtml(r)}</span>`).join(" ")}</div><div class="number-badge">#${exerciseNumber(e)}</div></div>
+<p class="description">${escapeHtml(e.description)}</p>
+<div class="card-actions"><label class="check"><input type="checkbox" data-check="${escapeHtml(e.id)}" ${selected?"checked":""}> Select</label>${e.video?`<a class="video-btn" href="${escapeHtml(e.video)}" target="_blank" rel="noopener">Video</a>`:""}</div>
+</div></article>`;
+}).join("");
+document.querySelectorAll("[data-check]").forEach(input=>input.onchange=()=>{let id=input.dataset.check;input.checked?selectedIds.add(id):selectedIds.delete(id);renderExercises();renderSend();});
+document.querySelectorAll("[data-prev]").forEach(b=>b.onclick=()=>changeGallery(b.dataset.prev,-1));
+document.querySelectorAll("[data-next]").forEach(b=>b.onclick=()=>changeGallery(b.dataset.next,1));
+}
+function changeGallery(id,delta){
+const e=exercises.find(x=>x.id===id),imgs=imageList(e);if(!imgs.length)return;
+let idx=galleryIndex.get(id)||0;idx=(idx+delta+imgs.length)%imgs.length;galleryIndex.set(id,idx);renderExercises();
+}
+function renderSend(){
+$("selectedCount").textContent=`(${selectedIds.size})`;
+const list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));
+if(!list.length){$("selectedList").innerHTML=`<div class="empty">No exercises selected yet. Go back to Exercise and check what you want the patient to do.</div>`;return;}
+const withDose=featureOn("dosage");
+$("selectedList").innerHTML=list.map(e=>{let image=imageList(e)[0]||PLACEHOLDER_IMG;const d=dosage.get(e.id)||{};return`<div class="selected-item" data-item-id="${escapeHtml(e.id)}"><img src="${escapeHtml(image)}" alt=""><div><strong>#${exerciseNumber(e)} — ${escapeHtml(e.name)}</strong><small>${escapeHtml(exerciseRegions(e).join(", "))}</small>${withDose?`<div class="dose-row no-print">${[["sets","Sets"],["reps","Reps"],["hold","Hold (s)"],["freq","Times/day"]].map(([k,l])=>`<label>${l}<input type="number" min="0" data-dose="${escapeHtml(e.id)}" data-key="${k}" value="${escapeHtml(d[k]||"")}"></label>`).join("")}</div>`:""}</div></div>`;}).join("");
+document.querySelectorAll("[data-dose]").forEach(inp=>inp.oninput=()=>{const id=inp.dataset.dose,d={...(dosage.get(id)||{})};d[inp.dataset.key]=inp.value.trim();dosage.set(id,d);});
+}
+function doseText(id,ar){
+if(!featureOn("dosage"))return"";
+const d=dosage.get(id)||{},p=[];
+if(d.sets&&d.reps)p.push(ar?`${d.sets} مجموعات × ${d.reps} تكرار`:`${d.sets} sets × ${d.reps} reps`);
+else if(d.sets)p.push(ar?`${d.sets} مجموعات`:`${d.sets} sets`);
+else if(d.reps)p.push(ar?`${d.reps} تكرار`:`${d.reps} reps`);
+if(d.hold)p.push(ar?`ثبات ${d.hold} ثانية`:`hold ${d.hold}s`);
+if(d.freq)p.push(ar?`${d.freq} مرة في اليوم`:`${d.freq}× per day`);
+return p.join(" • ");
+}
+
+/* ---------- Pro: feature flags, subscription codes, branding, templates ---------- */
+function lsGet(k){try{return localStorage.getItem(k);}catch(e){return null;}}
+function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(k,v);}catch(e){}}
+// Admin can preview the site as a subscriber ("pro") or as a free user ("free").
+const VIEW_KEY="homeex_admin_view";
+function adminView(){try{return sessionStorage.getItem(VIEW_KEY)||"pro";}catch(e){return"pro";}}
+function hasPro(){return isAdmin?adminView()!=="free":proActive;}
+function featureOn(k){const m=FEATURES[k]||"off";if(m==="off")return false;if(m==="all")return true;return hasPro();}
+function featureLocked(k){return FEATURES[k]==="pro"&&FEATURES.subscriptions==="on"&&!featureOn(k);}
+function subsOn(){return FEATURES.subscriptions==="on";}
+function fmtDate(ms){return ms?new Date(ms).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}):"—";}
+function getBrand(){try{return JSON.parse(lsGet(BRAND_KEY)||"{}")||{};}catch(e){return{};}}
+function applyFeatures(){
+const showPro=subsOn();
+$("proOpenBtn").classList.toggle("hidden",!showPro);
+$("footerProBtn").classList.toggle("hidden",!showPro);
+$("footerProSep").classList.toggle("hidden",!showPro);
+$("proOpenBtn").textContent=hasPro()?"⭐ Pro ✓":"⭐ Pro";
+$("homeProBanner").classList.toggle("hidden",!showPro||hasPro());
+$("protoProTag").classList.toggle("hidden",!showPro);
+renderViewAs();
+$("proBanner").classList.toggle("hidden",!["dosage","branding","templates"].some(featureLocked));
+$("brandBox").classList.toggle("hidden",!featureOn("branding"));
+renderBrandSummary();renderTemplates();renderSend();
+}
+function renderBrandSummary(){
+const b=getBrand();
+$("brandSummary").textContent=[b.name,b.clinic,b.phone].filter(Boolean).join(" • ")||"ضيف اسمك واسم العيادة ورقمك واللوجو، وهيظهروا على الـ PDF والواتساب.";
+const mini=$("brandLogoMini");mini.style.backgroundImage=b.logo?`url("${driveToImageUrl(b.logo).replace(/"/g,'%22')}")`:"";mini.textContent=b.logo?"":"🏥";
+}
+function renderViewAs(){
+let bar=$("viewAsBar");
+if(!isAdmin||!subsOn()){if(bar)bar.remove();document.body.classList.remove("has-viewas");return;}
+document.body.classList.add("has-viewas");
+if(!bar){bar=document.createElement("div");bar.id="viewAsBar";bar.className="viewas no-print";document.body.appendChild(bar);}
+const v=adminView();
+bar.innerHTML=`<span>👁 عرض كـ</span><button data-view="pro" class="${v==="pro"?"active":""}">مشترك</button><button data-view="free" class="${v==="free"?"active":""}">مستخدم عادي</button>`;
+bar.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{try{sessionStorage.setItem(VIEW_KEY,b.dataset.view);}catch(e){}applyFeatures();});
+}
+
+/* Protocols. Line format (also used in Admin):
+   Name | Region | Description | 15:3x10h5/2, 11:3x10, 13:x3h30
+   per exercise → number:SETSxREPS hHOLD /TIMES-PER-DAY (all optional; "x3" = reps only) */
+const DEFAULT_TEMPLATE_LINES=`Acute low back pain | Lower Back | أول أيام ألم أسفل الظهر: حركة لطيفة وتنفس لتقليل التقلص | 88:2x10h5/3, 89:2x10/3, 5:x3h20/3, 61:x3h20/2, 112:x10/3
+Chronic low back pain – core stability | Lower Back | تقوية العضلات العميقة للجذع لألم الظهر المزمن | 8:3x10h10, 91:2x10, 1:3x12h3, 59:3x8h5, 90:3x8, 2:x3h20, 24:3x12
+Disc – extension bias (McKenzie) | Lower Back | للانزلاق الغضروفي اللي بيتحسن مع فرد الظهر | 16:x10h2/5, 19:2x10h3, 85:2x10, 8:3x10h10, 1:3x10h3, 31:x3h30/2
+Sciatica & piriformis | Lower Back | ألم العصب الوركي وعضلة الكمثرية: إطالة وتنشيط الأرداف | 13:x3h30/2, 12:x3h30/2, 5:x3h20/2, 88:2x10h5, 24:3x12, 1:3x12h3
+Neck pain & forward head posture | Neck | ألم الرقبة وتقدم الرأس من الموبايل والمكتب | 63:3x10h5/3, 66:3x10h10, 70:3x10h5/2, 86:3x12, 48:x3h30/2, 49:x3h30/2, 84:2x10
+Stiff neck – mobility | Neck | تيبس الرقبة: استعادة الحركة بالتدريج | 64:2x10/3, 65:2x10/3, 63:2x10h5/3, 50:x5h5/2, 48:x3h30/2
+Frozen shoulder – stiffness phase | Shoulder | الكتف المتجمد: استعادة مدى الحركة | 34:x20/3, 67:3x10h5/2, 68:3x10h5/2, 69:3x10/2, 71:x3h30/2, 27:x3h30/2
+Rotator cuff & impingement | Shoulder | آلام أوتار الكتف: تقوية الكفة المدورة ولوح الكتف | 70:3x10h5, 36:3x15, 37:3x15, 14:3x12, 21:3x10h3, 22:3x10h3, 39:3x12, 71:x3h30
+Scapular stability & posture | Upper Back | ثبات لوح الكتف وتصحيح القوام (Upper crossed) | 20:3x10h3, 21:3x10h3, 22:3x10h3, 26:3x10, 40:3x10, 86:3x12, 38:3x10, 56:x3h30/2
+Tennis elbow | Elbow & Wrist | التهاب الوتر الخارجي للكوع: Eccentric وإطالة | 43:x3h30/3, 74:3x15, 73:2x15, 79:3x10h5
+Golfer's elbow | Elbow & Wrist | التهاب الوتر الداخلي للكوع | 42:x3h30/3, 83:x3h30/2, 76:2x15, 73:2x15, 79:3x10h5
+De Quervain's | Elbow & Wrist | التهاب أوتار الإبهام | 41:x3h20/2, 81:2x10, 77:2x10, 82:2x10h3
+Wrist & hand stiffness (after cast) | Elbow & Wrist | تيبس الرسغ واليد بعد فك الجبس | 76:2x15/3, 77:2x15/3, 73:2x15/3, 78:2x5/3, 79:3x10h5, 81:2x10, 80:2x10
+Hip osteoarthritis | Hip | خشونة مفصل الفخذ: حركة وتقوية عضلات الحوض | 97:2x10, 23:3x10, 24:3x12, 92:3x10, 1:3x12h3, 94:3x8, 31:x3h30/2
+Knee osteoarthritis | Knee | خشونة الركبة: تقوية العضلة الأمامية والحوض | 15:3x10h5/2, 11:3x10, 95:3x10h3, 96:3x10, 10:3x10h5, 23:3x10, 94:3x8, 30:2x15
+Knee post-op – early phase | Knee | بعد عمليات الركبة (TKR / ACL) – المرحلة الأولى حسب تعليمات الجراح | 47:3x20/6, 15:3x10h5/3, 97:3x10/3, 11:3x10/2, 95:3x10h3/2, 10:3x10h5/2
+Patellofemoral pain | Knee | ألم مقدمة الركبة (الصابونة): تقوية الحوض والفخذ | 23:3x12, 24:3x15, 1:3x12h3, 92:3x10, 98:3x15, 28:3x10, 29:3x10, 31:x3h30
+Ankle sprain rehab | Ankle / Foot | التواء الكاحل: حركة ثم تقوية ثم توازن | 47:3x20/3, 99:x2/2, 44:3x15, 45:3x15, 46:3x15, 30:3x12, 102:x3h30, 62:x3h30
+Plantar fasciitis | Ankle / Foot | التهاب اللفافة الأخمصية (شوكة القدم) | 103:x3h30/3, 100:x3h30/2, 32:x3h30/2, 101:3x10, 30:3x12
+Falls prevention (elderly) | Balance | الوقاية من الوقوع لكبار السن: تقوية وتوازن | 94:3x8, 105:2x20, 106:2x10, 107:2x10, 93:2x10, 62:x3h20, 104:x3, 102:x3h15
+TMJ dysfunction | TMJ | آلام مفصل الفك (برنامج Rocabado المبسّط) | 108:x6h6/6, 109:x6/6, 110:2x10, 111:x6h3/3, 63:x6h5/3
+Breathing & airway clearance | Breathing | تمارين التنفس وطرد البلغم (أمراض الصدر وبعد الكورونا) | 112:x10/3, 113:x10/3, 114:x10/3, 115:x3/3
+Pelvic floor – stress incontinence | woman health | تقوية قاع الحوض لسلس البول وبعد الولادة | 116:3x10h10/3, 117:3x10/3, 118:x5, 8:3x10h10, 112:x10`;
+const REGION_ICONS={"Shoulder":"💪","Elbow & Wrist":"✋","Neck":"🧣","Upper Back":"🧍","Lower Back":"🔙","Hip":"🦴","Knee":"🦵","Ankle / Foot":"🦶","Core":"🎯","Balance":"⚖️","TMJ":"😬","Aqua therapy":"🏊","woman health":"🌸","Breathing":"🫁"};
+let protoRegion="";
+function parseTemplateLine(line){
+const parts=line.split("|").map(s=>s.trim());
+let name,region="",desc="",spec;
+if(parts.length>=4)[name,region,desc,spec]=parts;else[name,spec]=parts;
+const items=String(spec||"").split(/[,;]+/).map(s=>s.trim()).filter(Boolean).map(tok=>{
+const m=tok.match(/^(\d+)(?::\s*(?:(\d+)?x(\d+))?\s*(?:h(\d+))?\s*(?:\/(\d+))?)?$/i);
+return m?{n:Number(m[1]),sets:m[2]||"",reps:m[3]||"",hold:m[4]||"",freq:m[5]||""}:null;}).filter(Boolean);
+return name&&items.length?{name,region,desc,items}:null;
+}
+function templateToLine(t){
+const spec=t.items.map(i=>{let d=(i.reps?`${i.sets||""}x${i.reps}`:"")+(i.hold?`h${i.hold}`:"")+(i.freq?`/${i.freq}`:"");return d?`${i.n}:${d}`:String(i.n);}).join(", ");
+return t.region||t.desc?`${t.name} | ${t.region||""} | ${t.desc||""} | ${spec}`:`${t.name} | ${spec}`;
+}
+function normalizeTemplate(t){
+if(!t||!t.name)return null;
+if(Array.isArray(t.items))return{name:t.name,region:t.region||"",desc:t.desc||"",items:t.items.filter(i=>i&&i.n)};
+if(Array.isArray(t.numbers))return{name:t.name,region:"",desc:"",items:t.numbers.map(n=>({n:Number(n)}))};
+return null;
+}
+const DEFAULT_TEMPLATES=DEFAULT_TEMPLATE_LINES.split("\n").map(parseTemplateLine).filter(Boolean);
+function renderTemplates(){
+const on=featureOn("templates"),locked=featureLocked("templates");
+const showTab=(on||locked)&&TEMPLATES.length>0;
+$("protocolsTabBtn").classList.toggle("hidden",!showTab);
+if(!showTab&&!$("protocolsTab").classList.contains("hidden"))switchTab("exerciseTab");
+renderAd();
+if(!TEMPLATES.length)return;
+const regions=[...new Set(TEMPLATES.map(t=>t.region).filter(Boolean))];
+if(protoRegion&&!regions.includes(protoRegion))protoRegion="";
+$("protoFilters").innerHTML=regions.length>1?[["","All"],...regions.map(r=>[r,`${REGION_ICONS[r]||"•"} ${r}`])].map(([v,l])=>`<button class="proto-filter ${protoRegion===v?"active":""}" data-proto-region="${escapeHtml(v)}">${escapeHtml(l)}</button>`).join(""):"";
+document.querySelectorAll("[data-proto-region]").forEach(b=>b.onclick=()=>{protoRegion=b.dataset.protoRegion;renderTemplates();});
+const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
+$("templatesList").innerHTML=TEMPLATES.map((t,i)=>({t,i})).filter(({t})=>!protoRegion||t.region===protoRegion).map(({t,i})=>{
+const names=t.items.map(it=>byNum.get(it.n)?.name).filter(Boolean);
+const daily=Math.max(0,...t.items.map(it=>Number(it.freq)||1));
+return`<div class="proto-card ${locked?"locked":""}">
+${locked?`<span class="proto-lock">🔒 Pro</span>`:""}
+<div class="proto-top"><div class="proto-icon">${REGION_ICONS[t.region]||"📋"}</div><div><div class="proto-name">${escapeHtml(t.name)}</div>${t.region?`<div class="proto-region">${escapeHtml(t.region)}</div>`:""}</div></div>
+${t.desc?`<p class="proto-desc" dir="rtl">${escapeHtml(t.desc)}</p>`:""}
+<div class="proto-meta"><span>${t.items.length} exercises</span>${t.items.some(it=>it.reps||it.hold)?`<span>Dosage included</span>`:""}${daily>1?`<span>up to ${daily}×/day</span>`:""}</div>
+<div class="proto-ex">${escapeHtml(names.slice(0,4).join(" • "))}${names.length>4?` +${names.length-4}`:""}</div>
+<button class="btn ${locked?"btn-outline":"btn-primary"}" data-tpl="${i}">${locked?"Unlock with Pro":"Use protocol →"}</button>
+</div>`;}).join("");
+document.querySelectorAll("[data-tpl]").forEach(b=>b.onclick=()=>locked?openPro():applyTemplate(TEMPLATES[Number(b.dataset.tpl)]));
+}
+function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600);}
+function applyTemplate(t){
+const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
+selectedIds.clear();
+let count=0;
+t.items.forEach(it=>{const e=byNum.get(it.n);if(!e)return;selectedIds.add(e.id);count++;
+dosage.set(e.id,{sets:it.sets||"",reps:it.reps||"",hold:it.hold||"",freq:it.freq||""});});
+searchNumbers=null;$("exerciseSearch").value="";
+renderExercises();switchTab("sendTab");window.scrollTo({top:0,behavior:"smooth"});
+toast(`✓ ${t.name}: ${count} exercises ready`);
+}
+function proStatusHtml(){
+if(proActive)return`<div class="pro-status ok" dir="rtl">✅ اشتراك Pro شغال على الجهاز ده.<br>المشترك: <b>${escapeHtml(proInfo.name||"—")}</b><br>صالح حتى: <b>${fmtDate(proInfo.expiresAt)}</b> (فاضل ${Math.max(0,Math.ceil((proInfo.expiresAt-Date.now())/864e5))} يوم)</div>`;
+if(!proInfo)return"";
+const msg={missing:"الكود ده مش موجود.",other:"الكود ده متفعّل على جهاز تاني.",stopped:"الاشتراك ده متوقف.",expired:`الاشتراك خلص يوم ${fmtDate(proInfo.expiresAt)}. كلمنا عشان تجدد على نفس الكود.`,error:"مقدرناش نتأكد من الاشتراك. اتأكد من النت."}[proInfo.status];
+return msg?`<div class="pro-status bad" dir="rtl">${escapeHtml(msg)}</div>`:"";
+}
+function proWaLink(planName){
+const n=waPhone(PRO_PAGE.whatsapp);if(!n)return"";
+const renew=proInfo&&proInfo.status==="expired"?` (تجديد — الكود: ${lsGet(PRO_KEY)})`:"";
+return`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، عايز أشترك في HomeEx Pro${planName?` — باقة ${planName}`:""}${renew}`)}`;
+}
+function renderOffer(){
+const box=$("proOffer");
+if(proActive){box.innerHTML="";return;}
+const p=PRO_PAGE,plans=(p.plans||[]).filter(x=>x&&x.name);
+box.innerHTML=`<div dir="rtl">
+<h3 style="margin:6px 0 0;font-size:20px">${escapeHtml(p.headline||"")}</h3>
+<p class="offer-sub">مع اشتراك Pro هتاخد:</p>
+<ul class="offer-list">${(p.features||[]).filter(Boolean).map(f=>`<li>✅ ${escapeHtml(f)}</li>`).join("")}</ul>
+${plans.length?`<div class="plans">${plans.map(x=>{const l=proWaLink(x.name);return`<div class="plan ${x.best?"best":""}">${x.best?`<small style="color:#b45309;font-weight:800">⭐ الأوفر</small>`:""}<b>${escapeHtml(x.name)}</b><div class="price">${escapeHtml(x.price||"")}</div><small>${escapeHtml(x.note||"")}</small>${l?`<a class="btn btn-green" href="${escapeHtml(l)}" target="_blank" rel="noopener">اشترك</a>`:""}</div>`;}).join("")}</div>`:""}
+${!plans.length&&proWaLink("")?`<a class="btn btn-green" href="${escapeHtml(proWaLink(""))}" target="_blank" rel="noopener">اشترك على واتساب</a>`:""}
+<p class="code-meta">الدفع بـ InstaPay أو فودافون كاش، وبعدها بيوصلك كود التفعيل على الواتساب.</p>
+</div>`;
+}
+function openPro(){
+$("proStatus").innerHTML=proStatusHtml();renderOffer();$("proNotice").innerHTML="";
+$("proCodeInput").value=lsGet(PRO_KEY)||"";
+$("proModal").classList.remove("hidden");
+}
+async function ensureDeviceUser(){
+await auth.authStateReady();
+if(!auth.currentUser)await signInAnonymously(auth);
+return auth.currentUser;
+}
+function codeState(d,uid){
+const exp=d.expiresAt?.toMillis?.()||0;
+if(d.active===false)return{status:"stopped",expiresAt:exp};
+if(d.deviceUid&&d.deviceUid!==uid)return{status:"other",expiresAt:exp};
+if(exp<=Date.now())return{status:"expired",expiresAt:exp};
+return{status:"active",expiresAt:exp,name:d.name};
+}
+async function refreshPro(){
+proActive=false;proInfo=null;
+const code=lsGet(PRO_KEY);
+if(subsOn()&&code){
+try{
+const user=await ensureDeviceUser();
+const snap=await getDoc(doc(db,"codes",code));
+proInfo=snap.exists()?codeState(snap.data(),user.uid):{status:"missing"};
+// A code must be bound to this device to count; an unbound one needs Activate again.
+if(snap.exists()&&!snap.data().deviceUid)proInfo={status:"missing"};
+proActive=proInfo.status==="active";
+}catch(e){console.warn("Pro check failed:",e);proInfo={status:"error"};}
+}
+applyFeatures();
+}
+async function activatePro(){
+const code=$("proCodeInput").value.trim().toUpperCase().replace(/\s+/g,"");
+const note=t=>$("proNotice").innerHTML=`<div class="notice error" dir="rtl">${escapeHtml(t)}</div>`;
+if(!/^[A-Z0-9-]{6,40}$/.test(code)){note("اكتب الكود صح.");return;}
+const btn=$("proActivateBtn");btn.disabled=true;btn.textContent="جاري التأكد...";
+try{
+const user=await ensureDeviceUser(),ref=doc(db,"codes",code),snap=await getDoc(ref);
+if(!snap.exists()){note("الكود ده مش موجود.");return;}
+const st=codeState(snap.data(),user.uid);
+if(st.status==="stopped"){note("الاشتراك ده متوقف.");return;}
+if(st.status==="other"){note("الكود ده متفعّل على جهاز تاني. لو غيّرت موبايلك كلمنا.");return;}
+if(st.status==="expired"){note(`الاشتراك خلص يوم ${fmtDate(st.expiresAt)}. كلمنا عشان تجدد.`);return;}
+if(!snap.data().deviceUid)await updateDoc(ref,{deviceUid:user.uid,activatedAt:serverTimestamp()});
+lsSet(PRO_KEY,code);
+await refreshPro();
+$("proStatus").innerHTML=proStatusHtml();renderOffer();
+$("proNotice").innerHTML=`<div class="notice ok" dir="rtl">تم تفعيل Pro بنجاح 🎉</div>`;
+}catch(e){console.error(e);note(e.code==="auth/admin-restricted-operation"?"التفعيل مش متاح دلوقتي. كلمنا.":(e.message||"التفعيل فشل."));}
+finally{btn.disabled=false;btn.textContent="تفعيل";}
+}
+
+/* Admin: subscription codes */
+function newCode(){
+const A="ABCDEFGHJKLMNPQRSTUVWXYZ23456789",r=crypto.getRandomValues(new Uint8Array(12));
+const s=[...r].map(x=>A[x%A.length]).join("");
+return`HX-${s.slice(0,4)}-${s.slice(4,8)}-${s.slice(8,12)}`;
+}
+function addMonths(ms,months){const d=new Date(ms);d.setMonth(d.getMonth()+months);return d.getTime();}
+function waPhone(p){let n=String(p||"").replace(/\D/g,"");if(n.startsWith("0"))n="2"+n;return n;}
+function codeMessage(c){
+const site=window.location.href.split("#")[0].split("?")[0];
+return`اشتراك HomeEx Pro ⭐\n\nالكود: ${c.id}\nصالح حتى: ${fmtDate(c.expiresAt)}\n\nافتح الموقع ${site}\nواضغط على زرار Pro واكتب الكود.\nالكود بيشتغل على جهاز واحد بس.`;
+}
+async function loadCodes(){
+try{const snap=await getDocs(collection(db,"codes"));codesCache=snap.docs.map(d=>({id:d.id,...d.data(),expiresAt:d.data().expiresAt?.toMillis?.()||0})).sort((a,b)=>a.expiresAt-b.expiresAt);}
+catch(e){console.error(e);codesCache={error:e.message};}
+renderCodes();
+}
+let codesFilter="all",codesQuery="";
+function codeStatus(c){
+if(c.active===false)return"stopped";
+if(c.expiresAt<=Date.now())return"expired";
+if(!c.deviceUid)return"pending";
+return c.expiresAt-Date.now()<=7*864e5?"expiring":"active";
+}
+function renderCodes(){
+const box=$("codesBox");if(!box)return;
+if(!codesCache){box.innerHTML=`<div class="code-meta">Loading…</div>`;return;}
+if(codesCache.error){box.innerHTML=`<div class="notice error">تعذر تحميل الأكواد: ${escapeHtml(codesCache.error)}<br>غالباً قواعد Firestore لسه محتاجة تتحدث (collection: codes).</div>`;return;}
+if(!codesCache.length){box.innerHTML=`<div class="empty">لسه مفيش مشتركين.</div>`;$("codesStats").innerHTML="";return;}
+const counts={all:codesCache.length,active:0,expiring:0,pending:0,expired:0,stopped:0};
+codesCache.forEach(c=>{const st=codeStatus(c);counts[st]++;if(st==="expiring")counts.active++;});
+const months=codesCache.reduce((a,c)=>a+(Number(c.paidMonths)||0),0);
+const tiles=[["all","كل المشتركين",counts.all,""],["active","شغالين دلوقتي",counts.active,"ok"],["expiring","بيخلصوا خلال 7 أيام",counts.expiring,"warn"],["pending","لسه مفعّلوش",counts.pending,""],["expired","منتهيين",counts.expired,"bad"],["stopped","موقوفين",counts.stopped,"bad"]];
+$("codesStats").innerHTML=`<div class="stat-grid">${tiles.map(([k,l,n,c])=>`<button class="stat ${c} ${codesFilter===k?"active":""}" data-cfilter="${k}"><b>${n}</b><span>${l}</span></button>`).join("")}</div>
+<div class="code-meta" style="margin:8px 0 0">إجمالي الشهور المدفوعة: <b>${months}</b> شهر • التجديدات: <b>${codesCache.reduce((a,c)=>a+(Number(c.renewals)||0),0)}</b></div>
+<input id="codesSearch" placeholder="🔎 دوّر بالاسم أو الرقم أو الكود" value="${escapeHtml(codesQuery)}" style="width:100%;margin-top:10px;border:1px solid #d0d5dd;border-radius:10px;padding:10px">`;
+document.querySelectorAll("[data-cfilter]").forEach(b=>b.onclick=()=>{codesFilter=b.dataset.cfilter;renderCodes();});
+$("codesSearch").oninput=e=>{codesQuery=e.target.value;const pos=e.target.selectionStart;renderCodes();const i=$("codesSearch");i.focus();i.setSelectionRange(pos,pos);};
+const q=codesQuery.trim().toLowerCase();
+const list=codesCache.filter(c=>{const st=codeStatus(c);
+if(codesFilter==="active"&&st!=="active"&&st!=="expiring")return false;
+if(codesFilter!=="all"&&codesFilter!=="active"&&st!==codesFilter)return false;
+return!q||[c.id,c.name,c.phone].some(v=>String(v||"").toLowerCase().includes(q));});
+if(!list.length){box.innerHTML=`<div class="empty">مفيش نتايج.</div>`;return;}
+box.innerHTML=list.map(c=>{
+const expired=c.expiresAt<=Date.now(),days=Math.ceil((c.expiresAt-Date.now())/864e5);
+const st=codeStatus(c);
+const pill=st==="stopped"?`<span class="pill bad">موقوف</span>`:st==="expired"?`<span class="pill bad">منتهي</span>`:st==="pending"?`<span class="pill wait">لم يُفعّل بعد • ${days} يوم</span>`:st==="expiring"?`<span class="pill warn">بيخلص بعد ${days} يوم</span>`:`<span class="pill ok">شغال • ${days} يوم</span>`;
+return`<div class="code-row"><div><code>${escapeHtml(c.id)}</code> ${pill}<div class="code-meta">${escapeHtml(c.name||"—")}${c.phone?" • "+escapeHtml(c.phone):""} • ينتهي ${fmtDate(c.expiresAt)}${c.deviceUid?" • مربوط بجهاز":""}</div></div>
+<div class="code-actions">
+<select data-renew-len="${escapeHtml(c.id)}" class="btn btn-outline"><option value="1">شهر</option><option value="3">3 شهور</option><option value="6">6 شهور</option><option value="12">سنة</option></select>
+<button class="btn btn-primary" data-renew="${escapeHtml(c.id)}">تجديد</button>
+${c.deviceUid?`<button class="btn btn-outline" data-reset="${escapeHtml(c.id)}">فك الجهاز</button>`:""}
+<button class="btn btn-outline" data-toggle="${escapeHtml(c.id)}">${c.active===false?"تشغيل":"إيقاف"}</button>
+<button class="btn btn-green" data-wa="${escapeHtml(c.id)}">واتساب</button>
+<button class="btn btn-danger" data-delcode="${escapeHtml(c.id)}">حذف</button>
+</div></div>`;}).join("");
+const find=id=>codesCache.find(c=>c.id===id);
+const act=async(fn)=>{try{await fn();await loadCodes();}catch(e){alert(e.message);}};
+box.querySelectorAll("[data-renew]").forEach(b=>b.onclick=()=>{const c=find(b.dataset.renew),m=Number(box.querySelector(`[data-renew-len="${CSS.escape(c.id)}"]`).value);
+const next=addMonths(Math.max(Date.now(),c.expiresAt),m);
+if(confirm(`تجديد ${c.id} لحد ${fmtDate(next)}؟`))act(()=>updateDoc(doc(db,"codes",c.id),{expiresAt:Timestamp.fromMillis(next),active:true,renewedAt:serverTimestamp(),renewals:increment(1),paidMonths:increment(m)}));});
+box.querySelectorAll("[data-reset]").forEach(b=>b.onclick=()=>{if(confirm("فك ربط الكود بالجهاز؟ المشترك هيقدر يفعّله على جهاز جديد."))act(()=>updateDoc(doc(db,"codes",b.dataset.reset),{deviceUid:null,activatedAt:null}));});
+box.querySelectorAll("[data-toggle]").forEach(b=>b.onclick=()=>{const c=find(b.dataset.toggle);act(()=>updateDoc(doc(db,"codes",c.id),{active:c.active===false}));});
+box.querySelectorAll("[data-wa]").forEach(b=>b.onclick=()=>{const c=find(b.dataset.wa);window.open(`https://wa.me/${waPhone(c.phone)}?text=${encodeURIComponent(codeMessage(c))}`,"_blank");});
+box.querySelectorAll("[data-delcode]").forEach(b=>b.onclick=()=>{if(confirm(`حذف الكود ${b.dataset.delcode} نهائياً؟`))act(()=>deleteDoc(doc(db,"codes",b.dataset.delcode)));});
+}
+async function createCode(){
+const name=$("newCodeName").value.trim(),phone=$("newCodePhone").value.trim(),months=Number($("newCodeLen").value);
+if(!name){$("codesNotice").innerHTML=`<div class="notice error">اكتب اسم المشترك.</div>`;return;}
+const id=newCode(),expiresAt=addMonths(Date.now(),months);
+try{
+await setDoc(doc(db,"codes",id),{name,phone,plan:"pro",paidMonths:months,renewals:0,expiresAt:Timestamp.fromMillis(expiresAt),deviceUid:null,activatedAt:null,active:true,createdAt:serverTimestamp()});
+$("newCodeName").value="";$("newCodePhone").value="";
+$("codesNotice").innerHTML=`<div class="notice ok">تم إنشاء الكود <b>${id}</b> — دوس "واتساب" جنبه عشان تبعته.</div>`;
+await loadCodes();
+}catch(e){console.error(e);$("codesNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
+}
+async function saveFeatures(){
+const f={};document.querySelectorAll("[data-feature]").forEach(s=>f[s.dataset.feature]=s.value);
+const tpl=parseLines($("templatesInput").value).map(parseTemplateLine).filter(Boolean);
+try{
+await setDoc(doc(db,"settings","main"),{features:f,templates:tpl,updatedAt:serverTimestamp()},{merge:true});
+FEATURES={...FEATURES,...f};TEMPLATES=tpl.length?tpl:DEFAULT_TEMPLATES;await refreshPro();
+$("featuresNotice").innerHTML=`<div class="notice ok">اتحفظ. التغيير وصل لكل المستخدمين.</div>`;
+}catch(e){$("featuresNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
+}
+function featuresCardHtml(){
+const modes=k=>["subscriptions","exAd","protoAd"].includes(k)?[["off","مقفول"],["on","شغال"]]:[["off","مقفول"],["all","للكل مجاناً"],["pro","للمشتركين بس"]];
+const rows=[["subscriptions","نظام الاشتراكات (زرار Pro + تفعيل الأكواد)"],["templates","البروتوكولات الجاهزة"],["dosage","Sets / Reps / Hold لكل تمرين"],["branding","بيانات الأخصائي والعيادة على الـ PDF والواتساب"],["exAd","صورة الإعلان في صفحة التمارين"],["protoAd","صورة الإعلان في تاب البروتوكولات"]];
+return`<div class="settings-card"><h3>المزايا (Features)</h3><p>لو كله "مقفول" الموقع بيفضل زي ما هو بالظبط. "للمشتركين بس" محتاجة نظام الاشتراكات يبقى شغال. انت كأدمن بتشوف كل المزايا اللي مش مقفولة.</p>
+${rows.map(([k,l])=>`<div class="feature-row"><span>${l}</span><select data-feature="${k}">${modes(k).map(([v,t])=>`<option value="${v}" ${FEATURES[k]===v?"selected":""}>${t}</option>`).join("")}</select></div>`).join("")}
+<div class="field" style="margin-top:14px"><label>البروتوكولات (${TEMPLATES.length}) — سطر لكل بروتوكول</label><textarea id="templatesInput" class="settings-textarea" style="min-height:260px;font-family:monospace;font-size:12px" dir="ltr">${escapeHtml(TEMPLATES.map(templateToLine).join("\n"))}</textarea><small style="display:block;margin-top:6px;color:#667085;line-height:1.7">الشكل: <code>الاسم | المنطقة | الوصف | التمارين</code><br>التمارين: رقم التمرين وبعده الجرعة. مثلاً <code>15:3x10h5/2</code> معناها تمرين 15، 3 مجموعات × 10، ثبات 5 ثواني، مرتين في اليوم. و<code>13:x3h30</code> معناها 3 مرات ثبات 30 ثانية. و<code>47</code> لوحده معناها من غير جرعة.<br>لو مسحت كل السطور وحفظت، البروتوكولات الجاهزة الأصلية بترجع.</small></div>
+<div style="margin-top:12px"><button class="btn btn-primary" id="saveFeaturesBtn">حفظ المزايا</button></div><div id="featuresNotice"></div></div>`;
+}
+function proPageCardHtml(){
+const p=PRO_PAGE;
+return`<div class="settings-card"><h3>صفحة عرض الاشتراك</h3><p>دي اللي بتظهر للناس لما يدوسوا ⭐ Pro. لينك تقدر تنشره على فيسبوك واليوتيوب: <code>${escapeHtml(window.location.href.split("#")[0].split("?")[0])}#pro</code></p>
+<div class="form-grid">
+<div class="field full"><label>العنوان</label><input id="ppHeadline" value="${escapeHtml(p.headline||"")}"></div>
+<div class="field full"><label>المزايا — سطر لكل ميزة</label><textarea id="ppFeatures" class="settings-textarea">${escapeHtml((p.features||[]).join("\n"))}</textarea></div>
+<div class="field full"><label>الباقات — سطر لكل باقة: الاسم | السعر | ملاحظة | * (لو عايزها "الأوفر")</label><textarea id="ppPlans" class="settings-textarea">${escapeHtml((p.plans||[]).map(x=>[x.name,x.price,x.note,x.best?"*":""].join(" | ").replace(/(\s\|\s)+$/,"")).join("\n"))}</textarea></div>
+<div class="field"><label>رقم الواتساب اللي هيوصلك عليه الطلبات</label><input id="ppWhatsapp" inputmode="tel" placeholder="01xxxxxxxxx" value="${escapeHtml(p.whatsapp||"")}"></div>
+</div>
+<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap"><button class="btn btn-primary" id="saveProPageBtn">حفظ صفحة العرض</button><button class="btn btn-outline" id="previewProPageBtn">معاينة</button></div><div id="proPageNotice"></div></div>`;
+}
+async function saveProPage(){
+const plans=parseLines($("ppPlans").value).map(line=>{const[name,price,note,best]=line.split("|").map(s=>(s||"").trim());return{name,price:price||"",note:note||"",best:best==="*"};}).filter(x=>x.name);
+const proPage={headline:$("ppHeadline").value.trim(),features:parseLines($("ppFeatures").value),plans,whatsapp:$("ppWhatsapp").value.trim()};
+try{
+await setDoc(doc(db,"settings","main"),{proPage,updatedAt:serverTimestamp()},{merge:true});
+PRO_PAGE=proPage;
+$("proPageNotice").innerHTML=`<div class="notice ok">اتحفظ.</div>`;
+}catch(e){$("proPageNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
+}
+function codesCardHtml(){
+return`<div class="settings-card"><h3>المشتركين (أكواد Pro)</h3><p>التجديد بيمد صلاحية نفس الكود — مش محتاج تبعت كود جديد. "فك الجهاز" لو المشترك غيّر موبايله.</p>
+<div class="form-grid"><div class="field"><label>اسم المشترك</label><input id="newCodeName"></div><div class="field"><label>رقم الواتساب</label><input id="newCodePhone" inputmode="tel" placeholder="01xxxxxxxxx"></div>
+<div class="field"><label>المدة</label><select id="newCodeLen"><option value="1">شهر</option><option value="3">3 شهور</option><option value="6">6 شهور</option><option value="12">سنة</option></select></div>
+<div class="field" style="justify-content:end"><button class="btn btn-primary" id="createCodeBtn">+ إنشاء كود</button></div></div>
+<div id="codesNotice"></div><div id="codesStats" style="margin-top:16px"></div><div id="codesBox" style="display:grid;gap:8px;margin-top:14px"></div></div>`;
+}
+function switchTab(tabId){
+document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab===tabId));
+["exerciseTab","protocolsTab","sendTab","adminTab"].forEach(id=>$(id).classList.toggle("hidden",id!==tabId));
+if(tabId==="sendTab")renderSend();
+if(tabId==="adminTab")renderAdmin();
+}
+function getDirectExerciseNumbers(){
+try{
+let raw=new URLSearchParams(window.location.search).get("ex");
+if(!raw){
+const hash=window.location.hash.replace(/^#/,"");
+raw=new URLSearchParams(hash).get("ex");
+}
+if(!raw)return null;
+const nums=raw.split(/[,\s]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0);
+return [...new Set(nums)];
+}catch(e){return null;}
+}
+async function loadExercises(){
+const loadingTimer=setTimeout(()=>{
+if(!exercises.length)$("exerciseSummary").textContent="تعذر تحميل التمارين. أعد تحميل الصفحة وتأكد من اتصال الإنترنت.";
+},10000);
+try{
+const snap=await getDocs(query(collection(db,"exercises"),orderBy("number","asc")));
+exercises=snap.docs.map(d=>({id:d.id,...d.data()}));
+if(!exercises.length)exercises=[];
+}catch(err){
+console.warn("Firestore load:",err);
+try{
+const snap=await getDocs(collection(db,"exercises"));
+exercises=snap.docs.map(d=>({id:d.id,...d.data()}));
+}catch(e){exercises=[];$("exerciseSummary").textContent="Could not load exercises from Firestore.";console.error("Firestore exercises load failed:",e);}
+}
+clearTimeout(loadingTimer);exercises=sortedExercises(exercises);renderRegions();renderExercises();renderSend();renderTemplates();
+}
+async function checkAdmin(user){
+adminCheckError="";
+adminRawRole=null;
+if(!user)return false;
+try{
+const snap=await getDoc(doc(db,"users",user.uid));
+if(!snap.exists()){
+adminCheckError="No Firestore document was found in users with this exact Firebase UID.";
+return false;
+}
+adminRawRole=snap.data().role;
+const role=String(snap.data().role||"").trim().toLowerCase();
+if(role!=="admin"){
+adminCheckError='The role field must be exactly "admin".';
+return false;
+}
+return true;
+}catch(e){
+adminCheckError=e?.message||String(e);
+console.error("Admin check failed:",e);
+return false;
+}
+}
+let loginFormBuilt=false;
+function buildLoginForm(){
+if(loginFormBuilt)return;
+loginFormBuilt=true;
+const box=$("loginBox");
+const emailField=document.createElement("div");emailField.className="field";
+const emailLabel=document.createElement("label");emailLabel.textContent="Email";
+const emailInput=document.createElement("input");emailInput.id="loginEmail";emailInput.type="email";emailInput.placeholder="admin@example.com";emailInput.autocomplete="username";
+emailField.appendChild(emailLabel);emailField.appendChild(emailInput);
+
+const passField=document.createElement("div");passField.className="field";
+const passLabel=document.createElement("label");passLabel.textContent="Password";
+const passInput=document.createElement("input");passInput.id="loginPassword";passInput.type="password";passInput.placeholder="••••••••";passInput.autocomplete="current-password";
+passField.appendChild(passLabel);passField.appendChild(passInput);
+
+const btn=document.createElement("button");btn.className="btn btn-primary";btn.id="loginBtn";btn.textContent="Login";btn.onclick=login;
+const notice=document.createElement("div");notice.id="loginNotice";
+const hint=document.createElement("div");hint.style.cssText="margin-top:12px;color:#667085;font-size:12px";hint.textContent="Admin access is checked using your Firebase UID and the Firestore users document.";
+
+box.appendChild(emailField);box.appendChild(passField);box.appendChild(btn);box.appendChild(notice);box.appendChild(hint);
+passInput.addEventListener("keydown",e=>{if(e.key==="Enter")login();});
+}
+function showAdmin(){
+if(currentUser&&isAdmin){switchTab("adminTab");return;}
+buildLoginForm();
+$("loginEmail").value="";
+$("loginPassword").value="";
+$("loginNotice").innerHTML="";
+$("loginModal").classList.remove("hidden");
+setTimeout(()=>$("loginEmail").focus(),50);
+}
+async function loadSettings(){
+try{
+const snap=await getDoc(doc(db,"settings","main"));
+if(snap.exists()){
+const d=snap.data();
+heroImageLinks=Array.isArray(d.heroImages)?d.heroImages.filter(Boolean):[];
+adImageLinks=Array.isArray(d.adImages)?d.adImages.map(x=>typeof x==="string"?{img:x,link:x}:{img:String(x?.img||"").trim(),link:String(x?.link||x?.img||"").trim()}).filter(x=>x.img):[];
+headerIntervalSeconds=Math.max(2,Number(d.headerIntervalSeconds)||4);
+adIntervalSeconds=Math.max(2,Number(d.adIntervalSeconds)||5);
+if(Array.isArray(d.regions)&&d.regions.length)REGIONS=d.regions.map(r=>String(r).trim()).filter(Boolean);
+if(d.features&&typeof d.features==="object")FEATURES={...FEATURES,...d.features};
+const tl=Array.isArray(d.templates)?d.templates.map(normalizeTemplate).filter(Boolean):[];
+TEMPLATES=tl.length?tl:DEFAULT_TEMPLATES;
+if(d.proPage&&typeof d.proPage==="object")PRO_PAGE={...PRO_PAGE,...d.proPage};
+}
+}catch(e){console.warn("Settings load failed:",e);}
+renderHero();renderAd();
+}
+function settingLines(values){return (values||[]).join("\n");}
+function parseLines(value){return String(value||"").split(/\r?\n/).map(s=>s.trim()).filter(Boolean);}
+function adLinesToText(list){return (list||[]).map(x=>x.link&&x.link!==x.img?`${x.img} | ${x.link}`:x.img).join("\n");}
+function parseAdLines(value){
+return parseLines(value).map(line=>{
+const parts=line.split("|").map(s=>s.trim());
+return {img:parts[0],link:parts[1]||parts[0]};
+}).filter(x=>x.img);
+}
+async function saveSiteSettings(){
+if(!isAdmin)return;
+const hero=parseLines($("heroImageLinks").value), ads=parseAdLines($("adImageLinks").value);
+const headerSeconds=Math.max(2,Number($("headerIntervalSeconds")?.value)||4);
+const adSeconds=Math.max(2,Number($("adIntervalSeconds")?.value)||5);
+const regions=[...new Set(parseLines($("regionsList")?.value))];
+if(!regions.length){$("siteSettingsNotice").innerHTML=`<div class="notice error">أضف قسم واحد على الأقل قبل الحفظ.</div>`;return;}
+try{
+await setDoc(doc(db,"settings","main"),{heroImages:hero,adImages:ads,headerIntervalSeconds:headerSeconds,adIntervalSeconds:adSeconds,regions,updatedAt:serverTimestamp()},{merge:true});
+heroImageLinks=hero;adImageLinks=ads;headerIntervalSeconds=headerSeconds;adIntervalSeconds=adSeconds;REGIONS=regions;
+activeRegions=new Set([...activeRegions].filter(r=>REGIONS.includes(r)));
+renderHero();renderAd();renderRegions();renderExercises();
+$("siteSettingsNotice").innerHTML=`<div class="notice success">Site settings saved successfully.</div>`;
+}catch(e){
+console.error(e);$("siteSettingsNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;
+}
+}
+function renderHero(){
+const box=$("heroSlides");if(!box)return;
+const old=box.querySelectorAll(".hero-slide");old.forEach(x=>x.remove());
+const imgs=(heroImageLinks||[]).map(driveToImageUrl).filter(Boolean);
+imgs.forEach((src,i)=>{const s=document.createElement("div");s.className="hero-slide"+(i===0?" active":"");s.style.backgroundImage=`url("${src.replace(/"/g,'\\"')}")`;s.onerror=()=>{};box.insertBefore(s,box.firstChild);});
+if(heroTimer){clearInterval(heroTimer);heroTimer=null;}
+if(imgs.length>1){let i=0;heroTimer=setInterval(()=>{const slides=[...box.querySelectorAll(".hero-slide")];if(!slides.length)return;slides[i].classList.remove("active");i=(i+1)%slides.length;slides[i].classList.add("active");},Math.max(2,Number(headerIntervalSeconds)||4)*1000);}
+}
+function renderAd(){
+const boxes=[FEATURES.exAd!=="off"?$("adSlot"):null,FEATURES.protoAd!=="off"?$("adSlotProto"):null].filter(Boolean);
+[$("adSlot"),$("adSlotProto")].forEach(b=>{if(b&&!boxes.includes(b)){b.style.display="none";b.innerHTML="";}});
+if(!boxes.length){if(adTimer){clearInterval(adTimer);adTimer=null;}return;}
+const imgs=(adImageLinks||[]).map(x=>({src:driveToImageUrl(x.img),href:x.link?driveToImageUrl(x.link):driveToImageUrl(x.img)})).filter(x=>x.src);
+if(!imgs.length){boxes.forEach(b=>{b.style.display="none";b.innerHTML="";});if(adTimer){clearInterval(adTimer);adTimer=null;}return;}
+boxes.forEach(b=>b.style.display="block");let i=0;
+const paint=()=>{const html=`<div class="ad-label">Ad</div><a href="${escapeHtml(imgs[i].href)}" target="_blank" rel="noopener" aria-label="Advertisement"><img src="${escapeHtml(imgs[i].src)}" alt="Advertisement" onerror="this.style.display='none'"></a>`;boxes.forEach(b=>b.innerHTML=html);};
+paint();if(adTimer){clearInterval(adTimer);adTimer=null;}if(imgs.length>1){adTimer=setInterval(()=>{i=(i+1)%imgs.length;paint();},Math.max(2,Number(adIntervalSeconds)||5)*1000);}
+}
+function renderAdmin(){
+if(!isAdmin){$("adminContent").innerHTML=`<div class="empty">Admin access required. Please log in from the Admin button.</div>`;return;}
+const list=sortedExercises(exercises.filter(e=>!String(e.id).startsWith("demo")));
+$("adminContent").innerHTML=`<div class="admin-panel">
+<div class="admin-toolbar"><div><strong>Exercise library</strong><div style="color:#667085;font-size:13px">${list.length} Firestore exercises</div></div>
+<div style="display:flex;gap:8px"><button class="btn btn-primary" id="addExerciseBtn">+ Add exercise</button><button class="btn btn-outline" id="logoutBtn">Logout</button></div></div>
+<div class="settings-card"><h3>Website appearance</h3><p>Add multiple images using one Google Drive link per line. Header images rotate every 4 seconds. Advertisement images use the interval below.</p>
+<div class="settings-grid">
+<div class="field"><label>Header images</label><textarea id="heroImageLinks" class="settings-textarea" placeholder="Google Drive image link — one per line">${escapeHtml(settingLines(heroImageLinks))}</textarea><small style="display:block;margin-top:6px;color:#667085">Keep the same header size. Drive files must be shared as “Anyone with the link”.</small><label style="display:block;margin-top:10px">Header change every (seconds)
+<input id="headerIntervalSeconds" type="number" min="2" step="1" value="4"></label></div>
+<div class="field"><label>Advertisement images</label><label style="display:block;margin-top:10px">Advertisement change every (seconds)
+<input id="adIntervalSeconds" type="number" min="2" step="1" value="5"></label><textarea id="adImageLinks" class="settings-textarea" placeholder="لينك الصورة — أو لينك الصورة | لينك الصفحة اللي هتفتح لما حد يدوس عليها">${escapeHtml(adLinesToText(adImageLinks))}</textarea><small style="display:block;margin-top:6px;color:#667085">سطر لكل صورة. لو عايز الإعلان يفتح لينك مختلف عن الصورة نفسها لما حد يدوس عليه، اكتب بعد لينك الصورة علامة | وبعدها لينك الوجهة. مثال:<br><code>https://drive.google.com/...view | https://example.com/offer</code><br>لو مكتبتش علامة | خالص، الدوس على الإعلان هيفتح الصورة نفسها في تاب جديد زي ما كان.</small></div>
+<div class="field full"><label>Body regions (categories)</label><textarea id="regionsList" class="settings-textarea" placeholder="One region per line">${escapeHtml(settingLines(REGIONS))}</textarea><small style="display:block;margin-top:6px;color:#667085">قسم واحد في كل سطر. أضف قسم جديد بإضافة سطر، أو احذف قسم بمسح سطره — يفضل ما تحذفش قسم لسه فيه تمارين مربوطة بيه.</small></div>
+<div><button class="btn btn-primary" id="saveSiteSettingsBtn">Save appearance</button></div><div id="siteSettingsNotice"></div>
+</div></div>
+${featuresCardHtml()}
+${proPageCardHtml()}
+${codesCardHtml()}
+<div class="admin-list">${list.map(e=>`<div class="admin-row"><div class="meta"><div class="admin-number">#${exerciseNumber(e)}</div><img src="${escapeHtml(imageList(e)[0]||PLACEHOLDER_IMG)}" alt=""><div><strong>${escapeHtml(e.name)}</strong><div style="font-size:12px;color:#667085">${escapeHtml(exerciseRegions(e).join(", "))}</div></div></div><div class="admin-row-actions"><button class="btn btn-outline" data-edit="${escapeHtml(e.id)}">Edit</button><button class="btn btn-danger" data-delete="${escapeHtml(e.id)}">Delete</button></div></div>`).join("")||`<div class="empty">No Firestore exercises yet. Add your first one.</div>`}</div></div>`;
+if($("headerIntervalSeconds"))$("headerIntervalSeconds").value=headerIntervalSeconds;if($("adIntervalSeconds"))$("adIntervalSeconds").value=adIntervalSeconds;
+$("addExerciseBtn").onclick=()=>openExerciseModal();$("logoutBtn").onclick=async()=>{await signOut(auth);currentUser=null;isAdmin=false;switchTab("exerciseTab");applyFeatures();};
+$("saveSiteSettingsBtn").onclick=saveSiteSettings;
+$("saveFeaturesBtn").onclick=saveFeatures;$("createCodeBtn").onclick=createCode;
+$("saveProPageBtn").onclick=saveProPage;$("previewProPageBtn").onclick=openPro;
+renderCodes();loadCodes();
+document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openExerciseModal(b.dataset.edit));document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteExercise(b.dataset.delete));
+}
+async function nextExerciseNumber(){
+const nums=exercises.map(exerciseNumber).filter(n=>Number.isFinite(n)&&n<999999);return nums.length?Math.max(...nums)+1:1;
+}
+function addImageInput(value=""){
+const wrap=document.createElement("div");
+wrap.className="image-input-row";
+wrap.style.cssText="display:flex;gap:8px;margin-top:8px;align-items:center";
+const input=document.createElement("input");
+input.type="url";
+input.className="exercise-image-input";
+input.placeholder="https://drive.google.com/... or direct image URL";
+input.value=value||"";
+input.style.flex="1";
+const remove=document.createElement("button");
+remove.type="button";
+remove.className="btn btn-danger";
+remove.textContent="Remove";
+remove.onclick=()=>wrap.remove();
+wrap.appendChild(input);
+wrap.appendChild(remove);
+$("imageInputs").appendChild(wrap);
+}
+function getImageInputs(){
+return [...document.querySelectorAll(".exercise-image-input")].map(i=>i.value.trim()).filter(Boolean);
+}
+function populateRegionCheckboxes(selected){
+const group=$("fRegionsGroup");if(!group)return;
+const sel=new Set(selected||[]);
+const opts=[...REGIONS];
+sel.forEach(r=>{if(!opts.includes(r))opts.push(r);});
+group.innerHTML=opts.map(r=>`<label><input type="checkbox" value="${escapeHtml(r)}" ${sel.has(r)?"checked":""}> ${escapeHtml(r)}</label>`).join("");
+}
+function getSelectedRegions(){
+return [...document.querySelectorAll('#fRegionsGroup input[type="checkbox"]:checked')].map(i=>i.value);
+}
+function openExerciseModal(id=null){
+$("exerciseForm").reset();
+$("exerciseId").value="";
+$("formNotice").innerHTML="";
+$("imageInputs").innerHTML="";
+$("exerciseModalTitle").textContent=id?"Edit exercise":"Add exercise";
+if(id){
+const e=exercises.find(x=>x.id===id);
+if(!e)return;
+$("exerciseId").value=e.id;
+$("fNumber").value=exerciseNumber(e);
+$("fName").value=e.name||"";
+populateRegionCheckboxes(exerciseRegions(e));
+$("fDescription").value=e.description||"";
+const imgs=Array.isArray(e.images)?e.images:[];
+(imgs.length?imgs:[""]).forEach(addImageInput);
+$("fVideo").value=e.video||"";
+}else{
+populateRegionCheckboxes();
+$("fNumber").value="";
+nextExerciseNumber().then(n=>$("fNumber").value=n);
+addImageInput();
+}
+$("exerciseModal").classList.remove("hidden");
+}
+async function saveExercise(ev){
+ev.preventDefault();
+if(!isAdmin){
+$("formNotice").innerHTML=`<div class="notice error">Admin access required.</div>`;
+return;
+}
+const id=$("exerciseId").value.trim();
+const number=id?Number($("fNumber").value):await nextExerciseNumber();
+const name=$("fName").value.trim();
+const description=$("fDescription").value.trim();
+const images=getImageInputs();
+const regions=getSelectedRegions();
+if(!name){
+$("formNotice").innerHTML=`<div class="notice error">Please enter the exercise name.</div>`;
+return;
+}
+if(!regions.length){
+$("formNotice").innerHTML=`<div class="notice error">Please select at least one body region.</div>`;
+return;
+}
+if(!description){
+$("formNotice").innerHTML=`<div class="notice error">Please enter the instructions.</div>`;
+return;
+}
+if(!images.length){
+$("formNotice").innerHTML=`<div class="notice error">Please add at least one exercise image.</div>`;
+return;
+}
+const payload={number,name,regions,description,images,video:$("fVideo").value.trim(),updatedAt:serverTimestamp()};
+try{
+if(id)await updateDoc(doc(db,"exercises",id),payload);
+else{payload.createdAt=serverTimestamp();await addDoc(collection(db,"exercises"),payload);}
+$("exerciseModal").classList.add("hidden");
+await loadExercises();
+renderAdmin();
+}catch(e){
+console.error(e);
+$("formNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;
+}
+}
+async function deleteExercise(id){
+if(!isAdmin||!confirm("Delete this exercise?"))return;
+try{await deleteDoc(doc(db,"exercises",id));selectedIds.delete(id);await loadExercises();renderAdmin();}catch(e){alert(e.message);}
+}
+async function login(){
+$("loginNotice").innerHTML="";
+const email=$("loginEmail").value.trim(),password=$("loginPassword").value;
+if(!email||!password){
+$("loginNotice").innerHTML=`<div class="notice error">Please enter email and password.</div>`;
+return;
+}
+const btn=$("loginBtn");
+btn.disabled=true;
+btn.textContent="Logging in...";
+try{
+const cred=await signInWithEmailAndPassword(auth,email,password);
+currentUser=cred.user;
+isAdmin=await checkAdmin(currentUser);
+if(isAdmin){
+$("loginModal").classList.add("hidden");
+switchTab("adminTab");
+renderAdmin();
+}else{
+const msg=adminCheckError||"This account is not an admin.";
+$("loginNotice").innerHTML=`<div class="notice error"><strong>Login worked, but Admin access was not confirmed.</strong><br>${escapeHtml(msg)}<br><br>Check Firestore: users → your exact Firebase UID → role = admin.</div>`;
+}
+}catch(e){
+console.error("Login failed:",e);
+let msg="Login failed.";
+if(e.code==="auth/invalid-credential"||e.code==="auth/wrong-password"||e.code==="auth/user-not-found")msg="Email or password is incorrect.";
+else if(e.code==="auth/unauthorized-domain")msg="This GitHub Pages domain is not authorized in Firebase Authentication.";
+else if(e.code==="auth/operation-not-allowed")msg="Email/Password sign-in is not enabled in Firebase Authentication.";
+else if(e.code==="auth/too-many-requests")msg="Too many attempts. Please wait and try again.";
+else if(e.message)msg=e.message;
+$("loginNotice").innerHTML=`<div class="notice error">${escapeHtml(msg)}</div>`;
+}finally{
+btn.disabled=false;
+btn.textContent="Login";
+}
+}
+function parseSearchNumbers(){
+const raw=$("exerciseSearch").value.trim();if(!raw){searchNumbers=null;renderExercises();return;}
+const nums=raw.split(/[\s,;]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0);searchNumbers=nums.length?new Set(nums):new Set([-1]);renderExercises();
+}
+function whatsapp(){
+const patient=$("patientName").value.trim();
+const list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));
+if(!list.length){alert("Select at least one exercise.");return;}
+const numbers=list.map(e=>exerciseNumber(e)).join(" ");
+const linkNumbers=list.map(e=>exerciseNumber(e)).join(",");
+const currentUrl=new URL(window.location.href);
+currentUrl.search="";
+currentUrl.hash="";
+const base=currentUrl.href.replace(/\/$/,"");
+const directLink=`${base}#ex=${encodeURIComponent(linkNumbers)}`;
+let text="";
+if(patient)text+=`برنامج التمارين الي ${patient}\n\n`;
+text+=`لمشاهدة الصور او الفيديوهات مباشرة، افتح اللينك ده:\n${directLink}\n\n`;
+list.forEach((e,i)=>{
+const dose=doseText(e.id,true);
+text+=`${i+1} - ${e.name}\n${dose?`الجرعة: ${dose}\n`:""}${e.description}\n\n`;
+});
+if(featureOn("branding")){const b=getBrand(),sig=[b.name,b.clinic,b.phone].filter(Boolean).join("\n");if(sig)text+=`—\n${sig}`;}
+window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
+}
+async function makePdf(){
+const patient=$("patientName").value.trim(),list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));if(!list.length){alert("Select at least one exercise.");return;}
+const clone=$("pdfArea").cloneNode(true);clone.querySelectorAll(".no-print").forEach(x=>x.remove());
+const title=document.createElement("div");title.innerHTML=`<h1 style="font-family:Arial;margin:0 0 8px">Home Exercise Program</h1><p style="font-family:Arial;color:#555">${patient?`Patient: ${escapeHtml(patient)}`:""}</p>`;clone.prepend(title);clone.style.padding="20px";
+if(featureOn("branding")){const b=getBrand();if(b.name||b.clinic||b.phone||b.logo){const h=document.createElement("div");h.style.cssText="display:flex;align-items:center;gap:14px;border-bottom:2px solid #1e3a8a;padding-bottom:12px;margin-bottom:14px;font-family:Arial";h.innerHTML=`${b.logo?`<img src="${escapeHtml(driveToImageUrl(b.logo))}" crossorigin="anonymous" style="height:60px;max-width:140px;object-fit:contain">`:""}<div><div style="font-size:18px;font-weight:bold">${escapeHtml(b.name||"")}</div><div style="color:#555">${escapeHtml([b.clinic,b.phone].filter(Boolean).join(" • "))}</div></div>`;clone.prepend(h);}}
+clone.querySelectorAll("[data-item-id]").forEach(el=>{const t=doseText(el.dataset.itemId,false);if(t){const s=document.createElement("div");s.style.cssText="font-family:Arial;font-weight:bold;color:#1e3a8a;margin-top:4px";s.textContent=t;el.querySelector("div")?.appendChild(s);}});
+const temp=document.createElement("div");temp.style.background="white";temp.appendChild(clone);document.body.appendChild(temp);
+await html2pdf().set({margin:10,filename:`home-exercise-program${patient?"-"+patient.replace(/\s+/g,"-"):""}.pdf`,image:{type:"jpeg",quality:.92},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}}).from(temp).save();temp.remove();
+}
+
+document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
+$("clearFilters").onclick=()=>{activeRegions.clear();renderRegions();renderExercises();};
+$("searchBtn").onclick=parseSearchNumbers;$("clearSearchBtn").onclick=()=>{$("exerciseSearch").value="";searchNumbers=null;renderExercises();};
+$("exerciseSearch").addEventListener("keydown",e=>{if(e.key==="Enter")parseSearchNumbers();});
+$("backBtn").onclick=()=>switchTab("exerciseTab");$("whatsappBtn").onclick=whatsapp;$("pdfBtn").onclick=makePdf;$("adminOpenBtn").onclick=showAdmin;$("footerAdminBtn").onclick=showAdmin;
+$("homeLink").onclick=()=>{
+const u=new URL(window.location.href);
+u.search="";u.hash="";
+window.location.href=u.href;
+};
+$("proOpenBtn").onclick=openPro;$("homeProBtn").onclick=openPro;$("footerProBtn").onclick=openPro;$("bannerProBtn").onclick=openPro;$("proActivateBtn").onclick=activatePro;
+$("proCodeInput").addEventListener("keydown",e=>{if(e.key==="Enter")activatePro();});
+let brandLogoDraft="";
+function showLogoDraft(){const pv=$("brandLogoPreview");pv.style.backgroundImage=brandLogoDraft?`url("${driveToImageUrl(brandLogoDraft).replace(/"/g,'%22')}")`:"";pv.textContent=brandLogoDraft?"":"لا يوجد";$("brandLogoRemove").classList.toggle("hidden",!brandLogoDraft);}
+$("brandToggleBtn").onclick=()=>{const b=getBrand();$("brandName").value=b.name||"";$("brandClinic").value=b.clinic||"";$("brandPhone").value=b.phone||"";brandLogoDraft=b.logo||"";showLogoDraft();$("brandForm").classList.toggle("hidden");};
+$("brandLogoFile").onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
+const img=new Image(),url=URL.createObjectURL(f);
+img.onload=()=>{const max=320,k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);brandLogoDraft=c.toDataURL("image/png");showLogoDraft();};
+img.onerror=()=>{URL.revokeObjectURL(url);alert("مقدرناش نقرا الصورة دي. جرّب صورة تانية.");};img.src=url;};
+$("brandLogoRemove").onclick=()=>{brandLogoDraft="";showLogoDraft();};
+$("brandSaveBtn").onclick=()=>{const data={name:$("brandName").value.trim(),clinic:$("brandClinic").value.trim(),phone:$("brandPhone").value.trim(),logo:brandLogoDraft};
+try{localStorage.setItem(BRAND_KEY,JSON.stringify(data));}catch(e){alert("مقدرناش نحفظ. لو اللوجو كبير جرّب صورة أصغر.");return;}
+$("brandForm").classList.add("hidden");renderBrandSummary();toast("✓ اتحفظت بيانات العيادة");};
+$("exerciseForm").addEventListener("submit",saveExercise);$("addImageBtn").onclick=()=>addImageInput();document.querySelectorAll("[data-close]").forEach(b=>b.onclick=()=>$(b.dataset.close).classList.add("hidden"));
+
+let appRevealed=false;
+function revealApp(){
+if(appRevealed)return;
+appRevealed=true;
+const m=$("appMain");if(m)m.classList.remove("app-booting");
+const loader=$("bootLoader");if(loader)loader.remove();
+}
+onAuthStateChanged(auth,async user=>{
+currentUser=user;
+if(!user){isAdmin=false;applyFeatures();revealApp();return;}
+isAdmin=user.isAnonymous?false:await checkAdmin(user);
+if(isAdmin && !directExerciseNumbers){
+$("loginModal").classList.add("hidden");
+switchTab("adminTab");
+renderAdmin();
+}else if(!isAdmin&&!user.isAnonymous){
+console.warn("Signed-in user is not confirmed as admin:",adminCheckError);
+}
+applyFeatures();
+revealApp();
+});
+setTimeout(revealApp,3000);
+
+directExerciseNumbers=getDirectExerciseNumbers();
+if(directExerciseNumbers){
+document.body.classList.add("direct-mode");
+switchTab("exerciseTab");
+}
+loadSettings().then(async()=>{loadExercises();await refreshPro();if(subsOn()&&/^#pro$/i.test(window.location.hash))openPro();});homeexTrackVisit();
+
+if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(e=>console.warn("Service worker registration failed",e)));}
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();});
+
+async function homeexTrackVisit(){
+  try{
+    const ref=doc(db,"stats","usage");
+    const snap=await getDoc(ref);
+    const current=snap.exists()?Number(snap.data().visits||0):0;
+    await setDoc(ref,{visits:current+1},{merge:true});
+    const el=document.getElementById("visitCount");
+    if(el)el.textContent=(current+1).toLocaleString("en-US");
+  }catch(e){
+    console.warn("Visit counter unavailable:",e);
+  }
+}
+
+
+(function(){
+  function hxMoveAdminToFooter(){
+    const footer=document.querySelector("footer");
+    if(!footer)return;
+    const els=Array.from(document.querySelectorAll("a,button,[role='button']"));
+    els.forEach(el=>{
+      if(el.id==="footerAdminBtn")return;
+      const s=(el.textContent||"").trim().toLowerCase();
+      if(s!=="admin")return;
+      if(el.closest("footer"))return;
+      // Only move an Admin control if it is a small navigation/header control.
+      const parent=el.closest("header,nav,.topbar,.navbar,#topbar,#navbar");
+      if(parent){
+        el.remove();
+      }
+    });
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",hxMoveAdminToFooter);
+  else hxMoveAdminToFooter();
+})();
+</script>
+<footer class="footer" style="padding:18px 8px 25px;text-align:center;font-size:12px;color:#98a2b3">
+  <a href="mailto:ahmed4nassef@gmail.com">Contact Us</a>
+  <span style="margin:0 7px">•</span>
+  <a href="mailto:ahmed4nassef@gmail.com">ahmed4nassef@gmail.com</a>
+  <span style="margin:0 7px">•</span>
+  <span>Visits: <b id="visitCount">—</b></span>
+  <span id="footerProSep" class="hidden" style="margin:0 7px">•</span>
+  <button id="footerProBtn" class="hidden" type="button" style="border:0;background:none;padding:0;color:inherit;font:inherit;cursor:pointer">Pro</button>
+  <span style="margin:0 7px">•</span>
+  <button id="footerAdminBtn" type="button" style="border:0;background:none;padding:0;color:inherit;font:inherit;cursor:pointer">Admin</button>
+</footer></body>
+</html>
