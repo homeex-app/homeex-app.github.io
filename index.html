@@ -1231,6 +1231,8 @@ async function homeexTrackVisit(){
 </script>
 <div class="modal hidden" id="installModal"><div class="modal-card" style="max-width:520px">
 <div class="modal-head"><h3 style="margin:0">Install the app<span dir="rtl" style="display:block;font-weight:700;color:#667085;font-size:15px;margin-top:2px;font-family:Tahoma,Arial,sans-serif">تثبيت التطبيق</span></h3><button class="close" type="button" id="installClose">×</button></div>
+<div id="installNowBox" class="hidden" style="margin-top:12px"><button type="button" id="installNowBtn" class="btn btn-primary" style="width:100%;font-size:15px;padding:13px">📲 Install now · <span dir="rtl">ثبّت الآن</span></button></div>
+<div class="install-box hidden" id="installInApp" style="background:#fff7ed;border-color:#fed7aa"><b>Opened from WhatsApp, Facebook or Telegram?</b> Open this page in <b>Chrome</b> (or Safari on iPhone) first, then tap Download App again.<div class="install-ar" style="margin-top:6px"><b>فاتح الصفحة من واتساب أو فيسبوك أو تليجرام؟</b> افتحها الأول في متصفح <b>Chrome</b> (أو Safari على الآيفون)، وبعدين اضغط Download App تاني.</div></div>
 <div class="install-box" id="installIos">
 <h4>iPhone / iPad</h4>
 <ol class="install-steps"><li>Tap the <b>Share</b> button <b>⬆︎</b> at the bottom of Safari.</li><li>Choose <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>.</li></ol>
@@ -1252,7 +1254,12 @@ async function homeexTrackVisit(){
   function installed(){return (window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;}
   var isIos=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
   if(!installed())btn.classList.remove("hidden");
+  var inApp=/FBAN|FBAV|FB_IAB|Instagram|WhatsApp|Telegram|Line\/|; wv\)/i.test(navigator.userAgent);
+  function syncNow(){document.getElementById("installNowBox").classList.toggle("hidden",!window.__hxInstallPrompt);}
+  window.addEventListener("beforeinstallprompt",function(){setTimeout(syncNow,0);});
   function openHelp(){
+    syncNow();
+    document.getElementById("installInApp").classList.toggle("hidden",!inApp);
     document.getElementById("installIos").style.display=isIos||!/android/i.test(navigator.userAgent)?"":"none";
     document.getElementById("installAndroid").style.display=isIos?"none":"";
     modal.classList.remove("hidden");
@@ -1262,6 +1269,7 @@ async function homeexTrackVisit(){
     if(p){p.prompt();p.userChoice.then(function(r){window.__hxInstallPrompt=null;});}
     else openHelp();
   });
+  document.getElementById("installNowBtn").addEventListener("click",function(){var p=window.__hxInstallPrompt;if(!p)return;p.prompt();p.userChoice.then(function(){window.__hxInstallPrompt=null;syncNow();modal.classList.add("hidden");});});
   document.getElementById("installClose").addEventListener("click",function(){modal.classList.add("hidden");});
   modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.add("hidden");});
   window.addEventListener("appinstalled",function(){modal.classList.add("hidden");});
