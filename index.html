@@ -1400,7 +1400,7 @@ function renderMyProtocols(show=true){
 const box=$("myProtoBox");if(!box)return;
 if(!show||!proCode()){box.innerHTML="";return;}
 const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
-box.innerHTML=`<div class="my-proto-head"><div><h3>⭐ My protocols <span style="font-size:14px;color:#667085" dir="rtl">· بروتوكولاتي</span></h3><div class="code-meta" dir="rtl">خاصة بيك إنت بس ومتحفوظة على كود اشتراكك. اختار تمارين وجرعات، وبعدين من Send اضغط "Save as my protocol".</div></div></div>
+box.innerHTML=`<div class="my-proto-head"><div><h3>⭐ My protocols</h3><div class="code-meta" dir="rtl">خاصة بيك إنت بس ومتحفوظة على كود اشتراكك. اختار تمارين وجرعات، وبعدين من Send اضغط "Save as my protocol".</div></div></div>
 ${myProtocols.length?`<div class="proto-grid" style="margin-bottom:22px">${myProtocols.map(t=>{const names=(t.items||[]).map(it=>byNum.get(it.n)?.name).filter(Boolean);return`<div class="proto-card"><div class="proto-top"><div class="proto-icon">⭐</div><div><div class="proto-name">${escapeHtml(t.name)}</div><div class="proto-region">${t.byAdmin?"Added for you":"My protocol"}</div></div></div>
 <div class="proto-meta"><span>${(t.items||[]).length} exercises</span>${(t.items||[]).some(it=>it.reps||it.sets||it.hold)?`<span>Dosage included</span>`:""}</div>
 <div class="proto-ex">${escapeHtml(names.slice(0,4).join(" • "))}${names.length>4?` +${names.length-4}`:""}</div>
@@ -1448,9 +1448,9 @@ ${brandOn?`<div class="acc-sec"><h4>🏥 بيانات العيادة</h4>
 <div>${[b.clinic,b.name,b.phone].filter(Boolean).map(escapeHtml).join(" • ")||`<span class="code-meta">لسه مضفتش بيانات عيادتك.</span>`}</div>
 <div class="code-meta">بتظهر في رسالة الواتساب، ولينك المريض، والـ PDF.</div>
 <button class="btn btn-outline acc-btn" type="button" id="accBrandBtn">✏️ تعديل بيانات العيادة</button></div>`:""}
-<div class="acc-sec"><h4>⭐ بروتوكولاتي <span class="acc-count">${myProtocols.length}</span></h4>
+<div class="acc-sec"><h4>⭐ My protocols <span class="acc-count">${myProtocols.length}</span></h4>
 <div>${myProtocols.length?myProtocols.map(t=>escapeHtml(t.name)).join(" • "):`<span class="code-meta">لسه محفظتش بروتوكولات.</span>`}</div>
-<button class="btn btn-outline acc-btn" type="button" id="accProtoBtn">افتح بروتوكولاتي</button></div>
+<button class="btn btn-outline acc-btn" type="button" id="accProtoBtn">Open My protocols</button></div>
 <div class="acc-sec"><h4>🔒 تماريني الخاصة <span class="acc-count">${priv.length}</span></h4>
 <div>${priv.length?priv.map(e=>`#${exerciseNumber(e)} ${escapeHtml(e.name)}`).join("<br>"):`<span class="code-meta">التمارين اللي بنضيفها مخصوص ليك هتظهر هنا.</span>`}</div></div>
 <div class="acc-sec"><h4>📩 طلباتي</h4><div id="accReqs" class="code-meta">Loading…</div>
