@@ -1,0 +1,81 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin";
+    }
+
+    match /exercises/{exerciseId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /stats/usage {
+      allow read: if true;
+      allow create, update: if request.resource.data.keys().hasOnly(['visits'])
+                             && request.resource.data.visits is int;
+    }
+
+    // HomeEx Pro subscription codes
+    match /codes/{code} {
+      allow get: if request.auth != null;
+      allow list, create, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        request.auth != null
+        && resource.data.deviceUid == null
+        && resource.data.active == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['deviceUid', 'activatedAt'])
+        && request.resource.data.deviceUid == request.auth.uid
+        && request.resource.data.activatedAt == request.time
+      );
+    }
+
+    // HomeEx Pro: the subscriber who activated this code on their device
+    function ownsCode(code) {
+      let c = get(/databases/$(database)/documents/codes/$(code)).data;
+      return request.auth != null
+        && c.get('deviceUid', '') == request.auth.uid
+        && c.get('active', true) != false
+        && c.expiresAt > request.time;
+    }
+
+    // Subscriber's own protocols (only they can see or change them)
+    match /codes/{code}/protocols/{id} {
+      allow read, write: if isAdmin() || ownsCode(code);
+    }
+
+    // Exercise requests: the subscriber sends, the admin handles
+    match /codes/{code}/hxRequests/{id} {
+      allow read: if isAdmin() || ownsCode(code);
+      allow create: if ownsCode(code) && request.resource.data.status == "new";
+      allow update, delete: if isAdmin();
+    }
+
+    // Exercises the admin adds for one subscriber only
+    match /codes/{code}/privateExercises/{id} {
+      allow read: if isAdmin() || ownsCode(code);
+      allow write: if isAdmin();
+    }
+
+    // Admin lists of all requests / private exercises
+    match /{path=**}/hxRequests/{id} {
+      allow read: if isAdmin();
+    }
+    match /{path=**}/privateExercises/{id} {
+      allow read: if isAdmin();
+    }
+
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+  }
+}
