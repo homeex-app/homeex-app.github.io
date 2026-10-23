@@ -581,19 +581,20 @@ const mode=FEATURES.templates||"off";
 const ready=mode==="off"?[]:TEMPLATES.map((t,i)=>({t,i,isPro:mode==="pro"||!!t.pro}));
 const freeList=ready.filter(x=>!x.isPro),proList=ready.filter(x=>x.isPro&&(hasPro()||subsOn()));
 const proAvailable=proList.length>0||!!proCode()||subsOn();
+const bothTabs=subsOn()||(freeList.length>0&&proAvailable);
 const showTab=freeList.length>0||proAvailable;
 $("protocolsTabBtn").classList.toggle("hidden",!showTab);
 if(!showTab&&!$("protocolsTab").classList.contains("hidden"))switchTab("exerciseTab");
 renderAd();
-if(!freeList.length)protoTier="pro";else if(!proAvailable)protoTier="free";
-$("protoTiers").innerHTML=freeList.length&&proAvailable?`<button class="proto-tier ${protoTier==="free"?"active":""}" data-tier="free">Free</button><button class="proto-tier ${protoTier==="pro"?"active":""}" data-tier="pro">⭐ Pro</button>`:"";
+if(!bothTabs)protoTier=freeList.length?"free":"pro";
+$("protoTiers").innerHTML=bothTabs?`<button class="proto-tier ${protoTier==="free"?"active":""}" data-tier="free">Free</button><button class="proto-tier ${protoTier==="pro"?"active":""}" data-tier="pro">⭐ Pro</button>`:"";
 document.querySelectorAll("[data-tier]").forEach(b=>b.onclick=()=>{protoTier=b.dataset.tier;protoRegion="";renderTemplates();});
 const onPro=protoTier==="pro";
 renderMyProtocols(onPro);
 const list=onPro?proList:freeList;
 $("templatesList").innerHTML="";$("protoFilters").innerHTML="";
 if(onPro&&!hasPro()&&subsOn()){$("templatesList").innerHTML=`<div class="pro-upsell" dir="rtl"><b>⭐ بروتوكولات Pro</b><span>بروتوكولات جاهزة للمشتركين، وتقدر كمان تحفظ بروتوكولاتك الخاصة بيك.</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">اعرف أكتر</button></div>`;$("protoUpsellBtn").onclick=openPro;}
-if(!list.length)return;
+if(!list.length){if(!onPro)$("templatesList").innerHTML=`<div class="empty" style="grid-column:1/-1" dir="rtl">مفيش بروتوكولات مجانية دلوقتي. شوف تاب ⭐ Pro.</div>`;return;}
 const regions=[...new Set(list.map(x=>x.t.region).filter(Boolean))];
 if(protoRegion&&!regions.includes(protoRegion))protoRegion="";
 $("protoFilters").innerHTML=regions.length>1?[["","All"],...regions.map(r=>[r,`${REGION_ICONS[r]||"•"} ${r}`])].map(([v,l])=>`<button class="proto-filter ${protoRegion===v?"active":""}" data-proto-region="${escapeHtml(v)}">${escapeHtml(l)}</button>`).join(""):"";
