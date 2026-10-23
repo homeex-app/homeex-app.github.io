@@ -1250,7 +1250,9 @@ async function homeexTrackVisit(){
   if(!btn||!modal)return;
   function installed(){return (window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;}
   var isIos=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
-  if(!installed())btn.classList.remove("hidden");
+  function wasInstalled(){try{return localStorage.getItem("hxInstalled")==="1";}catch(e){return false;}}
+  function markInstalled(){try{localStorage.setItem("hxInstalled","1");}catch(e){}btn.classList.add("hidden");}
+  if(!installed()&&!wasInstalled())btn.classList.remove("hidden");
   function openHelp(){
     document.getElementById("installIos").style.display=isIos||!/android/i.test(navigator.userAgent)?"":"none";
     document.getElementById("installAndroid").style.display=isIos?"none":"";
@@ -1258,12 +1260,12 @@ async function homeexTrackVisit(){
   }
   btn.addEventListener("click",function(){
     var p=window.__hxInstallPrompt;
-    if(p){p.prompt();p.userChoice.then(function(r){if(r&&r.outcome==="accepted")btn.classList.add("hidden");window.__hxInstallPrompt=null;});}
+    if(p){p.prompt();p.userChoice.then(function(r){if(r&&r.outcome==="accepted")markInstalled();window.__hxInstallPrompt=null;});}
     else openHelp();
   });
   document.getElementById("installClose").addEventListener("click",function(){modal.classList.add("hidden");});
   modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.add("hidden");});
-  window.addEventListener("appinstalled",function(){btn.classList.add("hidden");modal.classList.add("hidden");});
+  window.addEventListener("appinstalled",function(){markInstalled();modal.classList.add("hidden");});
 })();
 </script>
 <footer class="footer" style="padding:18px 8px 25px;text-align:center;font-size:12px;color:#98a2b3">
