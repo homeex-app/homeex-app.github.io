@@ -22,7 +22,8 @@
 #bootLoader{text-align:center;padding:70px 20px;color:#98a2b3;font-size:14px}
 :root{--bg:#f6f8fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#2563eb;--primary-dark:#1d4ed8;--border:#e5e7eb;--danger:#dc2626;--success:#059669;--shadow:0 10px 30px rgba(16,24,40,.07);--radius:18px}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
-button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.app{min-height:100vh}
+button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.private-badge{background:#fef3c7!important;color:#92400e!important}.my-proto-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:6px 0 12px}.my-proto-head h3{margin:0;font-size:19px}.req-item{border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:8px;background:#fff}.req-item b{color:#172033}.req-st{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;margin-inline-start:6px}.req-st.new{background:#eff6ff;color:#1d4ed8}.req-st.done{background:#dcfce7;color:#166534}.app{min-height:100vh}
 header{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;padding:28px 20px 92px;min-height:190px}.header-inner{max-width:1180px;margin:auto;position:relative;z-index:2}.hero-slides{position:absolute;inset:0;z-index:0}.hero-slide{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:0;transition:opacity .8s ease}.hero-slide.active{opacity:1}.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.78),rgba(30,58,138,.58))}.brand{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.brand h1{font-size:28px;margin:0 0 7px}.brand p{margin:0;color:#e2e8f0}
 .install-btn{background:#fff;color:#1e3a8a;border:0;padding:6px 10px;border-radius:9px;font-weight:700;font-size:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15);cursor:pointer}.install-steps{margin:0;padding:0 0 0 20px;line-height:1.7}.install-steps li{margin:4px 0}.install-ar{direction:rtl;text-align:right;font-family:Tahoma,Arial,sans-serif}.install-ar .install-steps{padding:0 20px 0 0}.install-box{border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-top:12px}.install-box h4{margin:0 0 6px;font-size:15px}.install-sep{border:0;border-top:1px dashed var(--border);margin:10px 0}@media(max-width:700px){.install-btn{font-size:11px;padding:5px 8px}}
 .admin-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:11px 17px;border-radius:12px}
@@ -204,7 +205,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="regions" id="regions"></div>
 
 <div id="adSlot" class="ad-slot" style="display:none"></div>
-<div class="section-head"><div><h2>Exercises</h2><p id="exerciseSummary">Loading...</p></div></div>
+<div class="section-head"><div><h2>Exercises</h2><p id="exerciseSummary">Loading...</p></div><button class="btn btn-outline no-print hidden" id="requestExBtn" type="button">➕ Request an exercise</button></div>
 <div class="exercise-grid" id="exerciseGrid"></div>
 </section>
 
@@ -212,6 +213,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="section-head"><div><h2>Protocols <span class="pro-tag hidden" id="protoProTag">PRO</span></h2><p>Ready-made programs with dosage. One tap → ready to send.</p></div></div>
 <div id="adSlotProto" class="ad-slot" style="display:none"></div>
 <div class="proto-filters" id="protoFilters"></div>
+<div id="myProtoBox"></div>
 <div class="proto-grid" id="templatesList"></div>
 </section>
 
@@ -242,6 +244,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="send-actions no-print">
 <button class="btn btn-green" id="whatsappBtn">Send on WhatsApp</button>
 <button class="btn btn-dark" id="pdfBtn">Download PDF</button>
+<button class="btn btn-outline hidden" id="saveProtoBtn" type="button">💾 Save as my protocol</button>
 <button class="btn btn-outline" id="backBtn">Back to exercises</button>
 </div>
 </div>
@@ -259,6 +262,21 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="modal-card">
 <div class="modal-head"><h3>Admin login</h3><button class="close" data-close="loginModal">×</button></div>
 <div class="login-box" id="loginBox"></div>
+</div>
+</div>
+
+<div class="modal hidden" id="requestModal">
+<div class="modal-card" style="width:min(620px,100%)">
+<div class="modal-head"><h3>➕ Request an exercise <span style="display:block;font-size:14px;color:#667085;font-weight:600" dir="rtl">اطلب تمرين</span></h3><button class="close" data-close="requestModal">×</button></div>
+<p class="code-meta" dir="rtl">اكتب التمرين اللي محتاجه، وهنضيفه بصورة وفيديو. ممكن يتضاف للكل أو يبقى خاص بيك إنت بس.</p>
+<div class="field"><label>Exercise name · اسم التمرين</label><input id="reqName" maxlength="120" placeholder="e.g. Nordic hamstring curl"></div>
+<div class="field" style="margin-top:10px"><label>Details · التفاصيل</label><textarea id="reqDetails" maxlength="1500" rows="4" dir="auto" placeholder="الوضع، الحركة، الجرعة، أي ملاحظة"></textarea></div>
+<div class="field" style="margin-top:10px"><label>Image link · لينك الصورة</label><input id="reqImage" type="url" maxlength="500" placeholder="https://drive.google.com/... or image URL"></div>
+<div class="field" style="margin-top:10px"><label>Video link · لينك الفيديو</label><input id="reqVideo" type="url" maxlength="500" placeholder="https://youtube.com/..."></div>
+<div class="form-actions"><button class="btn btn-primary" type="button" id="reqSendBtn">Send request</button></div>
+<div id="reqNotice"></div>
+<h4 style="margin:18px 0 8px">My requests · طلباتي</h4>
+<div id="reqList" class="code-meta">—</div>
 </div>
 </div>
 
@@ -293,6 +311,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 </div>
 </div>
 <div class="field full"><label>Video explanation URL</label><input id="fVideo" placeholder="https://youtube.com/..."></div>
+<div class="field full"><label>Who can see this exercise?</label><select id="fOwner"><option value="">Everyone</option></select><small style="display:block;margin-top:6px;color:#667085" dir="rtl">لو اخترت مشترك، التمرين هيظهر له هو بس (بعلامة 🔒 ورقم من 1001)، ومحدش تاني يشوفه.</small></div>
 </div>
 <div class="form-actions"><button type="button" class="btn btn-outline" data-close="exerciseModal">Cancel</button><button class="btn btn-primary" type="submit">Save exercise</button></div>
 <div id="formNotice"></div>
@@ -335,7 +354,7 @@ function homeexStartHeaderSlider(urls,seconds){
 
 import {initializeApp} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-app.js";
 import {getAuth,signInWithEmailAndPassword,onAuthStateChanged,signOut,signInAnonymously} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-auth.js";
-import {getFirestore,collection,getDocs,addDoc,updateDoc,deleteDoc,doc,getDoc,setDoc,serverTimestamp,query,orderBy,Timestamp,increment} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
+import {getFirestore,collection,getDocs,addDoc,updateDoc,deleteDoc,doc,getDoc,setDoc,serverTimestamp,query,orderBy,Timestamp,increment,collectionGroup} from "https://www.gstatic.com/firebasejs/12.1.0/firebase-firestore.js";
 
 const firebaseConfig={
 apiKey:"AIzaSyDIDA8-KmZ9Pi5JHYjb8E2kgFQNF1_Zy70",
@@ -428,7 +447,7 @@ ${count>1?`<button class="gallery-arrow left" data-prev="${escapeHtml(e.id)}" ar
 ${count?`<div class="image-counter">${idx+1} / ${count}</div>`:""}
 </div>
 <div class="card-body">
-<div class="card-top"><div><h3 class="card-title">${escapeHtml(e.name)}</h3>${exerciseRegions(e).map(r=>`<span class="badge">${escapeHtml(r)}</span>`).join(" ")}</div><div class="number-badge">#${exerciseNumber(e)}</div></div>
+<div class="card-top"><div><h3 class="card-title">${escapeHtml(e.name)}</h3>${exerciseRegions(e).map(r=>`<span class="badge">${escapeHtml(r)}</span>`).join(" ")}${e.private?`<span class="badge private-badge">🔒 ${isAdmin?escapeHtml(ownerLabel(e.code)):"Private"}</span>`:""}</div><div class="number-badge">#${exerciseNumber(e)}</div></div>
 <p class="description">${escapeHtml(e.description)}</p>
 <div class="card-actions"><label class="check"><input type="checkbox" data-check="${escapeHtml(e.id)}" ${selected?"checked":""}> Select</label>${e.video?`<a class="video-btn" href="${escapeHtml(e.video)}" target="_blank" rel="noopener">Video</a>`:""}</div>
 </div></article>`;
@@ -550,11 +569,13 @@ return null;
 const DEFAULT_TEMPLATES=DEFAULT_TEMPLATE_LINES.split("\n").map(parseTemplateLine).filter(Boolean);
 function renderTemplates(){
 const on=featureOn("templates"),locked=featureLocked("templates");
-const showTab=(on||locked)&&TEMPLATES.length>0;
+const showTab=((on||locked)&&TEMPLATES.length>0)||!!proCode();
+renderMyProtocols();
 $("protocolsTabBtn").classList.toggle("hidden",!showTab);
 if(!showTab&&!$("protocolsTab").classList.contains("hidden"))switchTab("exerciseTab");
 renderAd();
-if(!TEMPLATES.length)return;
+$("templatesList").innerHTML="";$("protoFilters").innerHTML="";
+if(!TEMPLATES.length||!(on||locked))return;
 const regions=[...new Set(TEMPLATES.map(t=>t.region).filter(Boolean))];
 if(protoRegion&&!regions.includes(protoRegion))protoRegion="";
 $("protoFilters").innerHTML=regions.length>1?[["","All"],...regions.map(r=>[r,`${REGION_ICONS[r]||"•"} ${r}`])].map(([v,l])=>`<button class="proto-filter ${protoRegion===v?"active":""}" data-proto-region="${escapeHtml(v)}">${escapeHtml(l)}</button>`).join(""):"";
@@ -639,6 +660,7 @@ proActive=proInfo.status==="active";
 }catch(e){console.warn("Pro check failed:",e);proInfo={status:"error"};}
 }
 applyFeatures();
+loadProExtras();
 }
 async function activatePro(){
 const code=$("proCodeInput").value.trim().toUpperCase().replace(/\s+/g,"");
@@ -817,6 +839,7 @@ exercises=snap.docs.map(d=>({id:d.id,...d.data()}));
 }catch(e){exercises=[];$("exerciseSummary").textContent="Could not load exercises from Firestore.";console.error("Firestore exercises load failed:",e);}
 }
 clearTimeout(loadingTimer);exercises=sortedExercises(exercises);renderRegions();renderExercises();renderSend();renderTemplates();if(isAdmin)renderAdmin();
+loadProExtras();
 }
 async function checkAdmin(user){
 adminCheckError="";
@@ -952,17 +975,18 @@ $("adminContent").innerHTML=`<div class="admin-panel">
 ${featuresCardHtml()}
 ${proPageCardHtml()}
 ${codesCardHtml()}
+<div class="settings-card" id="reqAdminCard"><h3>Exercise requests <span style="font-size:14px;color:#667085" dir="rtl">· طلبات المشتركين</span></h3><div id="reqAdminBox" class="code-meta">Loading…</div></div>
 <div class="admin-list">${list.map(e=>`<div class="admin-row"><div class="meta"><div class="admin-number">#${exerciseNumber(e)}</div><img src="${escapeHtml(imageList(e)[0]||PLACEHOLDER_IMG)}" alt=""><div><strong>${escapeHtml(e.name)}</strong><div style="font-size:12px;color:#667085">${escapeHtml(exerciseRegions(e).join(", "))}</div></div></div><div class="admin-row-actions"><button class="btn btn-outline" data-edit="${escapeHtml(e.id)}">Edit</button><button class="btn btn-danger" data-delete="${escapeHtml(e.id)}">Delete</button></div></div>`).join("")||`<div class="empty">No Firestore exercises yet. Add your first one.</div>`}</div></div>`;
 if($("headerIntervalSeconds"))$("headerIntervalSeconds").value=headerIntervalSeconds;if($("adIntervalSeconds"))$("adIntervalSeconds").value=adIntervalSeconds;
 $("addExerciseBtn").onclick=()=>openExerciseModal();$("logoutBtn").onclick=async()=>{await signOut(auth);currentUser=null;isAdmin=false;switchTab("exerciseTab");applyFeatures();};
 $("saveSiteSettingsBtn").onclick=saveSiteSettings;
 $("saveFeaturesBtn").onclick=saveFeatures;$("createCodeBtn").onclick=createCode;
 $("saveProPageBtn").onclick=saveProPage;$("previewProPageBtn").onclick=openPro;
-renderCodes();loadCodes();
+renderCodes();loadCodes();loadAdminRequests();
 document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openExerciseModal(b.dataset.edit));document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteExercise(b.dataset.delete));
 }
 async function nextExerciseNumber(){
-const nums=exercises.map(exerciseNumber).filter(n=>Number.isFinite(n)&&n<999999);return nums.length?Math.max(...nums)+1:1;
+const nums=exercises.filter(e=>!e.private).map(exerciseNumber).filter(n=>Number.isFinite(n)&&n<999999);return nums.length?Math.max(...nums)+1:1;
 }
 function addImageInput(value=""){
 const wrap=document.createElement("div");
@@ -996,8 +1020,10 @@ group.innerHTML=opts.map(r=>`<label><input type="checkbox" value="${escapeHtml(r
 function getSelectedRegions(){
 return [...document.querySelectorAll('#fRegionsGroup input[type="checkbox"]:checked')].map(i=>i.value);
 }
-function openExerciseModal(id=null){
+function openExerciseModal(id=null,preset=null){
+hxPendingRequest=preset&&preset.requestPath||null;
 $("exerciseForm").reset();
+fillOwnerSelect();
 $("exerciseId").value="";
 $("formNotice").innerHTML="";
 $("imageInputs").innerHTML="";
@@ -1013,11 +1039,14 @@ $("fDescription").value=e.description||"";
 const imgs=Array.isArray(e.images)?e.images:[];
 (imgs.length?imgs:[""]).forEach(addImageInput);
 $("fVideo").value=e.video||"";
+$("fOwner").value=e.private?e.code:"";
 }else{
 populateRegionCheckboxes();
 $("fNumber").value="";
-nextExerciseNumber().then(n=>$("fNumber").value=n);
-addImageInput();
+const owner=preset&&preset.owner||"";$("fOwner").value=owner;
+(owner?Promise.resolve(nextPrivateNumber()):nextExerciseNumber()).then(n=>$("fNumber").value=n);
+if(preset){$("fName").value=preset.name||"";$("fDescription").value=preset.desc||"";$("fVideo").value=preset.video||"";}
+addImageInput(preset&&preset.image||"");
 }
 $("exerciseModal").classList.remove("hidden");
 }
@@ -1028,7 +1057,9 @@ $("formNotice").innerHTML=`<div class="notice error">Admin access required.</div
 return;
 }
 const id=$("exerciseId").value.trim();
-const number=id?Number($("fNumber").value):await nextExerciseNumber();
+const owner=$("fOwner").value,old=id?exercises.find(x=>x.id===id):null,oldOwner=old&&old.private?old.code:"";
+const sameNumber=id&&(oldOwner?1:0)===(owner?1:0);
+const number=sameNumber?Number($("fNumber").value):(owner?nextPrivateNumber():await nextExerciseNumber());
 const name=$("fName").value.trim();
 const description=$("fDescription").value.trim();
 const images=getImageInputs();
@@ -1051,8 +1082,10 @@ return;
 }
 const payload={number,name,regions,description,images,video:$("fVideo").value.trim(),updatedAt:serverTimestamp()};
 try{
-if(id)await updateDoc(doc(db,"exercises",id),payload);
-else{payload.createdAt=serverTimestamp();await addDoc(collection(db,"exercises"),payload);}
+const target=owner?collection(db,"codes",owner,"privateExercises"):collection(db,"exercises");
+if(id&&oldOwner===owner){await updateDoc(old&&old._path?doc(db,old._path):doc(db,"exercises",id),payload);}
+else{payload.createdAt=serverTimestamp();await addDoc(target,payload);if(id)await deleteDoc(old&&old._path?doc(db,old._path):doc(db,"exercises",id));}
+if(hxPendingRequest){try{await updateDoc(doc(db,hxPendingRequest),{status:"done",doneAt:serverTimestamp(),exerciseNumber:number,private:!!owner});}catch(e){console.warn(e);}hxPendingRequest=null;}
 $("exerciseModal").classList.add("hidden");
 await loadExercises();
 renderAdmin();
@@ -1063,7 +1096,8 @@ $("formNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</d
 }
 async function deleteExercise(id){
 if(!isAdmin||!confirm("Delete this exercise?"))return;
-try{await deleteDoc(doc(db,"exercises",id));selectedIds.delete(id);await loadExercises();renderAdmin();}catch(e){alert(e.message);}
+const ex=exercises.find(x=>x.id===id);
+try{await deleteDoc(ex&&ex._path?doc(db,ex._path):doc(db,"exercises",id));selectedIds.delete(id);await loadExercises();renderAdmin();}catch(e){alert(e.message);}
 }
 async function login(){
 $("loginNotice").innerHTML="";
@@ -1125,6 +1159,103 @@ text+=`${i+1} - ${e.name}\n${dose?`الجرعة: ${dose}\n`:""}${e.description}\
 });
 if(featureOn("branding")){const b=getBrand(),sig=[b.name,b.clinic,b.phone].filter(Boolean).join("\n");if(sig)text+=`—\n${sig}`;}
 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
+}
+
+/* ---------- Pro: private exercises, my protocols, exercise requests ---------- */
+let hxPendingRequest=null,myProtocols=[],activeMyProto=null;
+function proCode(){return proActive?lsGet(PRO_KEY):null;}
+function ownerLabel(code){const c=Array.isArray(codesCache)?codesCache.find(x=>x.id===code):null;return c&&c.name?c.name:(code||"");}
+function nextPrivateNumber(){const nums=exercises.filter(e=>e.private).map(exerciseNumber).filter(Number.isFinite);return Math.max(1000,...nums)+1;}
+function fillOwnerSelect(){
+const sel=$("fOwner");if(!sel)return;const cur=sel.value;
+const list=Array.isArray(codesCache)?codesCache.filter(c=>c.active!==false):[];
+sel.innerHTML=`<option value="">Everyone · للكل</option>`+list.map(c=>`<option value="${escapeHtml(c.id)}">🔒 ${escapeHtml(c.name||c.id)}${c.phone?" – "+escapeHtml(c.phone):""}</option>`).join("");
+if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+}
+let proExtrasBusy=null;
+async function loadProExtras(){
+if(proExtrasBusy)return proExtrasBusy;
+proExtrasBusy=(async()=>{
+let priv=[];const code=proCode();
+try{
+if(isAdmin){const snap=await getDocs(collectionGroup(db,"privateExercises"));priv=snap.docs.map(d=>({id:d.id,...d.data(),private:true,code:d.ref.parent.parent.id,_path:d.ref.path}));}
+else if(code){const snap=await getDocs(collection(db,"codes",code,"privateExercises"));priv=snap.docs.map(d=>({id:d.id,...d.data(),private:true,code,_path:d.ref.path}));}
+}catch(e){console.warn("Private exercises:",e);}
+myProtocols=[];
+if(code){try{const snap=await getDocs(collection(db,"codes",code,"protocols"));myProtocols=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.name).localeCompare(String(b.name)));}catch(e){console.warn("My protocols:",e);}}
+const had=exercises.some(e=>e.private);
+exercises=sortedExercises(exercises.filter(e=>!e.private).concat(priv));
+if(had||priv.length){renderExercises();renderSend();}
+renderTemplates();updateProButtons();
+if(isAdmin&&!$("adminTab").classList.contains("hidden"))renderAdmin();
+})();
+try{await proExtrasBusy;}finally{proExtrasBusy=null;}
+}
+function updateProButtons(){
+const code=proCode();
+$("requestExBtn").classList.toggle("hidden",!code);
+$("saveProtoBtn").classList.toggle("hidden",!code);
+}
+function renderMyProtocols(){
+const box=$("myProtoBox");if(!box)return;
+if(!proCode()){box.innerHTML="";return;}
+const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
+box.innerHTML=`<div class="my-proto-head"><div><h3>⭐ My protocols <span style="font-size:14px;color:#667085" dir="rtl">· بروتوكولاتي</span></h3><div class="code-meta" dir="rtl">خاصة بيك إنت بس ومتحفوظة على كود اشتراكك. اختار تمارين وجرعات، وبعدين من Send اضغط "Save as my protocol".</div></div></div>
+${myProtocols.length?`<div class="proto-grid" style="margin-bottom:22px">${myProtocols.map(t=>{const names=(t.items||[]).map(it=>byNum.get(it.n)?.name).filter(Boolean);return`<div class="proto-card"><div class="proto-top"><div class="proto-icon">⭐</div><div><div class="proto-name">${escapeHtml(t.name)}</div><div class="proto-region">My protocol</div></div></div>
+<div class="proto-meta"><span>${(t.items||[]).length} exercises</span>${(t.items||[]).some(it=>it.reps||it.sets||it.hold)?`<span>Dosage included</span>`:""}</div>
+<div class="proto-ex">${escapeHtml(names.slice(0,4).join(" • "))}${names.length>4?` +${names.length-4}`:""}</div>
+<div style="display:flex;gap:8px;margin-top:auto"><button class="btn btn-primary" style="flex:1" data-myproto="${escapeHtml(t.id)}">Use →</button><button class="btn btn-danger" data-delproto="${escapeHtml(t.id)}">Delete</button></div></div>`;}).join("")}</div>`:`<div class="empty" style="margin-bottom:22px" dir="rtl">لسه معندكش بروتوكولات. اختار التمارين وحط الجرعات، وبعدين من صفحة Send اضغط <b>💾 Save as my protocol</b>.</div>`}`;
+box.querySelectorAll("[data-myproto]").forEach(b=>b.onclick=()=>{const t=myProtocols.find(x=>x.id===b.dataset.myproto);if(!t)return;applyTemplate({name:t.name,items:t.items||[]});activeMyProto=t.id;});
+box.querySelectorAll("[data-delproto]").forEach(b=>b.onclick=async()=>{const t=myProtocols.find(x=>x.id===b.dataset.delproto);if(!t||!confirm(`Delete "${t.name}"?`))return;try{await deleteDoc(doc(db,"codes",proCode(),"protocols",t.id));if(activeMyProto===t.id)activeMyProto=null;await loadProExtras();toast("✓ Deleted");}catch(e){alert(e.message);}});
+}
+async function saveMyProtocol(){
+const code=proCode();if(!code)return;
+const list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));
+if(!list.length){alert("Select at least one exercise.");return;}
+const items=list.map(e=>{const d=dosage.get(e.id)||{};return{n:exerciseNumber(e),sets:d.sets||"",reps:d.reps||"",hold:d.hold||"",freq:d.freq||""};});
+const cur=activeMyProto&&myProtocols.find(t=>t.id===activeMyProto);
+try{
+if(cur&&confirm(`Update "${cur.name}" with the current exercises?\n(Cancel = save as a new protocol)`)){
+await updateDoc(doc(db,"codes",code,"protocols",cur.id),{items,updatedAt:serverTimestamp()});toast(`✓ "${cur.name}" updated`);
+}else{
+const name=(prompt("Protocol name · اسم البروتوكول","")||"").trim().slice(0,80);if(!name)return;
+const ref=await addDoc(collection(db,"codes",code,"protocols"),{name,items,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});activeMyProto=ref.id;toast(`✓ "${name}" saved`);
+}
+await loadProExtras();
+}catch(e){console.error(e);alert("Could not save: "+e.message);}
+}
+async function openRequestModal(){
+const code=proCode();if(!code)return;
+$("reqNotice").innerHTML="";$("requestModal").classList.remove("hidden");$("reqList").textContent="Loading…";
+try{const snap=await getDocs(collection(db,"codes",code,"hxRequests"));const rows=snap.docs.map(d=>d.data()).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
+$("reqList").innerHTML=rows.length?rows.map(r=>`<div class="req-item"><b>${escapeHtml(r.name||"")}</b><span class="req-st ${r.status==="done"?"done":"new"}">${r.status==="done"?`✓ Added${r.exerciseNumber?" #"+r.exerciseNumber:""}`:"Sent"}</span>${r.details?`<div dir="auto" style="margin-top:4px;white-space:pre-line">${escapeHtml(r.details)}</div>`:""}</div>`).join(""):"—";}
+catch(e){$("reqList").textContent="—";console.warn(e);}
+}
+async function sendRequest(){
+const code=proCode();if(!code)return;
+const name=$("reqName").value.trim(),details=$("reqDetails").value.trim(),image=$("reqImage").value.trim(),video=$("reqVideo").value.trim();
+if(!name){$("reqNotice").innerHTML=`<div class="notice error" dir="rtl">اكتب اسم التمرين.</div>`;return;}
+const btn=$("reqSendBtn");btn.disabled=true;
+try{await addDoc(collection(db,"codes",code,"hxRequests"),{name:name.slice(0,120),details:details.slice(0,1500),image:image.slice(0,500),video:video.slice(0,500),status:"new",createdAt:serverTimestamp()});
+$("reqName").value="";$("reqDetails").value="";$("reqImage").value="";$("reqVideo").value="";
+$("reqNotice").innerHTML=`<div class="notice ok" dir="rtl">✓ الطلب اتبعت. هتلاقيه هنا لما يتضاف.</div>`;openRequestModal();}
+catch(e){console.error(e);$("reqNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
+finally{btn.disabled=false;}
+}
+let adminRequests=[];
+async function loadAdminRequests(){
+const box=$("reqAdminBox");if(!box||!isAdmin)return;
+try{const snap=await getDocs(collectionGroup(db,"hxRequests"));adminRequests=snap.docs.map(d=>({...d.data(),_path:d.ref.path,code:d.ref.parent.parent.id})).sort((a,b)=>(a.status==="done")-(b.status==="done")||(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));}
+catch(e){box.innerHTML=`<div class="notice error" dir="rtl">تعذر تحميل الطلبات: ${escapeHtml(e.message)}<br>غالباً قواعد Firestore لسه محتاجة تتحدث.</div>`;return;}
+if(!adminRequests.length){box.innerHTML=`<div class="empty">No requests yet · لسه مفيش طلبات</div>`;return;}
+box.innerHTML=adminRequests.map((r,i)=>`<div class="req-item"><b>${escapeHtml(r.name||"")}</b><span class="req-st ${r.status==="done"?"done":"new"}">${r.status==="done"?`✓ Added${r.exerciseNumber?" #"+r.exerciseNumber:""}`:"New"}</span>
+<div style="margin-top:2px">👤 ${escapeHtml(ownerLabel(r.code))} • ${r.createdAt?.toMillis?fmtDate(r.createdAt.toMillis()):""}</div>
+${r.details?`<div dir="auto" style="margin-top:4px;white-space:pre-line;color:#344054">${escapeHtml(r.details)}</div>`:""}
+${r.image?`<div style="margin-top:4px">🖼 <a href="${escapeHtml(r.image)}" target="_blank" rel="noopener">${escapeHtml(r.image)}</a></div>`:""}${r.video?`<div style="margin-top:4px">▶ <a href="${escapeHtml(r.video)}" target="_blank" rel="noopener">${escapeHtml(r.video)}</a></div>`:""}
+<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">${r.status!=="done"?`<button class="btn btn-primary" data-req-add="${i}" data-private="1">🔒 Add for this subscriber</button><button class="btn btn-outline" data-req-add="${i}" data-private="">Add for everyone</button><button class="btn btn-outline" data-req-done="${i}">Mark done</button>`:""}<button class="btn btn-danger" data-req-del="${i}">Delete</button></div></div>`).join("");
+box.querySelectorAll("[data-req-add]").forEach(b=>b.onclick=()=>{const r=adminRequests[Number(b.dataset.reqAdd)];openExerciseModal(null,{owner:b.dataset.private?r.code:"",name:r.name,desc:r.details,video:r.video||"",image:r.image||"",requestPath:r._path});});
+box.querySelectorAll("[data-req-done]").forEach(b=>b.onclick=async()=>{const r=adminRequests[Number(b.dataset.reqDone)];try{await updateDoc(doc(db,r._path),{status:"done",doneAt:serverTimestamp()});loadAdminRequests();}catch(e){alert(e.message);}});
+box.querySelectorAll("[data-req-del]").forEach(b=>b.onclick=async()=>{const r=adminRequests[Number(b.dataset.reqDel)];if(!confirm("Delete this request?"))return;try{await deleteDoc(doc(db,r._path));loadAdminRequests();}catch(e){alert(e.message);}});
 }
 function pdfImageUrl(u){const m=String(u||"").match(/drive\.google\.com\/thumbnail\?id=([\w-]+)/);return m?`https://lh3.googleusercontent.com/d/${m[1]}=w600`:u;}
 function pdfVideoLabel(u){const s=String(u),v=(s.match(/[?&]v=([\w-]+)/)||[])[1];const base=s.replace(/^https?:\/\/(www\.|m\.)?/,"").split("?")[0];return v?base+"?v="+v:base;}
@@ -1195,7 +1326,7 @@ document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>switchTab(t.dataset.t
 $("clearFilters").onclick=()=>{activeRegions.clear();renderRegions();renderExercises();};
 $("searchBtn").onclick=parseSearchNumbers;$("clearSearchBtn").onclick=()=>{$("exerciseSearch").value="";searchNumbers=null;renderExercises();};
 $("exerciseSearch").addEventListener("keydown",e=>{if(e.key==="Enter")parseSearchNumbers();});
-$("backBtn").onclick=()=>switchTab("exerciseTab");$("whatsappBtn").onclick=whatsapp;$("pdfBtn").onclick=makePdf;$("adminOpenBtn").onclick=showAdmin;$("footerAdminBtn").onclick=showAdmin;
+$("backBtn").onclick=()=>switchTab("exerciseTab");$("saveProtoBtn").onclick=saveMyProtocol;$("requestExBtn").onclick=openRequestModal;$("reqSendBtn").onclick=sendRequest;$("whatsappBtn").onclick=whatsapp;$("pdfBtn").onclick=makePdf;$("adminOpenBtn").onclick=showAdmin;$("footerAdminBtn").onclick=showAdmin;
 $("homeLink").onclick=()=>{
 const u=new URL(window.location.href);
 u.search="";u.hash="";
@@ -1236,6 +1367,7 @@ console.warn("Signed-in user is not confirmed as admin:",adminCheckError);
 }
 applyFeatures();
 revealApp();
+loadProExtras();
 });
 setTimeout(revealApp,3000);
 
