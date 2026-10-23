@@ -1126,40 +1126,69 @@ text+=`${i+1} - ${e.name}\n${dose?`الجرعة: ${dose}\n`:""}${e.description}\
 if(featureOn("branding")){const b=getBrand(),sig=[b.name,b.clinic,b.phone].filter(Boolean).join("\n");if(sig)text+=`—\n${sig}`;}
 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
 }
-function pdfDriveId(u){const m=String(u||"").match(/drive\.google\.com\/thumbnail\?id=([\w-]+)/);return m?m[1]:"";}
-function pdfImageUrl(u){if(!u)return"";const id=pdfDriveId(u);return id?`https://lh3.googleusercontent.com/d/${id}=w1000`:u;}
-function pdfImageAlt(u){const id=pdfDriveId(u);return id?"https://images.weserv.nl/?url="+encodeURIComponent(`drive.google.com/thumbnail?id=${id}&sz=w1000`):"";}
-function pdfExerciseHtml(e){
-const img=imageList(e)[0],dose=doseText(e.id,false);
-return `<div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin:0 0 16px">
-<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="background:#1e3a8a;color:#fff;border-radius:8px;padding:4px 10px;font-weight:bold;font-size:17px">#${exerciseNumber(e)}</span><b style="font-size:18px">${escapeHtml(e.name)}</b></div>
-${img?`<img src="${escapeHtml(pdfImageUrl(img))}" data-alt="${escapeHtml(pdfImageAlt(img))}" crossorigin="anonymous" style="display:block;width:100%;height:270px;object-fit:contain;background:#f3f4f6;border-radius:8px;margin-bottom:10px">`:""}
-${dose?`<div style="font-weight:bold;color:#1e3a8a;margin-bottom:6px">${escapeHtml(dose)}</div>`:""}
-<div dir="auto" style="white-space:pre-line;line-height:1.7;font-size:14px;color:#1f2937;text-align:start">${escapeHtml(e.description||"")}</div>
-</div>`;
-}
+function pdfImageUrl(u){const m=String(u||"").match(/drive\.google\.com\/thumbnail\?id=([\w-]+)/);return m?`https://lh3.googleusercontent.com/d/${m[1]}=w600`:u;}
+function pdfVideoLabel(u){const s=String(u),v=(s.match(/[?&]v=([\w-]+)/)||[])[1];const base=s.replace(/^https?:\/\/(www\.|m\.)?/,"").split("?")[0];return v?base+"?v="+v:base;}
+function pdfIsRtl(t){const m=String(t).match(/[A-Za-z؀-ۿ]/);return !!m&&/[؀-ۿ]/.test(m[0]);}
+function pdfLoadImg(src){return new Promise(r=>{if(!src){r(null);return;}const im=new Image();im.crossOrigin="anonymous";im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src;setTimeout(()=>r(null),8000);});}
 async function makePdf(){
 const patient=$("patientName").value.trim(),list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));if(!list.length){alert("Select at least one exercise.");return;}
 const btn=$("pdfBtn"),label=btn.textContent;btn.disabled=true;btn.textContent="Preparing PDF…";
-let head="";
-if(featureOn("branding")){const b=getBrand();if(b.name||b.clinic||b.phone||b.logo){head+=`<div style="display:flex;align-items:center;gap:14px;border-bottom:2px solid #1e3a8a;padding-bottom:12px;margin-bottom:14px">${b.logo?`<img src="${escapeHtml(pdfImageUrl(driveToImageUrl(b.logo)))}" crossorigin="anonymous" style="height:60px;max-width:140px;object-fit:contain">`:""}<div><div style="font-size:18px;font-weight:bold">${escapeHtml(b.name||"")}</div><div style="color:#555">${escapeHtml([b.clinic,b.phone].filter(Boolean).join(" • "))}</div></div></div>`;}}
-head+=`<h1 style="margin:0 0 4px;font-size:24px">Home Exercise Program</h1>${patient?`<p style="margin:0 0 4px;color:#444;font-size:15px">Patient: ${escapeHtml(patient)}</p>`:""}<p style="margin:0 0 16px;color:#777;font-size:12px">${new Date().toLocaleDateString("en-GB")} • ${list.length} exercise${list.length===1?"":"s"}</p>`;
-const holder=document.createElement("div");holder.style.cssText="position:fixed;left:-10000px;top:0;";document.body.appendChild(holder);
-const pages=[];
-for(let i=0;i<list.length;i+=2){
-const p=document.createElement("div");
-p.style.cssText="width:720px;background:#fff;color:#111827;font-family:Arial,Tahoma,sans-serif;padding:4px";
-p.innerHTML=(i===0?head:"")+list.slice(i,i+2).map(pdfExerciseHtml).join("");
-holder.appendChild(p);pages.push(p);
-}
-await Promise.all([...holder.querySelectorAll("img")].map(im=>new Promise(r=>{const done=()=>r();const fail=()=>{const alt=im.dataset.alt;if(alt&&im.src!==alt){im.src=alt;}else{im.remove();r();}};if(im.complete&&im.naturalWidth){r();return;}if(im.complete&&!im.naturalWidth){fail();}im.onload=done;im.onerror=fail;setTimeout(r,12000);})));
-const opt={margin:10,filename:`home-exercise-program${patient?"-"+patient.replace(/\s+/g,"-"):""}.pdf`,image:{type:"jpeg",quality:.9},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css"]}};
 try{
-let w=html2pdf().set(opt).from(pages[0]).toPdf();
-for(const p of pages.slice(1)){w=w.get("pdf").then(pdf=>{pdf.addPage();}).from(p).toContainer().toCanvas().toPdf();}
-await w.save();
+const PW=1240,PH=1754,M=80,CW=PW-2*M,MM=210/PW,FOOT=60,BOTTOM=PH-M-FOOT;
+const C={navy:"#1e3a8a",ink:"#0f172a",text:"#1f2937",muted:"#64748b",line:"#D6DFEE",band:"#EEF3FB",link:"#1d4ed8",doseBg:"#FEF3C7",doseFg:"#92400E"};
+const FONT="Arial, Tahoma, 'Noto Naskh Arabic', sans-serif";
+const pages=[],links=[];let ctx,y;
+function newPage(){const c=document.createElement("canvas");c.width=PW;c.height=PH;const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,PW,PH);x.textBaseline="alphabetic";pages.push(c);ctx=x;y=M;}
+function font(size,bold){ctx.font=`${bold?"bold ":""}${size}px ${FONT}`;}
+function rr(x,yy,w,h,r,fill,stroke){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,yy,w,h,r);else ctx.rect(x,yy,w,h);if(fill){ctx.fillStyle=fill;ctx.fill();}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();}}
+function wrap(text,maxW){const out=[];String(text||"").split(/\r?\n/).forEach(par=>{const rtl=pdfIsRtl(par);if(!par.trim()){out.push({t:"",rtl});return;}let line="";par.split(/ +/).forEach(w=>{const test=line?line+" "+w:w;if(ctx.measureText(test).width>maxW&&line){out.push({t:line,rtl});line=w;}else line=test;});if(line)out.push({t:line,rtl});});return out;}
+function drawLine(l,x0,w,yy){ctx.direction=l.rtl?"rtl":"ltr";ctx.textAlign=l.rtl?"right":"left";ctx.fillText(l.t,l.rtl?x0+w:x0,yy);ctx.direction="ltr";ctx.textAlign="left";}
+newPage();
+let brandShown=false;
+if(featureOn("branding")){const b=getBrand();if(b.name||b.clinic||b.phone||b.logo){const logo=b.logo?await pdfLoadImg(pdfImageUrl(driveToImageUrl(b.logo))):null;let x=M;if(logo){const h=110,w=Math.min(260,logo.width*h/logo.height);ctx.drawImage(logo,x,y,w,h);x+=w+28;}
+const right=(t,yy)=>{ctx.direction=pdfIsRtl(t)?"rtl":"ltr";ctx.textAlign="right";ctx.fillText(t,PW-M,yy);ctx.direction="ltr";ctx.textAlign="left";};
+let ty=y+38;if(b.name){font(40,true);ctx.fillStyle=C.ink;right(b.name,ty);ty+=44;}if(b.clinic){font(28);ctx.fillStyle="#334155";right(b.clinic,ty);ty+=38;}if(b.phone){font(26);ctx.fillStyle=C.muted;right(b.phone,ty);ty+=34;}
+y=Math.max(y+(logo?110:0),ty-20)+30;brandShown=true;}}
+ctx.fillStyle=C.navy;ctx.fillRect(M,y,CW,6);y+=56;
+font(46,true);ctx.fillStyle=C.navy;ctx.fillText("Home Exercise Program",M,y);
+font(26);ctx.fillStyle=C.muted;ctx.textAlign="right";const info=[patient?`Patient: ${patient}`:"",new Date().toLocaleDateString("en-GB"),`${list.length} exercise${list.length===1?"":"s"}`].filter(Boolean);info.forEach((t,i)=>ctx.fillText(t,PW-M,y-14+i*32));ctx.textAlign="left";
+y+=46;font(32);ctx.fillStyle="#334155";drawLine({t:"برنامج التمارين المنزلية",rtl:true},M,ctx.measureText("برنامج التمارين المنزلية").width+4,y);
+y=Math.max(y,y-60+info.length*32)+40;
+const PAD=28,BAND=78,LH=46,BODYW=CW-2*PAD;
+for(const e of list){
+font(30);const lines=wrap(e.description||"",BODYW);
+const dose=doseText(e.id,false),regions=exerciseRegions(e).join(" • ");
+let bodyH=PAD+(dose?60:0)+lines.length*LH+(e.video?56:0)+PAD-10;
+let need=BAND+bodyH+24;
+if(y+Math.min(need,BAND+PAD+LH*3)>BOTTOM)newPage();
+const top=y;
+rr(M,top,CW,BAND,14,C.band,null);
+font(30,true);const num="#"+exerciseNumber(e);const nw=ctx.measureText(num).width+28;rr(M+PAD-6,top+18,nw,44,10,C.navy,null);ctx.fillStyle="#fff";ctx.fillText(num,M+PAD+8,top+50);
+font(33,true);let name=e.name||"";const fullW=CW-PAD*2-nw-20;let rw=0;if(regions){font(22);rw=ctx.measureText(regions).width;font(33,true);if(ctx.measureText(name).width>fullW-rw-24)rw=0;else{font(22);ctx.fillStyle=C.muted;ctx.fillText(regions,PW-M-PAD-rw,top+48);}}
+font(33,true);ctx.fillStyle=C.ink;const maxName=fullW-(rw?rw+24:0);while(ctx.measureText(name).width>maxName&&name.length>4)name=name.slice(0,-2);if(name!==(e.name||""))name=name.trim()+"…";drawLine({t:name,rtl:pdfIsRtl(name)},M+PAD+nw+14,maxName,top+51);
+y=top+BAND+PAD;
+if(dose){font(26,true);const dw=ctx.measureText(dose).width+30;rr(M+PAD,y-4,dw,44,10,C.doseBg,null);ctx.fillStyle=C.doseFg;ctx.fillText(dose,M+PAD+15,y+27);y+=60;}
+font(30);ctx.fillStyle=C.text;
+let segTop=top;
+for(const l of lines){
+if(y+LH>BOTTOM){ctx.strokeStyle=C.line;ctx.lineWidth=2;rr(M,segTop,CW,y-segTop+10,14,null,C.line);newPage();segTop=y;font(30);ctx.fillStyle=C.text;}
+y+=34;if(l.t)drawLine(l,M+PAD,BODYW,y);y+=LH-34;
+}
+if(e.video){if(y+56>BOTTOM){rr(M,segTop,CW,y-segTop+10,14,null,C.line);newPage();segTop=y;}
+y+=44;font(26,true);ctx.fillStyle=C.link;const vt="▶  Video: "+pdfVideoLabel(e.video);ctx.fillText(vt,M+PAD,y);const vw=ctx.measureText(vt).width;
+links.push({page:pages.length,x:(M+PAD)*MM,y:(y-32)*MM,w:vw*MM,h:42*MM,url:e.video});y+=12;}
+y+=PAD-10;
+rr(M,segTop,CW,y-segTop,14,null,C.line);
+y+=24;
+}
+const total=pages.length;
+pages.forEach((c,i)=>{const x=c.getContext("2d");x.font=`20px ${FONT}`;x.fillStyle="#e2e8f0";x.fillRect(M,PH-M-30,CW,2);x.fillStyle="#94a3b8";x.textAlign="left";x.fillText("Home Exercise Program",M,PH-M);x.textAlign="right";x.fillText(`Page ${i+1} / ${total}`,PW-M,PH-M);});
+const pdf=await html2pdf().set({margin:0,jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},html2canvas:{scale:1}}).from('<div style="width:10px;height:10px;background:#fff"></div>',"string").toPdf().get("pdf");
+pages.forEach((c,i)=>{if(i>0)pdf.addPage("a4","portrait");pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",0,0,210,297);});
+links.forEach(l=>{pdf.setPage(l.page);pdf.link(l.x,l.y,l.w,l.h,{url:l.url});});
+pdf.save(`home-exercise-program${patient?"-"+patient.replace(/\s+/g,"-"):""}.pdf`);
 }catch(err){console.error(err);alert("Could not create the PDF. Please try again.");}
-finally{holder.remove();btn.disabled=false;btn.textContent=label;}
+finally{btn.disabled=false;btn.textContent=label;}
 }
 
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
