@@ -741,7 +741,7 @@ if(!c.deviceUid)return"pending";
 return c.expiresAt-Date.now()<=7*864e5?"expiring":"active";
 }
 function renderCodes(){
-renderClinics();
+renderClinics();fillSubProtoCodes();
 const box=$("codesBox");if(!box)return;
 if(!codesCache){box.innerHTML=`<div class="code-meta">Loading…</div>`;return;}
 if(codesCache.error){box.innerHTML=`<div class="notice error">تعذر تحميل الأكواد: ${escapeHtml(codesCache.error)}<br>غالباً قواعد Firestore لسه محتاجة تتحدث (collection: codes).</div>`;return;}
@@ -856,6 +856,49 @@ note(`تم إنشاء باقة <b>${escapeHtml(name)}</b> بـ ${seats} كود. 
 await loadCodes();
 }catch(e){console.error(e);note(escapeHtml(e.message));}
 finally{btn.disabled=false;}
+}
+
+/* ---------- Admin: protocol for one subscriber ---------- */
+function subProtoCardHtml(){
+return`<div class="settings-card" id="subProtoCard"><h3>📋 بروتوكول خاص لمشترك</h3><p dir="rtl">ضيف بروتوكول يظهر لمشترك معين بس، في تاب "👤 بروتوكولاتي" عنده. ممكن تبدأ من بروتوكول جاهز وتعدّل عليه.</p>
+<div class="form-grid">
+<div class="field"><label>المشترك</label><select id="spCode"><option value="">— اختار —</option></select></div>
+<div class="field"><label>ابدأ من بروتوكول جاهز (اختياري)</label><select id="spFrom"><option value="">—</option>${TEMPLATES.map((t,i)=>`<option value="${i}">${escapeHtml(t.name)}</option>`).join("")}</select></div>
+<div class="field full"><label>اسم البروتوكول</label><input id="spName" maxlength="80"></div>
+<div class="field full"><label>التمارين والجرعات</label><input id="spSpec" dir="ltr" placeholder="15:3x10h5/2, 11:3x10, 1001"><small style="display:block;margin-top:6px;color:#667085">نفس شكل البروتوكولات الجاهزة: رقم التمرين وبعده الجرعة. ممكن تحط تمارين المشترك الخاصة (1001 وطالع).</small></div>
+</div>
+<div class="form-actions"><button class="btn btn-primary" type="button" id="spAddBtn">إضافة للمشترك</button></div>
+<div id="spNotice"></div><div id="spList" style="margin-top:10px"></div></div>`;
+}
+function specOf(t){return t.items.map(i=>{let d=(i.reps?`${i.sets||""}x${i.reps}`:"")+(i.hold?`h${i.hold}`:"")+(i.freq?`/${i.freq}`:"");return d?`${i.n}:${d}`:String(i.n);}).join(", ");}
+function fillSubProtoCodes(){
+const sel=$("spCode");if(!sel)return;const cur=sel.value;
+const list=Array.isArray(codesCache)?codesCache.filter(c=>c.active!==false):[];
+sel.innerHTML=`<option value="">— اختار —</option>`+list.map(c=>`<option value="${escapeHtml(c.id)}">${escapeHtml(c.name||c.id)}${c.phone?" – "+escapeHtml(c.phone):""}</option>`).join("");
+if([...sel.options].some(o=>o.value===cur))sel.value=cur;
+}
+async function loadSubProtoList(){
+const code=$("spCode").value,box=$("spList");if(!code){box.innerHTML="";return;}
+box.innerHTML=`<div class="code-meta">Loading…</div>`;
+try{const snap=await getDocs(collection(db,"codes",code,"protocols"));const rows=snap.docs.map(d=>({id:d.id,...d.data()}));
+box.innerHTML=rows.length?`<div class="code-meta" style="margin-bottom:6px">بروتوكولات المشترك ده:</div>`+rows.map(r=>`<div class="req-item"><b>${escapeHtml(r.name||"")}</b><span class="req-st ${r.byAdmin?"done":"new"}">${r.byAdmin?"من الإدارة":"عملها بنفسه"}</span><div class="code-meta" dir="ltr">${escapeHtml(specOf({items:r.items||[]}))}</div>${r.byAdmin?`<button class="btn btn-danger" style="margin-top:6px" data-sp-del="${escapeHtml(r.id)}">حذف</button>`:""}</div>`).join(""):`<div class="code-meta">المشترك ده لسه معندوش بروتوكولات.</div>`;
+box.querySelectorAll("[data-sp-del]").forEach(b=>b.onclick=async()=>{if(!confirm("حذف البروتوكول ده من عند المشترك؟"))return;try{await deleteDoc(doc(db,"codes",code,"protocols",b.dataset.spDel));loadSubProtoList();}catch(e){alert(e.message);}});
+}catch(e){box.innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
+}
+function initSubProto(){
+if(!$("spCode"))return;
+fillSubProtoCodes();
+$("spCode").onchange=loadSubProtoList;
+$("spFrom").onchange=()=>{const t=TEMPLATES[Number($("spFrom").value)];if(!$("spFrom").value||!t)return;$("spName").value=t.name;$("spSpec").value=specOf(t);};
+$("spAddBtn").onclick=async()=>{
+const code=$("spCode").value,name=$("spName").value.trim(),spec=$("spSpec").value.trim();
+const note=(t,ok)=>$("spNotice").innerHTML=`<div class="notice ${ok?"ok":"error"}" dir="rtl">${t}</div>`;
+if(!code){note("اختار المشترك.");return;}if(!name){note("اكتب اسم البروتوكول.");return;}
+const parsed=parseTemplateLine(`${name} | ${spec}`);if(!parsed){note("اكتب التمارين صح، مثلاً: 15:3x10h5/2, 11:3x10");return;}
+try{await addDoc(collection(db,"codes",code,"protocols"),{name:name.slice(0,80),items:parsed.items,byAdmin:true,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});
+note(`✓ اتضاف "${escapeHtml(name)}" للمشترك. هيلاقيه في تاب 👤 بروتوكولاتي.`,true);$("spName").value="";$("spSpec").value="";$("spFrom").value="";loadSubProtoList();}
+catch(e){note(escapeHtml(e.message));}
+};
 }
 async function createCode(){
 const name=$("newCodeName").value.trim(),phone=$("newCodePhone").value.trim(),months=Number($("newCodeLen").value);
@@ -1106,6 +1149,7 @@ ${featuresCardHtml()}
 ${proPageCardHtml()}
 ${clinicsCardHtml()}
 ${codesCardHtml()}
+${subProtoCardHtml()}
 <div class="settings-card" id="reqAdminCard"><h3>Exercise requests <span style="font-size:14px;color:#667085" dir="rtl">· طلبات المشتركين</span></h3><div id="reqAdminBox" class="code-meta">Loading…</div></div>
 <div class="admin-list">${list.map(e=>`<div class="admin-row"><div class="meta"><div class="admin-number">#${exerciseNumber(e)}</div><img src="${escapeHtml(imageList(e)[0]||PLACEHOLDER_IMG)}" alt=""><div><strong>${escapeHtml(e.name)}</strong><div style="font-size:12px;color:#667085">${escapeHtml(exerciseRegions(e).join(", "))}</div></div></div><div class="admin-row-actions"><button class="btn btn-outline" data-edit="${escapeHtml(e.id)}">Edit</button><button class="btn btn-danger" data-delete="${escapeHtml(e.id)}">Delete</button></div></div>`).join("")||`<div class="empty">No Firestore exercises yet. Add your first one.</div>`}</div></div>`;
 if($("headerIntervalSeconds"))$("headerIntervalSeconds").value=headerIntervalSeconds;if($("adIntervalSeconds"))$("adIntervalSeconds").value=adIntervalSeconds;
@@ -1113,7 +1157,7 @@ $("addExerciseBtn").onclick=()=>openExerciseModal();$("logoutBtn").onclick=async
 $("saveSiteSettingsBtn").onclick=saveSiteSettings;
 $("saveFeaturesBtn").onclick=saveFeatures;$("createCodeBtn").onclick=createCode;$("createClinicBtn").onclick=createClinic;$("clinicLogoFile").onchange=pickClinicLogo;
 $("saveProPageBtn").onclick=saveProPage;$("previewProPageBtn").onclick=openPro;
-renderCodes();loadCodes();loadAdminRequests();
+renderCodes();loadCodes();loadAdminRequests();initSubProto();
 document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openExerciseModal(b.dataset.edit));document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteExercise(b.dataset.delete));
 }
 async function nextExerciseNumber(){
@@ -1354,7 +1398,7 @@ const box=$("myProtoBox");if(!box)return;
 if(!show||!proCode()){box.innerHTML="";return;}
 const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
 box.innerHTML=`<div class="my-proto-head"><div><h3>⭐ My protocols <span style="font-size:14px;color:#667085" dir="rtl">· بروتوكولاتي</span></h3><div class="code-meta" dir="rtl">خاصة بيك إنت بس ومتحفوظة على كود اشتراكك. اختار تمارين وجرعات، وبعدين من Send اضغط "Save as my protocol".</div></div></div>
-${myProtocols.length?`<div class="proto-grid" style="margin-bottom:22px">${myProtocols.map(t=>{const names=(t.items||[]).map(it=>byNum.get(it.n)?.name).filter(Boolean);return`<div class="proto-card"><div class="proto-top"><div class="proto-icon">⭐</div><div><div class="proto-name">${escapeHtml(t.name)}</div><div class="proto-region">My protocol</div></div></div>
+${myProtocols.length?`<div class="proto-grid" style="margin-bottom:22px">${myProtocols.map(t=>{const names=(t.items||[]).map(it=>byNum.get(it.n)?.name).filter(Boolean);return`<div class="proto-card"><div class="proto-top"><div class="proto-icon">⭐</div><div><div class="proto-name">${escapeHtml(t.name)}</div><div class="proto-region">${t.byAdmin?"Added for you":"My protocol"}</div></div></div>
 <div class="proto-meta"><span>${(t.items||[]).length} exercises</span>${(t.items||[]).some(it=>it.reps||it.sets||it.hold)?`<span>Dosage included</span>`:""}</div>
 <div class="proto-ex">${escapeHtml(names.slice(0,4).join(" • "))}${names.length>4?` +${names.length-4}`:""}</div>
 <div style="display:flex;gap:8px;margin-top:auto"><button class="btn btn-primary" style="flex:1" data-myproto="${escapeHtml(t.id)}">Use →</button><button class="btn btn-danger" data-delproto="${escapeHtml(t.id)}">Delete</button></div></div>`;}).join("")}</div>`:`<div class="empty" style="margin-bottom:22px" dir="rtl">لسه معندكش بروتوكولات. اختار التمارين وحط الجرعات، وبعدين من صفحة Send اضغط <b>💾 Save as my protocol</b>.</div>`}`;
