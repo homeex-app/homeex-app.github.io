@@ -429,6 +429,7 @@ function sortedExercises(list){return [...list].sort((a,b)=>exerciseNumber(a)-ex
 function imageList(e){return(e.images||[]).map(driveToImageUrl).filter(Boolean);}
 function filteredExercises(){
 let list=[...exercises];
+if(isAdmin&&adminView()==="free")list=list.filter(e=>!e.private);
 if(searchNumbers&&searchNumbers.size)list=list.filter(e=>searchNumbers.has(exerciseNumber(e)));
 if(directExerciseNumbers)list=list.filter(e=>directExerciseNumbers.includes(exerciseNumber(e)));
 if(activeRegions.size)list=list.filter(e=>exerciseRegions(e).some(r=>activeRegions.has(r)));
@@ -504,7 +505,7 @@ const showPro=subsOn();
 $("proOpenBtn").classList.toggle("hidden",!showPro);
 $("footerProBtn").classList.toggle("hidden",!showPro);
 $("footerProSep").classList.toggle("hidden",!showPro);
-$("proOpenBtn").textContent=proActive?"👤 حسابي":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
+$("proOpenBtn").textContent=proActive||isPreview()?"👤 حسابي":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
 $("homeProBanner").classList.toggle("hidden",!showPro||hasPro());
 $("protoProTag").classList.toggle("hidden",!showPro);
 renderViewAs();
@@ -524,7 +525,7 @@ document.body.classList.add("has-viewas");
 if(!bar){bar=document.createElement("div");bar.id="viewAsBar";bar.className="viewas no-print";document.body.appendChild(bar);}
 const v=adminView();
 bar.innerHTML=`<span>👁 عرض كـ</span><button data-view="pro" class="${v==="pro"?"active":""}">مشترك</button><button data-view="free" class="${v==="free"?"active":""}">مستخدم عادي</button>`;
-bar.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{try{sessionStorage.setItem(VIEW_KEY,b.dataset.view);}catch(e){}applyFeatures();});
+bar.querySelectorAll("[data-view]").forEach(b=>b.onclick=()=>{try{sessionStorage.setItem(VIEW_KEY,b.dataset.view);}catch(e){}applyFeatures();renderExercises();loadProExtras();});
 }
 
 /* Protocols. Line format (also used in Admin):
@@ -584,7 +585,7 @@ const proAvailable=ready.some(x=>x.isPro)||!!proCode()||subsOn();
 const tabs=[];
 if(freeList.length||subsOn())tabs.push(["free","Free"]);
 if(proAvailable&&ready.length)tabs.push(["pro","⭐ Pro"]);
-if(subsOn()||proCode())tabs.push(["mine","👤 بروتوكولاتي"]);
+if(subsOn()||proCode())tabs.push(["mine","👤 My protocols"]);
 const showTab=tabs.length>0&&(ready.length>0||!!proCode()||subsOn());
 $("protocolsTabBtn").classList.toggle("hidden",!showTab);
 if(!showTab&&!$("protocolsTab").classList.contains("hidden"))switchTab("exerciseTab");
@@ -647,7 +648,7 @@ return`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، �
 }
 function renderOffer(){
 const box=$("proOffer");
-if(proActive){renderAccount();return;}
+if(proActive||isPreview()){renderAccount();return;}
 const p=PRO_PAGE,plans=(p.plans||[]).filter(x=>x&&x.name);
 box.innerHTML=`<div dir="rtl">
 <h3 style="margin:6px 0 0;font-size:20px">${escapeHtml(p.headline||"")}</h3>
@@ -661,10 +662,10 @@ ${clinicOfferHtml()}
 </div>`;
 }
 function openPro(){
-$("proModalTitle").textContent=proActive?"👤 My account · حسابي":"⭐ HomeEx Pro";
-$("proStatus").innerHTML=proActive?"":proStatusHtml();renderOffer();$("proNotice").innerHTML="";
+$("proModalTitle").textContent=proActive||isPreview()?"👤 My account · حسابي":"⭐ HomeEx Pro";
+$("proStatus").innerHTML=proActive||isPreview()?"":proStatusHtml();renderOffer();$("proNotice").innerHTML="";
 $("proCodeInput").value=lsGet(PRO_KEY)||"";
-$("proCodeArea").classList.toggle("hidden",!!proActive);
+$("proCodeArea").classList.toggle("hidden",!!(proActive||isPreview()));
 $("proModal").classList.remove("hidden");
 }
 async function ensureDeviceUser(){
@@ -1360,7 +1361,9 @@ return ref.id;
 
 /* ---------- Pro: private exercises, my protocols, exercise requests ---------- */
 let hxPendingRequest=null,myProtocols=[],activeMyProto=null;
-function proCode(){return proActive?lsGet(PRO_KEY):null;}
+const ADMIN_PREVIEW_CODE="ADMIN-PREVIEW";
+function proCode(){if(proActive)return lsGet(PRO_KEY);return isAdmin&&subsOn()&&adminView()==="pro"?ADMIN_PREVIEW_CODE:null;}
+function isPreview(){return!proActive&&proCode()===ADMIN_PREVIEW_CODE;}
 function ownerLabel(code){const c=Array.isArray(codesCache)?codesCache.find(x=>x.id===code):null;return c&&c.name?c.name:(code||"");}
 function nextPrivateNumber(){const nums=exercises.filter(e=>e.private).map(exerciseNumber).filter(Number.isFinite);return Math.max(1000,...nums)+1;}
 function fillOwnerSelect(){
@@ -1423,23 +1426,23 @@ await loadProExtras();
 }
 
 async function myRequestsHtml(){
-const code=proCode();if(!code)return"—";
+const code=proCode();if(!code)return"—";if(isPreview())return`<div class="code-meta">في المعاينة مفيش طلبات. طلبات المشتركين الحقيقيين بتظهر لك في الأدمن.</div>`;
 try{const snap=await getDocs(collection(db,"codes",code,"hxRequests"));const rows=snap.docs.map(d=>d.data()).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
 return rows.length?rows.map(r=>`<div class="req-item"><b>${escapeHtml(r.name||"")}</b><span class="req-st ${r.status==="done"?"done":"new"}">${r.status==="done"?`✓ Added${r.exerciseNumber?" #"+r.exerciseNumber:""}`:"Sent"}</span>${r.details?`<div dir="auto" style="margin-top:4px;white-space:pre-line">${escapeHtml(r.details)}</div>`:""}</div>`).join(""):`<div class="code-meta">لسه مبعتش طلبات.</div>`;}
 catch(e){console.warn(e);return"—";}
 }
 function renderAccount(){
-const box=$("proOffer"),code=proCode();if(!code||!proInfo){box.innerHTML="";return;}
-const days=Math.max(0,Math.ceil((proInfo.expiresAt-Date.now())/864e5));
+const box=$("proOffer"),code=proCode();const info=isPreview()?{name:"Admin (preview · معاينة)",expiresAt:Date.now()+365*864e5,clinic:null}:info;if(!code||!info){box.innerHTML="";return;}
+const days=Math.max(0,Math.ceil((info.expiresAt-Date.now())/864e5));
 const n=waPhone(PRO_PAGE.whatsapp),renew=n?`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، عايز أجدد اشتراك HomeEx Pro — الكود: ${code}`)}`:"";
 const b=getBrand(),priv=sortedExercises(exercises.filter(e=>e.private));
 const brandOn=featureOn("branding");
 box.innerHTML=`<div dir="rtl" class="account">
 <div class="acc-sec"><h4>👤 اشتراكي</h4>
-<div>الاسم: <b>${escapeHtml(proInfo.name||"—")}</b></div>
-${proInfo.clinic&&proInfo.clinic.name?`<div>🏥 باقة عيادة: <b>${escapeHtml(proInfo.clinic.name)}</b></div>`:""}
+<div>الاسم: <b>${escapeHtml(info.name||"—")}</b></div>
+${info.clinic&&info.clinic.name?`<div>🏥 باقة عيادة: <b>${escapeHtml(info.clinic.name)}</b></div>`:""}
 <div>الكود: <b dir="ltr">${escapeHtml(code)}</b></div>
-<div>صالح حتى: <b>${fmtDate(proInfo.expiresAt)}</b> <span class="acc-days ${days<=7?"warn":""}">فاضل ${days} يوم</span></div>
+<div>صالح حتى: <b>${fmtDate(info.expiresAt)}</b> <span class="acc-days ${days<=7?"warn":""}">فاضل ${days} يوم</span></div>
 ${renew?`<a class="btn btn-green acc-btn" href="${escapeHtml(renew)}" target="_blank" rel="noopener">🔄 جدّد الاشتراك</a>`:""}</div>
 ${brandOn?`<div class="acc-sec"><h4>🏥 بيانات العيادة</h4>
 <div>${[b.clinic,b.name,b.phone].filter(Boolean).map(escapeHtml).join(" • ")||`<span class="code-meta">لسه مضفتش بيانات عيادتك.</span>`}</div>
@@ -1462,12 +1465,14 @@ myRequestsHtml().then(h=>{if($("accReqs"))$("accReqs").innerHTML=h;});
 async function openRequestModal(keep){
 const code=proCode();if(!code)return;
 if(!keep)$("reqNotice").innerHTML="";$("requestModal").classList.remove("hidden");$("reqList").textContent="Loading…";
+if(isPreview()){$("reqList").innerHTML="—";return;}
 try{const snap=await getDocs(collection(db,"codes",code,"hxRequests"));const rows=snap.docs.map(d=>d.data()).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
 $("reqList").innerHTML=rows.length?rows.map(r=>`<div class="req-item"><b>${escapeHtml(r.name||"")}</b><span class="req-st ${r.status==="done"?"done":"new"}">${r.status==="done"?`✓ Added${r.exerciseNumber?" #"+r.exerciseNumber:""}`:"Sent"}</span>${r.details?`<div dir="auto" style="margin-top:4px;white-space:pre-line">${escapeHtml(r.details)}</div>`:""}</div>`).join(""):"—";}
 catch(e){$("reqList").textContent="—";console.warn(e);}
 }
 async function sendRequest(){
 const code=proCode();if(!code)return;
+if(isPreview()){$("reqNotice").innerHTML=`<div class="notice error" dir="rtl">دي معاينة الأدمن، الطلب مش هيتبعت. المشترك الحقيقي بيبعته عادي.</div>`;return;}
 const name=$("reqName").value.trim(),details=$("reqDetails").value.trim(),image=$("reqImage").value.trim(),video=$("reqVideo").value.trim();
 if(!name){$("reqNotice").innerHTML=`<div class="notice error" dir="rtl">اكتب اسم التمرين.</div>`;return;}
 const btn=$("reqSendBtn");btn.disabled=true;
