@@ -25,7 +25,7 @@
 button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 .private-badge{background:#fef3c7!important;color:#92400e!important}.my-proto-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:6px 0 12px}.my-proto-head h3{margin:0;font-size:19px}.req-item{border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:8px;background:#fff}.req-item b{color:#172033}.req-st{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;margin-inline-start:6px}.req-st.new{background:#eff6ff;color:#1d4ed8}.req-st.done{background:#dcfce7;color:#166534}.app{min-height:100vh}
 header{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;padding:28px 20px 92px;min-height:190px}.header-inner{max-width:1180px;margin:auto;position:relative;z-index:2}.hero-slides{position:absolute;inset:0;z-index:0}.hero-slide{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:0;transition:opacity .8s ease}.hero-slide.active{opacity:1}.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.78),rgba(30,58,138,.58))}.brand{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.brand h1{font-size:28px;margin:0 0 7px}.brand p{margin:0;color:#e2e8f0}
-.install-btn{background:#fff;color:#1e3a8a;border:0;padding:6px 10px;border-radius:9px;font-weight:700;font-size:12px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15);cursor:pointer}.install-steps{margin:0;padding:0 0 0 20px;line-height:1.7}.install-steps li{margin:4px 0}.install-ar{direction:rtl;text-align:right;font-family:Tahoma,Arial,sans-serif}.install-ar .install-steps{padding:0 20px 0 0}.install-box{border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-top:12px}.install-box h4{margin:0 0 6px;font-size:15px}.install-sep{border:0;border-top:1px dashed var(--border);margin:10px 0}@media(max-width:700px){.install-btn{font-size:11px;padding:5px 8px}}
+.install-btn{background:rgba(255,255,255,.92);color:#1e3a8a;border:0;padding:4px 8px;border-radius:7px;font-weight:700;font-size:10.5px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15);cursor:pointer}.install-steps{margin:0;padding:0 0 0 20px;line-height:1.7}.install-steps li{margin:4px 0}.install-ar{direction:rtl;text-align:right;font-family:Tahoma,Arial,sans-serif}.install-ar .install-steps{padding:0 20px 0 0}.install-box{border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-top:12px}.install-box h4{margin:0 0 6px;font-size:15px}.install-sep{border:0;border-top:1px dashed var(--border);margin:10px 0}@media(max-width:700px){.install-btn{font-size:10px;padding:4px 7px}}
 .admin-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:11px 17px;border-radius:12px}
 .tabs-wrap{position:sticky;top:0;z-index:50;margin:-58px auto 0;max-width:1180px;padding:0 20px}.tabs{display:flex;gap:8px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);padding:8px;border:1px solid var(--border);box-shadow:var(--shadow);border-radius:16px}
 .tab{flex:1;border:0;background:transparent;padding:13px 16px;border-radius:11px;font-weight:800;color:var(--muted)}.tab.active{background:#eff6ff;color:var(--primary)}
@@ -64,6 +64,7 @@ body.direct-mode .tabs-wrap,body.direct-mode .search-panel,body.direct-mode .sec
 .patient-hero{background:linear-gradient(135deg,#ecfdf5,#eff6ff);border:1px solid #bbf7d0;border-radius:16px;padding:16px 18px;margin:22px 0 6px;line-height:1.7}
 .patient-hero b{font-size:18px;display:block;margin-bottom:4px;color:#065f46}
 .patient-hero span{font-size:14px;color:#344054}
+.share-brand{display:flex;align-items:center;gap:14px;padding:4px 0 14px;margin-bottom:12px;border-bottom:1px solid #bbf7d0}.share-brand img{width:64px;height:64px;object-fit:contain;border-radius:12px;background:#fff;border:1px solid #e5e7eb;flex-shrink:0}.sb-clinic{font-size:20px;font-weight:800;color:#1e3a8a;line-height:1.3}.sb-doc{font-size:15px;font-weight:700;color:#0f766e;margin-top:2px}.sb-phone{display:inline-block;margin-top:4px;font-size:14px;color:#334155;text-decoration:none;font-weight:600}.dose-pill{display:inline-block;background:#fef3c7;color:#92400e;font-weight:800;font-size:13px;border-radius:8px;padding:5px 10px;margin:4px 0 2px}
 </style>
 <style>
 .ad-slot{margin:10px 0 24px;min-height:0;border:1px solid rgba(148,163,184,.18);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 4px 18px rgba(15,23,42,.05);position:relative}
@@ -171,7 +172,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="header-inner">
 <div class="brand">
 <div><h1 id="homeLink" style="cursor:pointer">Home Exercise Prescription</h1><p>Choose exercises, then send the prescription to your patient.</p></div>
-<div style="display:flex;gap:8px;align-items:center"><button class="install-btn hidden" id="installBtn" type="button">📲 Download App</button><button class="pro-btn hidden" id="proOpenBtn">⭐ Pro</button><button class="admin-btn" id="adminOpenBtn">Admin</button></div>
+<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><button class="pro-btn hidden" id="proOpenBtn">⭐ Pro</button><button class="install-btn hidden" id="installBtn" type="button">📲 Download App</button><button class="admin-btn" id="adminOpenBtn">Admin</button></div>
 </div>
 </div>
 </header>
@@ -185,7 +186,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div id="bootLoader">Loading…</div>
 <main id="appMain" class="app-booting">
 <section id="exerciseTab">
-<div class="direct-only patient-hero" dir="rtl"><b>💪 برنامج التمارين بتاعك</b><span>اعمل التمارين بالترتيب زي ما الأخصائي قالك. اضغط على الصورة أو الأسهم عشان تشوف باقي الصور، أو على Video لو موجود. ولو حسيت بألم زيادة، وقّف وكلّم الأخصائي.</span></div>
+<div class="direct-only patient-hero" dir="rtl"><div id="shareBrand"></div><b id="patientHeroTitle">💪 برنامج التمارين بتاعك</b><span>اعمل التمارين بالترتيب زي ما الأخصائي قالك. اضغط على الصورة أو الأسهم عشان تشوف باقي الصور، أو على Video لو موجود. ولو حسيت بألم زيادة، وقّف وكلّم الأخصائي.</span></div>
 <div class="search-panel no-print">
 <div class="search-row">
 <div class="search-field"><label for="exerciseSearch">Patient</label><input id="exerciseSearch" placeholder="Exercises number (e.g. 1, 4, 7)" inputmode="numeric"></div>
@@ -448,6 +449,7 @@ ${count?`<div class="image-counter">${idx+1} / ${count}</div>`:""}
 </div>
 <div class="card-body">
 <div class="card-top"><div><h3 class="card-title">${escapeHtml(e.name)}</h3>${exerciseRegions(e).map(r=>`<span class="badge">${escapeHtml(r)}</span>`).join(" ")}${e.private?`<span class="badge private-badge">🔒 ${isAdmin?escapeHtml(ownerLabel(e.code)):"Private"}</span>`:""}</div><div class="number-badge">#${exerciseNumber(e)}</div></div>
+${shareInfo&&shareInfo.dose&&shareInfo.dose[String(exerciseNumber(e))]?`<div class="dose-pill" dir="rtl">الجرعة: ${escapeHtml(fmtDoseAr(shareInfo.dose[String(exerciseNumber(e))]))}</div>`:""}
 <p class="description">${escapeHtml(e.description)}</p>
 <div class="card-actions"><label class="check"><input type="checkbox" data-check="${escapeHtml(e.id)}" ${selected?"checked":""}> Select</label>${e.video?`<a class="video-btn" href="${escapeHtml(e.video)}" target="_blank" rel="noopener">Video</a>`:""}</div>
 </div></article>`;
@@ -811,6 +813,29 @@ document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.datas
 if(tabId==="sendTab")renderSend();
 if(tabId==="adminTab")renderAdmin();
 }
+let shareInfo=null,sharedCopies=[];
+function getShareParams(){try{const h=new URLSearchParams(window.location.hash.replace(/^#/,""));const id=h.get("s");return id&&/^[A-Za-z0-9]{10,40}$/.test(id)?{id,name:(h.get("n")||"").slice(0,80)}:null;}catch(e){return null;}}
+function fmtDoseAr(d){if(!d)return"";const p=[];if(d.sets&&d.reps)p.push(`${d.sets} مجموعات × ${d.reps} تكرار`);else if(d.sets)p.push(`${d.sets} مجموعات`);else if(d.reps)p.push(`${d.reps} تكرار`);if(d.hold)p.push(`ثبات ${d.hold} ثانية`);if(d.freq)p.push(`${d.freq} مرة في اليوم`);return p.join(" • ");}
+async function loadShare(){
+const sp=getShareParams();if(!sp)return;
+document.body.classList.add("direct-mode");
+try{
+const snap=await getDoc(doc(db,"shares",sp.id));
+if(!snap.exists()){directExerciseNumbers=[];return;}
+const d=snap.data();shareInfo={...d,patient:sp.name};
+sharedCopies=(d.priv||[]).map(x=>({...x,id:"share-"+x.n,number:x.n,shared:true}));
+directExerciseNumbers=[...new Set([...(d.nums||[]),...sharedCopies.map(x=>x.n)])];
+renderShareBrand();
+}catch(e){console.warn("Share load:",e);directExerciseNumbers=[];}
+}
+function renderShareBrand(){
+const box=$("shareBrand");if(!box||!shareInfo)return;
+const b=shareInfo.brand||{};
+const title=$("patientHeroTitle");if(title&&shareInfo.patient)title.textContent=`💪 برنامج التمارين لـ ${shareInfo.patient}`;
+if(!(b.name||b.clinic||b.phone||b.logo)){box.innerHTML="";return;}
+const tel=String(b.phone||"").replace(/[^\d+]/g,"");
+box.innerHTML=`<div class="share-brand">${b.logo?`<img src="${escapeHtml(b.logo)}" alt="">`:""}<div>${b.clinic?`<div class="sb-clinic">${escapeHtml(b.clinic)}</div>`:""}${b.name?`<div class="sb-doc">${escapeHtml(b.name)}</div>`:""}${b.phone?`<a class="sb-phone" href="tel:${escapeHtml(tel)}" dir="ltr">📞 ${escapeHtml(b.phone)}</a>`:""}</div></div>`;
+}
 function getDirectExerciseNumbers(){
 try{
 let raw=new URLSearchParams(window.location.search).get("ex");
@@ -838,7 +863,7 @@ const snap=await getDocs(collection(db,"exercises"));
 exercises=snap.docs.map(d=>({id:d.id,...d.data()}));
 }catch(e){exercises=[];$("exerciseSummary").textContent="Could not load exercises from Firestore.";console.error("Firestore exercises load failed:",e);}
 }
-clearTimeout(loadingTimer);exercises=sortedExercises(exercises);renderRegions();renderExercises();renderSend();renderTemplates();if(isAdmin)renderAdmin();
+clearTimeout(loadingTimer);if(sharedCopies.length)exercises=exercises.concat(sharedCopies);exercises=sortedExercises(exercises);renderRegions();renderExercises();renderSend();renderTemplates();if(isAdmin)renderAdmin();
 loadProExtras();
 }
 async function checkAdmin(user){
@@ -1139,26 +1164,48 @@ function parseSearchNumbers(){
 const raw=$("exerciseSearch").value.trim();if(!raw){searchNumbers=null;renderExercises();return;}
 const nums=raw.split(/[\s,;]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0);searchNumbers=nums.length?new Set(nums):new Set([-1]);renderExercises();
 }
-function whatsapp(){
+async function whatsapp(){
 const patient=$("patientName").value.trim();
 const list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));
 if(!list.length){alert("Select at least one exercise.");return;}
-const numbers=list.map(e=>exerciseNumber(e)).join(" ");
 const linkNumbers=list.map(e=>exerciseNumber(e)).join(",");
 const currentUrl=new URL(window.location.href);
 currentUrl.search="";
 currentUrl.hash="";
 const base=currentUrl.href.replace(/\/$/,"");
-const directLink=`${base}#ex=${encodeURIComponent(linkNumbers)}`;
-let text="";
-if(patient)text+=`برنامج التمارين الي ${patient}\n\n`;
-text+=`لمشاهدة الصور او الفيديوهات مباشرة، افتح اللينك ده:\n${directLink}\n\n`;
+let directLink=`${base}#ex=${encodeURIComponent(linkNumbers)}`;
+const b=featureOn("branding")?getBrand():{};
+const hasBrand=!!(b.name||b.clinic||b.phone||b.logo);
+const win=window.open("about:blank","_blank");
+if(hasBrand||list.some(e=>e.private)||(featureOn("dosage")&&list.some(e=>{const d=dosage.get(e.id)||{};return d.sets||d.reps||d.hold||d.freq;}))){
+try{const id=await createShare(list,b);directLink=`${base}#s=${id}${patient?"&n="+encodeURIComponent(patient):""}`;}
+catch(e){console.warn("Share link:",e);}
+}
+let text=`برنامج التمارين${patient?` لـ ${patient}`:""}\n`;
+if(b.clinic||b.name)text+=`من ${[b.clinic,b.name].filter(Boolean).join(" — ")}\n`;
+if(b.phone)text+=`📞 ${b.phone}\n`;
+text+=`\nلمشاهدة الصور والفيديوهات افتح اللينك ده:\n${directLink}\n\n`;
 list.forEach((e,i)=>{
 const dose=doseText(e.id,true);
 text+=`${i+1} - ${e.name}\n${dose?`الجرعة: ${dose}\n`:""}${e.description}\n\n`;
 });
-if(featureOn("branding")){const b=getBrand(),sig=[b.name,b.clinic,b.phone].filter(Boolean).join("\n");if(sig)text+=`—\n${sig}`;}
-window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
+const url=`https://wa.me/?text=${encodeURIComponent(text)}`;
+if(win&&!win.closed)win.location.href=url;else window.open(url,"_blank");
+}
+function shrinkLogo(src){return new Promise(r=>{if(!src){r("");return;}const im=new Image();if(!/^data:/.test(src))im.crossOrigin="anonymous";
+im.onload=()=>{try{const max=200,k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(im.width*k));c.height=Math.max(1,Math.round(im.height*k));c.getContext("2d").drawImage(im,0,0,c.width,c.height);r(c.toDataURL("image/png"));}catch(e){r(/^https?:/.test(src)?src:"");}};
+im.onerror=()=>r(/^https?:/.test(src)?src:"");im.src=src;setTimeout(()=>r(""),6000);});}
+async function createShare(list,b){
+const user=await ensureDeviceUser();
+const priv=list.filter(e=>e.private).slice(0,40).map(e=>({n:exerciseNumber(e),name:String(e.name||"").slice(0,200),regions:exerciseRegions(e).slice(0,10),description:String(e.description||"").slice(0,4000),images:(e.images||[]).slice(0,4),video:String(e.video||"").slice(0,500)}));
+const nums=list.filter(e=>!e.private).map(exerciseNumber).slice(0,80);
+const dose={};
+if(featureOn("dosage"))list.forEach(e=>{const d=dosage.get(e.id)||{};if(d.sets||d.reps||d.hold||d.freq)dose[String(exerciseNumber(e))]={sets:String(d.sets||""),reps:String(d.reps||""),hold:String(d.hold||""),freq:String(d.freq||"")};});
+const brand={};
+["name","clinic","phone"].forEach(k=>{if(b[k])brand[k]=String(b[k]).slice(0,120);});
+if(b.logo){const small=await shrinkLogo(driveToImageUrl(b.logo));if(small&&small.length<=80000)brand.logo=small;}
+const ref=await addDoc(collection(db,"shares"),{owner:user.uid,createdAt:serverTimestamp(),nums,priv,dose,brand});
+return ref.id;
 }
 
 /* ---------- Pro: private exercises, my protocols, exercise requests ---------- */
@@ -1376,7 +1423,7 @@ if(directExerciseNumbers){
 document.body.classList.add("direct-mode");
 switchTab("exerciseTab");
 }
-loadSettings().then(async()=>{loadExercises();await refreshPro();if(subsOn()&&/^#pro$/i.test(window.location.hash))openPro();});homeexTrackVisit();
+loadSettings().then(async()=>{await loadShare();loadExercises();await refreshPro();if(subsOn()&&/^#pro$/i.test(window.location.hash))openPro();});homeexTrackVisit();
 
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(e=>console.warn("Service worker registration failed",e)));}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.__hxInstallPrompt=e;});
