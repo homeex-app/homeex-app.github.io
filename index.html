@@ -23,6 +23,7 @@
 :root{--bg:#f6f8fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#2563eb;--primary-dark:#1d4ed8;--border:#e5e7eb;--danger:#dc2626;--success:#059669;--shadow:0 10px 30px rgba(16,24,40,.07);--radius:18px}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
 button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.proto-tiers{display:inline-flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:4px;margin:0 0 14px}.proto-tier{border:0;background:none;padding:8px 18px;border-radius:9px;font-weight:800;color:#667085;cursor:pointer}.proto-tier.active{background:#1e3a8a;color:#fff}.pro-upsell{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:14px 16px;margin-bottom:14px}.pro-upsell b{display:block;font-size:16px;color:#92400e}.pro-upsell span{color:#78350f;font-size:14px}.account{display:grid;gap:12px;margin-top:8px}.acc-sec{border:1px solid var(--border);border-radius:14px;padding:12px 14px;background:#fff;line-height:1.8}.acc-sec h4{margin:0 0 6px;font-size:16px;color:#1e3a8a}.acc-btn{margin-top:8px}.acc-count{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:999px;padding:0 9px;font-size:13px}.acc-days{display:inline-block;background:#dcfce7;color:#166534;border-radius:999px;padding:0 9px;font-size:13px;font-weight:700}.acc-days.warn{background:#fee2e2;color:#b91c1c}
 .private-badge{background:#fef3c7!important;color:#92400e!important}.my-proto-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:6px 0 12px}.my-proto-head h3{margin:0;font-size:19px}.req-item{border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:8px;background:#fff}.req-item b{color:#172033}.req-st{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;margin-inline-start:6px}.req-st.new{background:#eff6ff;color:#1d4ed8}.req-st.done{background:#dcfce7;color:#166534}.app{min-height:100vh}
 header{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;padding:28px 20px 92px;min-height:190px}.header-inner{max-width:1180px;margin:auto;position:relative;z-index:2}.hero-slides{position:absolute;inset:0;z-index:0}.hero-slide{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:0;transition:opacity .8s ease}.hero-slide.active{opacity:1}.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.78),rgba(30,58,138,.58))}.brand{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.brand h1{font-size:28px;margin:0 0 7px}.brand p{margin:0;color:#e2e8f0}
 .install-btn{background:rgba(255,255,255,.92);color:#1e3a8a;border:0;padding:4px 8px;border-radius:7px;font-weight:700;font-size:10.5px;white-space:nowrap;box-shadow:0 2px 6px rgba(0,0,0,.15);cursor:pointer}.install-steps{margin:0;padding:0 0 0 20px;line-height:1.7}.install-steps li{margin:4px 0}.install-ar{direction:rtl;text-align:right;font-family:Tahoma,Arial,sans-serif}.install-ar .install-steps{padding:0 20px 0 0}.install-box{border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-top:12px}.install-box h4{margin:0 0 6px;font-size:15px}.install-sep{border:0;border-top:1px dashed var(--border);margin:10px 0}@media(max-width:700px){.install-btn{font-size:10px;padding:4px 7px}}
@@ -213,6 +214,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <section id="protocolsTab" class="hidden">
 <div class="section-head"><div><h2>Protocols <span class="pro-tag hidden" id="protoProTag">PRO</span></h2><p>Ready-made programs with dosage. One tap → ready to send.</p></div></div>
 <div id="adSlotProto" class="ad-slot" style="display:none"></div>
+<div class="proto-tiers" id="protoTiers"></div>
 <div class="proto-filters" id="protoFilters"></div>
 <div id="myProtoBox"></div>
 <div class="proto-grid" id="templatesList"></div>
@@ -283,13 +285,13 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 
 <div class="modal hidden" id="proModal">
 <div class="modal-card" style="width:min(620px,100%)">
-<div class="modal-head"><h3>⭐ HomeEx Pro</h3><button class="close" data-close="proModal">×</button></div>
+<div class="modal-head"><h3 id="proModalTitle">⭐ HomeEx Pro</h3><button class="close" data-close="proModal">×</button></div>
 <div id="proStatus"></div>
 <div id="proOffer"></div>
-<div class="field" style="margin-top:16px"><label for="proCodeInput">معاك كود؟ اكتبه هنا</label><input id="proCodeInput" placeholder="HX-XXXX-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase"></div>
+<div id="proCodeArea"><div class="field" style="margin-top:16px"><label for="proCodeInput">معاك كود؟ اكتبه هنا</label><input id="proCodeInput" placeholder="HX-XXXX-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase"></div>
 <div class="form-actions"><button class="btn btn-primary" id="proActivateBtn">تفعيل</button></div>
 <div id="proNotice"></div>
-<p class="code-meta" style="margin-top:14px" dir="rtl">الكود بيشتغل على جهاز واحد بس. التجديد بيتم على نفس الكود.</p>
+<p class="code-meta" style="margin-top:14px" dir="rtl">الكود بيشتغل على جهاز واحد بس. التجديد بيتم على نفس الكود.</p></div>
 </div>
 </div>
 
@@ -498,7 +500,7 @@ const showPro=subsOn();
 $("proOpenBtn").classList.toggle("hidden",!showPro);
 $("footerProBtn").classList.toggle("hidden",!showPro);
 $("footerProSep").classList.toggle("hidden",!showPro);
-$("proOpenBtn").textContent=hasPro()?"⭐ Pro ✓":"⭐ Pro";
+$("proOpenBtn").textContent=proActive?"👤 My account":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
 $("homeProBanner").classList.toggle("hidden",!showPro||hasPro());
 $("protoProTag").classList.toggle("hidden",!showPro);
 renderViewAs();
@@ -552,38 +554,49 @@ let protoRegion="";
 function parseTemplateLine(line){
 const parts=line.split("|").map(s=>s.trim());
 let name,region="",desc="",spec;
-if(parts.length>=4)[name,region,desc,spec]=parts;else[name,spec]=parts;
+let tier="";if(parts.length>=4)[name,region,desc,spec,tier]=parts;else[name,spec]=parts;
 const items=String(spec||"").split(/[,;]+/).map(s=>s.trim()).filter(Boolean).map(tok=>{
 const m=tok.match(/^(\d+)(?::\s*(?:(\d+)?x(\d+))?\s*(?:h(\d+))?\s*(?:\/(\d+))?)?$/i);
 return m?{n:Number(m[1]),sets:m[2]||"",reps:m[3]||"",hold:m[4]||"",freq:m[5]||""}:null;}).filter(Boolean);
-return name&&items.length?{name,region,desc,items}:null;
+return name&&items.length?{name,region,desc,items,pro:/^pro$/i.test(String(tier||"").trim())}:null;
 }
 function templateToLine(t){
 const spec=t.items.map(i=>{let d=(i.reps?`${i.sets||""}x${i.reps}`:"")+(i.hold?`h${i.hold}`:"")+(i.freq?`/${i.freq}`:"");return d?`${i.n}:${d}`:String(i.n);}).join(", ");
-return t.region||t.desc?`${t.name} | ${t.region||""} | ${t.desc||""} | ${spec}`:`${t.name} | ${spec}`;
+return t.region||t.desc||t.pro?`${t.name} | ${t.region||""} | ${t.desc||""} | ${spec}${t.pro?" | pro":""}`:`${t.name} | ${spec}`;
 }
 function normalizeTemplate(t){
 if(!t||!t.name)return null;
-if(Array.isArray(t.items))return{name:t.name,region:t.region||"",desc:t.desc||"",items:t.items.filter(i=>i&&i.n)};
+if(Array.isArray(t.items))return{name:t.name,region:t.region||"",desc:t.desc||"",items:t.items.filter(i=>i&&i.n),pro:!!t.pro};
 if(Array.isArray(t.numbers))return{name:t.name,region:"",desc:"",items:t.numbers.map(n=>({n:Number(n)}))};
 return null;
 }
 const DEFAULT_TEMPLATES=DEFAULT_TEMPLATE_LINES.split("\n").map(parseTemplateLine).filter(Boolean);
+let protoTier="free";
 function renderTemplates(){
-const on=featureOn("templates"),locked=featureLocked("templates");
-const showTab=((on||locked)&&TEMPLATES.length>0)||!!proCode();
-renderMyProtocols();
+const mode=FEATURES.templates||"off";
+const ready=mode==="off"?[]:TEMPLATES.map((t,i)=>({t,i,isPro:mode==="pro"||!!t.pro}));
+const freeList=ready.filter(x=>!x.isPro),proList=ready.filter(x=>x.isPro&&(hasPro()||subsOn()));
+const proAvailable=proList.length>0||!!proCode()||subsOn();
+const showTab=freeList.length>0||proAvailable;
 $("protocolsTabBtn").classList.toggle("hidden",!showTab);
 if(!showTab&&!$("protocolsTab").classList.contains("hidden"))switchTab("exerciseTab");
 renderAd();
+if(!freeList.length)protoTier="pro";else if(!proAvailable)protoTier="free";
+$("protoTiers").innerHTML=freeList.length&&proAvailable?`<button class="proto-tier ${protoTier==="free"?"active":""}" data-tier="free">Free</button><button class="proto-tier ${protoTier==="pro"?"active":""}" data-tier="pro">⭐ Pro</button>`:"";
+document.querySelectorAll("[data-tier]").forEach(b=>b.onclick=()=>{protoTier=b.dataset.tier;protoRegion="";renderTemplates();});
+const onPro=protoTier==="pro";
+renderMyProtocols(onPro);
+const list=onPro?proList:freeList;
 $("templatesList").innerHTML="";$("protoFilters").innerHTML="";
-if(!TEMPLATES.length||!(on||locked))return;
-const regions=[...new Set(TEMPLATES.map(t=>t.region).filter(Boolean))];
+if(onPro&&!hasPro()&&subsOn()){$("templatesList").innerHTML=`<div class="pro-upsell" dir="rtl"><b>⭐ بروتوكولات Pro</b><span>بروتوكولات جاهزة للمشتركين، وتقدر كمان تحفظ بروتوكولاتك الخاصة بيك.</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">اعرف أكتر</button></div>`;$("protoUpsellBtn").onclick=openPro;}
+if(!list.length)return;
+const regions=[...new Set(list.map(x=>x.t.region).filter(Boolean))];
 if(protoRegion&&!regions.includes(protoRegion))protoRegion="";
 $("protoFilters").innerHTML=regions.length>1?[["","All"],...regions.map(r=>[r,`${REGION_ICONS[r]||"•"} ${r}`])].map(([v,l])=>`<button class="proto-filter ${protoRegion===v?"active":""}" data-proto-region="${escapeHtml(v)}">${escapeHtml(l)}</button>`).join(""):"";
 document.querySelectorAll("[data-proto-region]").forEach(b=>b.onclick=()=>{protoRegion=b.dataset.protoRegion;renderTemplates();});
 const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
-$("templatesList").innerHTML=TEMPLATES.map((t,i)=>({t,i})).filter(({t})=>!protoRegion||t.region===protoRegion).map(({t,i})=>{
+$("templatesList").insertAdjacentHTML("beforeend",list.filter(({t})=>!protoRegion||t.region===protoRegion).map(({t,i,isPro})=>{
+const locked=isPro&&!hasPro();
 const names=t.items.map(it=>byNum.get(it.n)?.name).filter(Boolean);
 const daily=Math.max(0,...t.items.map(it=>Number(it.freq)||1));
 return`<div class="proto-card ${locked?"locked":""}">
@@ -592,9 +605,9 @@ ${locked?`<span class="proto-lock">🔒 Pro</span>`:""}
 ${t.desc?`<p class="proto-desc" dir="rtl">${escapeHtml(t.desc)}</p>`:""}
 <div class="proto-meta"><span>${t.items.length} exercises</span>${t.items.some(it=>it.reps||it.hold)?`<span>Dosage included</span>`:""}${daily>1?`<span>up to ${daily}×/day</span>`:""}</div>
 <div class="proto-ex">${escapeHtml(names.slice(0,4).join(" • "))}${names.length>4?` +${names.length-4}`:""}</div>
-<button class="btn ${locked?"btn-outline":"btn-primary"}" data-tpl="${i}">${locked?"Unlock with Pro":"Use protocol →"}</button>
-</div>`;}).join("");
-document.querySelectorAll("[data-tpl]").forEach(b=>b.onclick=()=>locked?openPro():applyTemplate(TEMPLATES[Number(b.dataset.tpl)]));
+<button class="btn ${locked?"btn-outline":"btn-primary"}" data-tpl="${i}" data-locked="${locked?1:""}">${locked?"Unlock with Pro":"Use protocol →"}</button>
+</div>`;}).join(""));
+document.querySelectorAll("[data-tpl]").forEach(b=>b.onclick=()=>b.dataset.locked?openPro():applyTemplate(TEMPLATES[Number(b.dataset.tpl)]));
 }
 function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600);}
 function applyTemplate(t){
@@ -620,7 +633,7 @@ return`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، �
 }
 function renderOffer(){
 const box=$("proOffer");
-if(proActive){box.innerHTML="";return;}
+if(proActive){renderAccount();return;}
 const p=PRO_PAGE,plans=(p.plans||[]).filter(x=>x&&x.name);
 box.innerHTML=`<div dir="rtl">
 <h3 style="margin:6px 0 0;font-size:20px">${escapeHtml(p.headline||"")}</h3>
@@ -632,8 +645,10 @@ ${!plans.length&&proWaLink("")?`<a class="btn btn-green" href="${escapeHtml(proW
 </div>`;
 }
 function openPro(){
-$("proStatus").innerHTML=proStatusHtml();renderOffer();$("proNotice").innerHTML="";
+$("proModalTitle").textContent=proActive?"👤 My account · حسابي":"⭐ HomeEx Pro";
+$("proStatus").innerHTML=proActive?"":proStatusHtml();renderOffer();$("proNotice").innerHTML="";
 $("proCodeInput").value=lsGet(PRO_KEY)||"";
+$("proCodeArea").classList.toggle("hidden",!!proActive);
 $("proModal").classList.remove("hidden");
 }
 async function ensureDeviceUser(){
@@ -777,7 +792,7 @@ const modes=k=>["subscriptions","exAd","protoAd"].includes(k)?[["off","مقفو�
 const rows=[["subscriptions","نظام الاشتراكات (زرار Pro + تفعيل الأكواد)"],["templates","البروتوكولات الجاهزة"],["dosage","Sets / Reps / Hold لكل تمرين"],["branding","بيانات الأخصائي والعيادة على الـ PDF والواتساب"],["exAd","صورة الإعلان في صفحة التمارين"],["protoAd","صورة الإعلان في تاب البروتوكولات"]];
 return`<div class="settings-card"><h3>المزايا (Features)</h3><p>لو كله "مقفول" الموقع بيفضل زي ما هو بالظبط. "للمشتركين بس" محتاجة نظام الاشتراكات يبقى شغال. انت كأدمن بتشوف كل المزايا اللي مش مقفولة.</p>
 ${rows.map(([k,l])=>`<div class="feature-row"><span>${l}</span><select data-feature="${k}">${modes(k).map(([v,t])=>`<option value="${v}" ${FEATURES[k]===v?"selected":""}>${t}</option>`).join("")}</select></div>`).join("")}
-<div class="field" style="margin-top:14px"><label>البروتوكولات (${TEMPLATES.length}) — سطر لكل بروتوكول</label><textarea id="templatesInput" class="settings-textarea" style="min-height:260px;font-family:monospace;font-size:12px" dir="ltr">${escapeHtml(TEMPLATES.map(templateToLine).join("\n"))}</textarea><small style="display:block;margin-top:6px;color:#667085;line-height:1.7">الشكل: <code>الاسم | المنطقة | الوصف | التمارين</code><br>التمارين: رقم التمرين وبعده الجرعة. مثلاً <code>15:3x10h5/2</code> معناها تمرين 15، 3 مجموعات × 10، ثبات 5 ثواني، مرتين في اليوم. و<code>13:x3h30</code> معناها 3 مرات ثبات 30 ثانية. و<code>47</code> لوحده معناها من غير جرعة.<br>لو مسحت كل السطور وحفظت، البروتوكولات الجاهزة الأصلية بترجع.</small></div>
+<div class="field" style="margin-top:14px"><label>البروتوكولات (${TEMPLATES.length}) — سطر لكل بروتوكول</label><textarea id="templatesInput" class="settings-textarea" style="min-height:260px;font-family:monospace;font-size:12px" dir="ltr">${escapeHtml(TEMPLATES.map(templateToLine).join("\n"))}</textarea><small style="display:block;margin-top:6px;color:#667085;line-height:1.7">الشكل: <code>الاسم | المنطقة | الوصف | التمارين</code><br>التمارين: رقم التمرين وبعده الجرعة. مثلاً <code>15:3x10h5/2</code> معناها تمرين 15، 3 مجموعات × 10، ثبات 5 ثواني، مرتين في اليوم. و<code>13:x3h30</code> معناها 3 مرات ثبات 30 ثانية. و<code>47</code> لوحده معناها من غير جرعة.<br>⭐ لو عايز البروتوكول يظهر في تاب <b>Pro</b> للمشتركين بس، زوّد في آخر السطر <code>| pro</code>. من غيرها بيظهر في تاب <b>Free</b> للكل.<br>لو مسحت كل السطور وحفظت، البروتوكولات الجاهزة الأصلية بترجع.</small></div>
 <div style="margin-top:12px"><button class="btn btn-primary" id="saveFeaturesBtn">حفظ المزايا</button></div><div id="featuresNotice"></div></div>`;
 }
 function proPageCardHtml(){
@@ -1219,9 +1234,9 @@ const list=Array.isArray(codesCache)?codesCache.filter(c=>c.active!==false):[];
 sel.innerHTML=`<option value="">Everyone · للكل</option>`+list.map(c=>`<option value="${escapeHtml(c.id)}">🔒 ${escapeHtml(c.name||c.id)}${c.phone?" – "+escapeHtml(c.phone):""}</option>`).join("");
 if([...sel.options].some(o=>o.value===cur))sel.value=cur;
 }
-let proExtrasBusy=null;
+let proExtrasBusy=null,proExtrasAgain=false;
 async function loadProExtras(){
-if(proExtrasBusy)return proExtrasBusy;
+if(proExtrasBusy){proExtrasAgain=true;return proExtrasBusy;}
 proExtrasBusy=(async()=>{
 let priv=[];const code=proCode();
 try{
@@ -1236,16 +1251,16 @@ if(had||priv.length){renderExercises();renderSend();}
 renderTemplates();updateProButtons();
 if(isAdmin&&!$("adminTab").classList.contains("hidden"))renderAdmin();
 })();
-try{await proExtrasBusy;}finally{proExtrasBusy=null;}
+try{await proExtrasBusy;}finally{proExtrasBusy=null;if(proExtrasAgain){proExtrasAgain=false;loadProExtras();}}
 }
 function updateProButtons(){
 const code=proCode();
 $("requestExBtn").classList.toggle("hidden",!code);
 $("saveProtoBtn").classList.toggle("hidden",!code);
 }
-function renderMyProtocols(){
+function renderMyProtocols(show=true){
 const box=$("myProtoBox");if(!box)return;
-if(!proCode()){box.innerHTML="";return;}
+if(!show||!proCode()){box.innerHTML="";return;}
 const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
 box.innerHTML=`<div class="my-proto-head"><div><h3>⭐ My protocols <span style="font-size:14px;color:#667085" dir="rtl">· بروتوكولاتي</span></h3><div class="code-meta" dir="rtl">خاصة بيك إنت بس ومتحفوظة على كود اشتراكك. اختار تمارين وجرعات، وبعدين من Send اضغط "Save as my protocol".</div></div></div>
 ${myProtocols.length?`<div class="proto-grid" style="margin-bottom:22px">${myProtocols.map(t=>{const names=(t.items||[]).map(it=>byNum.get(it.n)?.name).filter(Boolean);return`<div class="proto-card"><div class="proto-top"><div class="proto-icon">⭐</div><div><div class="proto-name">${escapeHtml(t.name)}</div><div class="proto-region">My protocol</div></div></div>
@@ -1271,9 +1286,46 @@ const ref=await addDoc(collection(db,"codes",code,"protocols"),{name,items,creat
 await loadProExtras();
 }catch(e){console.error(e);alert("Could not save: "+e.message);}
 }
-async function openRequestModal(){
+
+async function myRequestsHtml(){
+const code=proCode();if(!code)return"—";
+try{const snap=await getDocs(collection(db,"codes",code,"hxRequests"));const rows=snap.docs.map(d=>d.data()).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
+return rows.length?rows.map(r=>`<div class="req-item"><b>${escapeHtml(r.name||"")}</b><span class="req-st ${r.status==="done"?"done":"new"}">${r.status==="done"?`✓ Added${r.exerciseNumber?" #"+r.exerciseNumber:""}`:"Sent"}</span>${r.details?`<div dir="auto" style="margin-top:4px;white-space:pre-line">${escapeHtml(r.details)}</div>`:""}</div>`).join(""):`<div class="code-meta">لسه مبعتش طلبات.</div>`;}
+catch(e){console.warn(e);return"—";}
+}
+function renderAccount(){
+const box=$("proOffer"),code=proCode();if(!code||!proInfo){box.innerHTML="";return;}
+const days=Math.max(0,Math.ceil((proInfo.expiresAt-Date.now())/864e5));
+const n=waPhone(PRO_PAGE.whatsapp),renew=n?`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، عايز أجدد اشتراك HomeEx Pro — الكود: ${code}`)}`:"";
+const b=getBrand(),priv=sortedExercises(exercises.filter(e=>e.private));
+const brandOn=featureOn("branding");
+box.innerHTML=`<div dir="rtl" class="account">
+<div class="acc-sec"><h4>👤 اشتراكي</h4>
+<div>الاسم: <b>${escapeHtml(proInfo.name||"—")}</b></div>
+<div>الكود: <b dir="ltr">${escapeHtml(code)}</b></div>
+<div>صالح حتى: <b>${fmtDate(proInfo.expiresAt)}</b> <span class="acc-days ${days<=7?"warn":""}">فاضل ${days} يوم</span></div>
+${renew?`<a class="btn btn-green acc-btn" href="${escapeHtml(renew)}" target="_blank" rel="noopener">🔄 جدّد الاشتراك</a>`:""}</div>
+${brandOn?`<div class="acc-sec"><h4>🏥 بيانات العيادة</h4>
+<div>${[b.clinic,b.name,b.phone].filter(Boolean).map(escapeHtml).join(" • ")||`<span class="code-meta">لسه مضفتش بيانات عيادتك.</span>`}</div>
+<div class="code-meta">بتظهر في رسالة الواتساب، ولينك المريض، والـ PDF.</div>
+<button class="btn btn-outline acc-btn" type="button" id="accBrandBtn">✏️ تعديل بيانات العيادة</button></div>`:""}
+<div class="acc-sec"><h4>⭐ بروتوكولاتي <span class="acc-count">${myProtocols.length}</span></h4>
+<div>${myProtocols.length?myProtocols.map(t=>escapeHtml(t.name)).join(" • "):`<span class="code-meta">لسه محفظتش بروتوكولات.</span>`}</div>
+<button class="btn btn-outline acc-btn" type="button" id="accProtoBtn">افتح بروتوكولاتي</button></div>
+<div class="acc-sec"><h4>🔒 تماريني الخاصة <span class="acc-count">${priv.length}</span></h4>
+<div>${priv.length?priv.map(e=>`#${exerciseNumber(e)} ${escapeHtml(e.name)}`).join("<br>"):`<span class="code-meta">التمارين اللي بنضيفها مخصوص ليك هتظهر هنا.</span>`}</div></div>
+<div class="acc-sec"><h4>📩 طلباتي</h4><div id="accReqs" class="code-meta">Loading…</div>
+<button class="btn btn-primary acc-btn" type="button" id="accReqBtn">➕ اطلب تمرين</button></div>
+</div>`;
+const close=()=>$("proModal").classList.add("hidden");
+if($("accBrandBtn"))$("accBrandBtn").onclick=()=>{close();switchTab("sendTab");if($("brandForm").classList.contains("hidden"))$("brandToggleBtn").click();$("brandBox").scrollIntoView({behavior:"smooth",block:"center"});};
+$("accProtoBtn").onclick=()=>{close();protoTier="pro";switchTab("protocolsTab");renderTemplates();window.scrollTo({top:0,behavior:"smooth"});};
+$("accReqBtn").onclick=()=>{close();openRequestModal();};
+myRequestsHtml().then(h=>{if($("accReqs"))$("accReqs").innerHTML=h;});
+}
+async function openRequestModal(keep){
 const code=proCode();if(!code)return;
-$("reqNotice").innerHTML="";$("requestModal").classList.remove("hidden");$("reqList").textContent="Loading…";
+if(!keep)$("reqNotice").innerHTML="";$("requestModal").classList.remove("hidden");$("reqList").textContent="Loading…";
 try{const snap=await getDocs(collection(db,"codes",code,"hxRequests"));const rows=snap.docs.map(d=>d.data()).sort((a,b)=>(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));
 $("reqList").innerHTML=rows.length?rows.map(r=>`<div class="req-item"><b>${escapeHtml(r.name||"")}</b><span class="req-st ${r.status==="done"?"done":"new"}">${r.status==="done"?`✓ Added${r.exerciseNumber?" #"+r.exerciseNumber:""}`:"Sent"}</span>${r.details?`<div dir="auto" style="margin-top:4px;white-space:pre-line">${escapeHtml(r.details)}</div>`:""}</div>`).join(""):"—";}
 catch(e){$("reqList").textContent="—";console.warn(e);}
@@ -1285,7 +1337,7 @@ if(!name){$("reqNotice").innerHTML=`<div class="notice error" dir="rtl">اكتب
 const btn=$("reqSendBtn");btn.disabled=true;
 try{await addDoc(collection(db,"codes",code,"hxRequests"),{name:name.slice(0,120),details:details.slice(0,1500),image:image.slice(0,500),video:video.slice(0,500),status:"new",createdAt:serverTimestamp()});
 $("reqName").value="";$("reqDetails").value="";$("reqImage").value="";$("reqVideo").value="";
-$("reqNotice").innerHTML=`<div class="notice ok" dir="rtl">✓ الطلب اتبعت. هتلاقيه هنا لما يتضاف.</div>`;openRequestModal();}
+$("reqNotice").innerHTML=`<div class="notice ok" dir="rtl">✓ الطلب اتبعت. هتلاقيه هنا لما يتضاف.</div>`;openRequestModal(true);}
 catch(e){console.error(e);$("reqNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
 finally{btn.disabled=false;}
 }
