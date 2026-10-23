@@ -504,7 +504,7 @@ const showPro=subsOn();
 $("proOpenBtn").classList.toggle("hidden",!showPro);
 $("footerProBtn").classList.toggle("hidden",!showPro);
 $("footerProSep").classList.toggle("hidden",!showPro);
-$("proOpenBtn").textContent=proActive?"👤 My account":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
+$("proOpenBtn").textContent=proActive?"👤 حسابي":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
 $("homeProBanner").classList.toggle("hidden",!showPro||hasPro());
 $("protoProTag").classList.toggle("hidden",!showPro);
 renderViewAs();
@@ -646,6 +646,7 @@ box.innerHTML=`<div dir="rtl">
 ${plans.length?`<div class="plans">${plans.map(x=>{const l=proWaLink(x.name);return`<div class="plan ${x.best?"best":""}">${x.best?`<small style="color:#b45309;font-weight:800">⭐ الأوفر</small>`:""}<b>${escapeHtml(x.name)}</b><div class="price">${escapeHtml(x.price||"")}</div><small>${escapeHtml(x.note||"")}</small>${l?`<a class="btn btn-green" href="${escapeHtml(l)}" target="_blank" rel="noopener">اشترك</a>`:""}</div>`;}).join("")}</div>`:""}
 ${!plans.length&&proWaLink("")?`<a class="btn btn-green" href="${escapeHtml(proWaLink(""))}" target="_blank" rel="noopener">اشترك على واتساب</a>`:""}
 ${clinicOfferHtml()}
+<p class="code-meta">👤 بعد التفعيل، زرار ⭐ Pro اللي فوق بيتحول لـ <b>"👤 حسابي"</b>: فيه اشتراكك، وبروتوكولاتك، وتمارينك الخاصة، وطلباتك، وزرار "اطلب تمرين".</p>
 <p class="code-meta">الدفع بـ InstaPay أو فودافون كاش، وبعدها بيوصلك كود التفعيل على الواتساب.</p>
 </div>`;
 }
@@ -778,7 +779,7 @@ box.querySelectorAll("[data-delcode]").forEach(b=>b.onclick=()=>{if(confirm(`ح�
 function clinicOfferHtml(){
 const n=waPhone(PRO_PAGE.whatsapp),link=n?`https://wa.me/${n}?text=${encodeURIComponent("السلام عليكم، عايز أعرف سعر باقة العيادات في HomeEx Pro")}`:"";
 return`<div class="clinic-offer"><b>🏥 باقة العيادات والمراكز</b>
-<ul class="offer-list"><li>✅ كود لكل دكتور في العيادة، بعدد الدكاترة اللي تحتاجه</li><li>✅ نفس اللوجو واسم العيادة ورقمها عند كل الدكاترة، على الواتساب ولينك المريض والـ PDF</li><li>✅ بيانات العيادة محفوظة عندنا، مش بتضيع لو حد غيّر موبايله</li><li>✅ كل مميزات Pro لكل دكتور</li></ul>
+<ul class="offer-list"><li>✅ كود لكل دكتور في العيادة، بعدد الدكاترة اللي تحتاجه</li><li>✅ نفس اللوجو واسم العيادة ورقمها عند كل الدكاترة، على الواتساب ولينك المريض والـ PDF</li><li>✅ بيانات العيادة محفوظة عندنا، مش بتضيع لو حد غيّر موبايله</li><li>✅ كل دكتور يعمل بروتوكولاته الخاصة، ويطلب تمارين وفيديوهات مخصوصة تظهر له ولمرضاه بس</li><li>✅ كل مميزات Pro لكل دكتور</li></ul>
 ${link?`<a class="btn btn-dark" href="${escapeHtml(link)}" target="_blank" rel="noopener">اسأل عن السعر</a>`:`<div class="code-meta">كلمنا عشان تعرف السعر.</div>`}</div>`;
 }
 let clinicLogoDraft="";
