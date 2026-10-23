@@ -23,6 +23,7 @@
 :root{--bg:#f6f8fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#2563eb;--primary-dark:#1d4ed8;--border:#e5e7eb;--danger:#dc2626;--success:#059669;--shadow:0 10px 30px rgba(16,24,40,.07);--radius:18px}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
 button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.clinic-offer{border:1px solid #c7d2fe;background:#eef2ff;border-radius:14px;padding:14px 16px;margin:14px 0}.clinic-offer>b{font-size:17px;color:#1e3a8a}.clinic-offer .offer-list{margin:8px 0 12px}
 .proto-tiers{display:inline-flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:4px;margin:0 0 14px}.proto-tier{border:0;background:none;padding:8px 18px;border-radius:9px;font-weight:800;color:#667085;cursor:pointer}.proto-tier.active{background:#1e3a8a;color:#fff}.pro-upsell{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:14px 16px;margin-bottom:14px}.pro-upsell b{display:block;font-size:16px;color:#92400e}.pro-upsell span{color:#78350f;font-size:14px}.account{display:grid;gap:12px;margin-top:8px}.acc-sec{border:1px solid var(--border);border-radius:14px;padding:12px 14px;background:#fff;line-height:1.8}.acc-sec h4{margin:0 0 6px;font-size:16px;color:#1e3a8a}.acc-btn{margin-top:8px}.acc-count{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:999px;padding:0 9px;font-size:13px}.acc-days{display:inline-block;background:#dcfce7;color:#166534;border-radius:999px;padding:0 9px;font-size:13px;font-weight:700}.acc-days.warn{background:#fee2e2;color:#b91c1c}
 .private-badge{background:#fef3c7!important;color:#92400e!important}.my-proto-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:6px 0 12px}.my-proto-head h3{margin:0;font-size:19px}.req-item{border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:8px;background:#fff}.req-item b{color:#172033}.req-st{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;margin-inline-start:6px}.req-st.new{background:#eff6ff;color:#1d4ed8}.req-st.done{background:#dcfce7;color:#166534}.app{min-height:100vh}
 header{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;padding:28px 20px 92px;min-height:190px}.header-inner{max-width:1180px;margin:auto;position:relative;z-index:2}.hero-slides{position:absolute;inset:0;z-index:0}.hero-slide{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:0;transition:opacity .8s ease}.hero-slide.active{opacity:1}.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.78),rgba(30,58,138,.58))}.brand{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.brand h1{font-size:28px;margin:0 0 7px}.brand p{margin:0;color:#e2e8f0}
@@ -238,6 +239,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div style="display:flex;flex-direction:column;gap:6px"><label class="btn btn-outline" style="text-align:center;cursor:pointer">📷 ارفع اللوجو<input type="file" id="brandLogoFile" accept="image/*" hidden></label><button type="button" class="btn btn-danger hidden" id="brandLogoRemove">شيل اللوجو</button></div></div>
 <small style="color:#667085">صورة من موبايلك أو جهازك. بنصغّرها تلقائياً.</small></div>
 </div>
+<div id="brandClinicNote" class="notice hidden" style="margin-top:10px">🏥 اسم العيادة والتليفون واللوجو ثابتين من باقة العيادة، ونفسهم عند كل دكاترة العيادة. تقدر تغيّر اسمك إنت بس.</div>
 <div class="form-actions"><button class="btn btn-primary" type="button" id="brandSaveBtn">حفظ</button></div>
 <div class="code-meta">البيانات بتتحفظ على الجهاز ده، وبتظهر أوتوماتيك على كل PDF ورسالة واتساب.</div>
 </div>
@@ -494,7 +496,9 @@ function featureOn(k){const m=FEATURES[k]||"off";if(m==="off")return false;if(m=
 function featureLocked(k){return FEATURES[k]==="pro"&&FEATURES.subscriptions==="on"&&!featureOn(k);}
 function subsOn(){return FEATURES.subscriptions==="on";}
 function fmtDate(ms){return ms?new Date(ms).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}):"—";}
-function getBrand(){try{return JSON.parse(lsGet(BRAND_KEY)||"{}")||{};}catch(e){return{};}}
+function getBrand(){let b={};try{b=JSON.parse(lsGet(BRAND_KEY)||"{}")||{};}catch(e){b={};}
+const c=proActive&&proInfo&&proInfo.clinic;if(c&&c.name)return{...b,clinic:c.name,phone:c.phone||b.phone||"",logo:c.logo||b.logo||""};return b;}
+function clinicLocked(){return!!(proActive&&proInfo&&proInfo.clinic&&proInfo.clinic.name);}
 function applyFeatures(){
 const showPro=subsOn();
 $("proOpenBtn").classList.toggle("hidden",!showPro);
@@ -641,6 +645,7 @@ box.innerHTML=`<div dir="rtl">
 <ul class="offer-list">${(p.features||[]).filter(Boolean).map(f=>`<li>✅ ${escapeHtml(f)}</li>`).join("")}</ul>
 ${plans.length?`<div class="plans">${plans.map(x=>{const l=proWaLink(x.name);return`<div class="plan ${x.best?"best":""}">${x.best?`<small style="color:#b45309;font-weight:800">⭐ الأوفر</small>`:""}<b>${escapeHtml(x.name)}</b><div class="price">${escapeHtml(x.price||"")}</div><small>${escapeHtml(x.note||"")}</small>${l?`<a class="btn btn-green" href="${escapeHtml(l)}" target="_blank" rel="noopener">اشترك</a>`:""}</div>`;}).join("")}</div>`:""}
 ${!plans.length&&proWaLink("")?`<a class="btn btn-green" href="${escapeHtml(proWaLink(""))}" target="_blank" rel="noopener">اشترك على واتساب</a>`:""}
+${clinicOfferHtml()}
 <p class="code-meta">الدفع بـ InstaPay أو فودافون كاش، وبعدها بيوصلك كود التفعيل على الواتساب.</p>
 </div>`;
 }
@@ -661,7 +666,7 @@ const exp=d.expiresAt?.toMillis?.()||0;
 if(d.active===false)return{status:"stopped",expiresAt:exp};
 if(d.deviceUid&&d.deviceUid!==uid)return{status:"other",expiresAt:exp};
 if(exp<=Date.now())return{status:"expired",expiresAt:exp};
-return{status:"active",expiresAt:exp,name:d.name};
+return{status:"active",expiresAt:exp,name:d.name,clinic:d.clinicId?{id:d.clinicId,name:d.clinicName||"",phone:d.clinicPhone||"",logo:d.clinicLogo||""}:null};
 }
 async function refreshPro(){
 proActive=false;proInfo=null;
@@ -725,6 +730,7 @@ if(!c.deviceUid)return"pending";
 return c.expiresAt-Date.now()<=7*864e5?"expiring":"active";
 }
 function renderCodes(){
+renderClinics();
 const box=$("codesBox");if(!box)return;
 if(!codesCache){box.innerHTML=`<div class="code-meta">Loading…</div>`;return;}
 if(codesCache.error){box.innerHTML=`<div class="notice error">تعذر تحميل الأكواد: ${escapeHtml(codesCache.error)}<br>غالباً قواعد Firestore لسه محتاجة تتحدث (collection: codes).</div>`;return;}
@@ -748,7 +754,7 @@ box.innerHTML=list.map(c=>{
 const expired=c.expiresAt<=Date.now(),days=Math.ceil((c.expiresAt-Date.now())/864e5);
 const st=codeStatus(c);
 const pill=st==="stopped"?`<span class="pill bad">موقوف</span>`:st==="expired"?`<span class="pill bad">منتهي</span>`:st==="pending"?`<span class="pill wait">لم يُفعّل بعد • ${days} يوم</span>`:st==="expiring"?`<span class="pill warn">بيخلص بعد ${days} يوم</span>`:`<span class="pill ok">شغال • ${days} يوم</span>`;
-return`<div class="code-row"><div><code>${escapeHtml(c.id)}</code> ${pill}<div class="code-meta">${escapeHtml(c.name||"—")}${c.phone?" • "+escapeHtml(c.phone):""} • ينتهي ${fmtDate(c.expiresAt)}${c.deviceUid?" • مربوط بجهاز":""}</div></div>
+return`<div class="code-row"><div><code>${escapeHtml(c.id)}</code> ${pill}<div class="code-meta">${c.clinicId?`🏥 ${escapeHtml(c.clinicName||"")} • `:""}${escapeHtml(c.name||"—")}${c.phone?" • "+escapeHtml(c.phone):""} • ينتهي ${fmtDate(c.expiresAt)}${c.deviceUid?" • مربوط بجهاز":""}</div></div>
 <div class="code-actions">
 <select data-renew-len="${escapeHtml(c.id)}" class="btn btn-outline"><option value="1">شهر</option><option value="3">3 شهور</option><option value="6">6 شهور</option><option value="12">سنة</option></select>
 <button class="btn btn-primary" data-renew="${escapeHtml(c.id)}">تجديد</button>
@@ -766,6 +772,79 @@ box.querySelectorAll("[data-reset]").forEach(b=>b.onclick=()=>{if(confirm("فك 
 box.querySelectorAll("[data-toggle]").forEach(b=>b.onclick=()=>{const c=find(b.dataset.toggle);act(()=>updateDoc(doc(db,"codes",c.id),{active:c.active===false}));});
 box.querySelectorAll("[data-wa]").forEach(b=>b.onclick=()=>{const c=find(b.dataset.wa);window.open(`https://wa.me/${waPhone(c.phone)}?text=${encodeURIComponent(codeMessage(c))}`,"_blank");});
 box.querySelectorAll("[data-delcode]").forEach(b=>b.onclick=()=>{if(confirm(`حذف الكود ${b.dataset.delcode} نهائياً؟`))act(()=>deleteDoc(doc(db,"codes",b.dataset.delcode)));});
+}
+
+/* ---------- Clinic packages: one clinic, several doctor codes, shared name/phone/logo ---------- */
+function clinicOfferHtml(){
+const n=waPhone(PRO_PAGE.whatsapp),link=n?`https://wa.me/${n}?text=${encodeURIComponent("السلام عليكم، عايز أعرف سعر باقة العيادات في HomeEx Pro")}`:"";
+return`<div class="clinic-offer"><b>🏥 باقة العيادات والمراكز</b>
+<ul class="offer-list"><li>✅ كود لكل دكتور في العيادة، بعدد الدكاترة اللي تحتاجه</li><li>✅ نفس اللوجو واسم العيادة ورقمها عند كل الدكاترة، على الواتساب ولينك المريض والـ PDF</li><li>✅ بيانات العيادة محفوظة عندنا، مش بتضيع لو حد غيّر موبايله</li><li>✅ كل مميزات Pro لكل دكتور</li></ul>
+${link?`<a class="btn btn-dark" href="${escapeHtml(link)}" target="_blank" rel="noopener">اسأل عن السعر</a>`:`<div class="code-meta">كلمنا عشان تعرف السعر.</div>`}</div>`;
+}
+let clinicLogoDraft="";
+function pickClinicLogo(e){const f=e.target.files[0];e.target.value="";if(!f)return;const img=new Image(),url=URL.createObjectURL(f);
+img.onload=()=>{const max=320,k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);clinicLogoDraft=c.toDataURL("image/png");$("clinicLogoPreview").style.backgroundImage=`url("${clinicLogoDraft}")`;$("clinicLogoPreview").textContent="";};
+img.onerror=()=>{URL.revokeObjectURL(url);alert("مقدرناش نقرا الصورة دي.");};img.src=url;}
+function clinicsCardHtml(){
+return`<div class="settings-card"><h3>🏥 باقات العيادات</h3><p>اعمل باقة لعيادة: كود لكل دكتور، وكلهم بنفس اسم العيادة والتليفون واللوجو. التجديد بيمد كل أكواد العيادة مرة واحدة.</p>
+<div class="form-grid"><div class="field"><label>اسم العيادة / المركز</label><input id="clinicName" placeholder="مثلاً: مركز الشفاء للعلاج الطبيعي"></div>
+<div class="field"><label>تليفون العيادة (بيظهر للمرضى)</label><input id="clinicPhone" inputmode="tel" placeholder="01xxxxxxxxx"></div>
+<div class="field"><label>واتساب المدير (لإرسال الأكواد)</label><input id="clinicManager" inputmode="tel" placeholder="01xxxxxxxxx"></div>
+<div class="field"><label>عدد الدكاترة</label><input id="clinicSeats" type="number" min="1" max="50" value="3"></div>
+<div class="field"><label>المدة</label><select id="clinicLen"><option value="1">شهر</option><option value="3">3 شهور</option><option value="6">6 شهور</option><option value="12" selected>سنة</option></select></div>
+<div class="field"><label>لوجو العيادة</label><div class="logo-pick"><div class="logo-preview" id="clinicLogoPreview">لا يوجد</div><label class="btn btn-outline" style="cursor:pointer">📷 ارفع اللوجو<input type="file" id="clinicLogoFile" accept="image/*" hidden></label></div></div>
+<div class="field" style="justify-content:end"><button class="btn btn-primary" id="createClinicBtn">+ إنشاء باقة عيادة</button></div></div>
+<div id="clinicNotice"></div><div id="clinicsBox" style="display:grid;gap:8px;margin-top:14px"></div></div>`;
+}
+function clinicGroups(){
+const g=new Map();(Array.isArray(codesCache)?codesCache:[]).filter(c=>c.clinicId).forEach(c=>{if(!g.has(c.clinicId))g.set(c.clinicId,[]);g.get(c.clinicId).push(c);});
+return[...g.entries()].map(([id,codes])=>({id,codes,name:codes[0].clinicName||"",phone:codes[0].clinicPhone||"",manager:codes[0].phone||"",logo:codes[0].clinicLogo||"",expiresAt:Math.min(...codes.map(c=>c.expiresAt))}));
+}
+function clinicMessage(cl){
+const site=window.location.href.split("#")[0].split("?")[0];
+return`باقة العيادات – HomeEx Pro 🏥\n\nالعيادة: ${cl.name}\nعدد الدكاترة: ${cl.codes.length}\nصالحة حتى: ${fmtDate(cl.expiresAt)}\n\nكود لكل دكتور (كل كود بيشتغل على موبايل واحد):\n${cl.codes.map((c,i)=>`${i+1}) ${c.id}`).join("\n")}\n\nكل دكتور يفتح الموقع ${site}\nويضغط على زرار Pro ويكتب الكود بتاعه.`;
+}
+function renderClinics(){
+const box=$("clinicsBox");if(!box)return;
+const list=clinicGroups();
+if(!list.length){box.innerHTML=`<div class="empty">لسه مفيش باقات عيادات.</div>`;return;}
+box.innerHTML=list.map(cl=>{const on=cl.codes.filter(c=>c.deviceUid).length,days=Math.ceil((cl.expiresAt-Date.now())/864e5);
+return`<div class="code-row"><div style="display:flex;gap:10px;align-items:center">${cl.logo?`<img src="${escapeHtml(cl.logo)}" alt="" style="width:44px;height:44px;object-fit:contain;border-radius:8px;border:1px solid #e5e7eb;background:#fff">`:""}<div><b>🏥 ${escapeHtml(cl.name)}</b> <span class="pill ${days<=0?"bad":days<=7?"warn":"ok"}">${days<=0?"منتهية":`${days} يوم`}</span>
+<div class="code-meta">${cl.codes.length} دكاترة • ${on} مفعّلين • ينتهي ${fmtDate(cl.expiresAt)}${cl.phone?" • 📞 "+escapeHtml(cl.phone):""}</div></div></div>
+<div class="code-actions">
+<select data-clinic-len="${escapeHtml(cl.id)}" class="btn btn-outline"><option value="1">شهر</option><option value="3">3 شهور</option><option value="6">6 شهور</option><option value="12" selected>سنة</option></select>
+<button class="btn btn-primary" data-clinic-renew="${escapeHtml(cl.id)}">تجديد الكل</button>
+<button class="btn btn-outline" data-clinic-add="${escapeHtml(cl.id)}">➕ دكتور</button>
+<button class="btn btn-green" data-clinic-wa="${escapeHtml(cl.id)}">واتساب للمدير</button>
+<button class="btn btn-danger" data-clinic-del="${escapeHtml(cl.id)}">حذف الباقة</button>
+</div></div>`;}).join("");
+const find=id=>list.find(c=>c.id===id);
+const act=async(fn)=>{try{await fn();await loadCodes();}catch(e){alert(e.message);}};
+box.querySelectorAll("[data-clinic-renew]").forEach(b=>b.onclick=()=>{const cl=find(b.dataset.clinicRenew),m=Number(box.querySelector(`[data-clinic-len="${CSS.escape(cl.id)}"]`).value);
+const next=addMonths(Math.max(Date.now(),cl.expiresAt),m);
+if(confirm(`تجديد كل أكواد ${cl.name} (${cl.codes.length}) لحد ${fmtDate(next)}؟`))act(()=>Promise.all(cl.codes.map(c=>updateDoc(doc(db,"codes",c.id),{expiresAt:Timestamp.fromMillis(next),active:true,renewedAt:serverTimestamp(),renewals:increment(1),paidMonths:increment(m)}))));});
+box.querySelectorAll("[data-clinic-add]").forEach(b=>b.onclick=()=>{const cl=find(b.dataset.clinicAdd);if(!confirm(`إضافة دكتور جديد لـ ${cl.name}؟`))return;
+act(()=>setDoc(doc(db,"codes",newCode()),clinicCodeData(cl.id,cl.name,cl.phone,cl.logo,cl.manager,cl.codes.length+1,Math.max(Date.now(),cl.expiresAt),0)));});
+box.querySelectorAll("[data-clinic-wa]").forEach(b=>b.onclick=()=>{const cl=find(b.dataset.clinicWa);window.open(`https://wa.me/${waPhone(cl.manager)}?text=${encodeURIComponent(clinicMessage(cl))}`,"_blank");});
+box.querySelectorAll("[data-clinic-del]").forEach(b=>b.onclick=()=>{const cl=find(b.dataset.clinicDel);if(confirm(`حذف باقة ${cl.name} وكل أكوادها (${cl.codes.length}) نهائياً؟`))act(()=>Promise.all(cl.codes.map(c=>deleteDoc(doc(db,"codes",c.id)))));});
+}
+function clinicCodeData(clinicId,name,phone,logo,manager,i,expiresAt,months){
+return{name:`${name} – دكتور ${i}`,phone:manager||"",plan:"clinic",paidMonths:months,renewals:0,expiresAt:Timestamp.fromMillis(expiresAt),deviceUid:null,activatedAt:null,active:true,createdAt:serverTimestamp(),clinicId,clinicName:name,clinicPhone:phone||"",clinicLogo:logo||""};
+}
+async function createClinic(){
+const name=$("clinicName").value.trim(),phone=$("clinicPhone").value.trim(),manager=$("clinicManager").value.trim(),seats=Math.min(50,Math.max(1,Number($("clinicSeats").value)||1)),months=Number($("clinicLen").value);
+const note=(t,ok)=>$("clinicNotice").innerHTML=`<div class="notice ${ok?"ok":"error"}">${t}</div>`;
+if(!name){note("اكتب اسم العيادة.");return;}
+if(!confirm(`إنشاء باقة "${name}" بـ ${seats} كود لمدة ${months} شهر؟`))return;
+const btn=$("createClinicBtn");btn.disabled=true;
+try{
+const clinicId="CL-"+newCode().slice(3),exp=addMonths(Date.now(),months);
+await Promise.all(Array.from({length:seats},(_,i)=>setDoc(doc(db,"codes",newCode()),clinicCodeData(clinicId,name,phone,clinicLogoDraft,manager,i+1,exp,months))));
+["clinicName","clinicPhone","clinicManager"].forEach(id=>$(id).value="");clinicLogoDraft="";$("clinicLogoPreview").style.backgroundImage="";$("clinicLogoPreview").textContent="لا يوجد";
+note(`تم إنشاء باقة <b>${escapeHtml(name)}</b> بـ ${seats} كود. دوس "واتساب للمدير" عشان تبعتلهم الأكواد.`,true);
+await loadCodes();
+}catch(e){console.error(e);note(escapeHtml(e.message));}
+finally{btn.disabled=false;}
 }
 async function createCode(){
 const name=$("newCodeName").value.trim(),phone=$("newCodePhone").value.trim(),months=Number($("newCodeLen").value);
@@ -1014,13 +1093,14 @@ $("adminContent").innerHTML=`<div class="admin-panel">
 </div></div>
 ${featuresCardHtml()}
 ${proPageCardHtml()}
+${clinicsCardHtml()}
 ${codesCardHtml()}
 <div class="settings-card" id="reqAdminCard"><h3>Exercise requests <span style="font-size:14px;color:#667085" dir="rtl">· طلبات المشتركين</span></h3><div id="reqAdminBox" class="code-meta">Loading…</div></div>
 <div class="admin-list">${list.map(e=>`<div class="admin-row"><div class="meta"><div class="admin-number">#${exerciseNumber(e)}</div><img src="${escapeHtml(imageList(e)[0]||PLACEHOLDER_IMG)}" alt=""><div><strong>${escapeHtml(e.name)}</strong><div style="font-size:12px;color:#667085">${escapeHtml(exerciseRegions(e).join(", "))}</div></div></div><div class="admin-row-actions"><button class="btn btn-outline" data-edit="${escapeHtml(e.id)}">Edit</button><button class="btn btn-danger" data-delete="${escapeHtml(e.id)}">Delete</button></div></div>`).join("")||`<div class="empty">No Firestore exercises yet. Add your first one.</div>`}</div></div>`;
 if($("headerIntervalSeconds"))$("headerIntervalSeconds").value=headerIntervalSeconds;if($("adIntervalSeconds"))$("adIntervalSeconds").value=adIntervalSeconds;
 $("addExerciseBtn").onclick=()=>openExerciseModal();$("logoutBtn").onclick=async()=>{await signOut(auth);currentUser=null;isAdmin=false;switchTab("exerciseTab");applyFeatures();};
 $("saveSiteSettingsBtn").onclick=saveSiteSettings;
-$("saveFeaturesBtn").onclick=saveFeatures;$("createCodeBtn").onclick=createCode;
+$("saveFeaturesBtn").onclick=saveFeatures;$("createCodeBtn").onclick=createCode;$("createClinicBtn").onclick=createClinic;$("clinicLogoFile").onchange=pickClinicLogo;
 $("saveProPageBtn").onclick=saveProPage;$("previewProPageBtn").onclick=openPro;
 renderCodes();loadCodes();loadAdminRequests();
 document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openExerciseModal(b.dataset.edit));document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteExercise(b.dataset.delete));
@@ -1302,6 +1382,7 @@ const brandOn=featureOn("branding");
 box.innerHTML=`<div dir="rtl" class="account">
 <div class="acc-sec"><h4>👤 اشتراكي</h4>
 <div>الاسم: <b>${escapeHtml(proInfo.name||"—")}</b></div>
+${proInfo.clinic&&proInfo.clinic.name?`<div>🏥 باقة عيادة: <b>${escapeHtml(proInfo.clinic.name)}</b></div>`:""}
 <div>الكود: <b dir="ltr">${escapeHtml(code)}</b></div>
 <div>صالح حتى: <b>${fmtDate(proInfo.expiresAt)}</b> <span class="acc-days ${days<=7?"warn":""}">فاضل ${days} يوم</span></div>
 ${renew?`<a class="btn btn-green acc-btn" href="${escapeHtml(renew)}" target="_blank" rel="noopener">🔄 جدّد الاشتراك</a>`:""}</div>
@@ -1435,7 +1516,9 @@ $("proOpenBtn").onclick=openPro;$("homeProBtn").onclick=openPro;$("footerProBtn"
 $("proCodeInput").addEventListener("keydown",e=>{if(e.key==="Enter")activatePro();});
 let brandLogoDraft="";
 function showLogoDraft(){const pv=$("brandLogoPreview");pv.style.backgroundImage=brandLogoDraft?`url("${driveToImageUrl(brandLogoDraft).replace(/"/g,'%22')}")`:"";pv.textContent=brandLogoDraft?"":"لا يوجد";$("brandLogoRemove").classList.toggle("hidden",!brandLogoDraft);}
-$("brandToggleBtn").onclick=()=>{const b=getBrand();$("brandName").value=b.name||"";$("brandClinic").value=b.clinic||"";$("brandPhone").value=b.phone||"";brandLogoDraft=b.logo||"";showLogoDraft();$("brandForm").classList.toggle("hidden");};
+$("brandToggleBtn").onclick=()=>{const b=getBrand();$("brandName").value=b.name||"";$("brandClinic").value=b.clinic||"";$("brandPhone").value=b.phone||"";brandLogoDraft=b.logo||"";showLogoDraft();
+const lk=clinicLocked();$("brandClinic").disabled=lk;$("brandPhone").disabled=lk;$("brandLogoFile").closest("label").classList.toggle("hidden",lk);if(lk)$("brandLogoRemove").classList.add("hidden");$("brandClinicNote").classList.toggle("hidden",!lk);
+$("brandForm").classList.toggle("hidden");};
 $("brandLogoFile").onchange=e=>{const f=e.target.files[0];e.target.value="";if(!f)return;
 const img=new Image(),url=URL.createObjectURL(f);
 img.onload=()=>{const max=320,k=Math.min(1,max/Math.max(img.width,img.height)),c=document.createElement("canvas");c.width=Math.round(img.width*k);c.height=Math.round(img.height*k);c.getContext("2d").drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(url);brandLogoDraft=c.toDataURL("image/png");showLogoDraft();};
