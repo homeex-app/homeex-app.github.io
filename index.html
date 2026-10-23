@@ -23,6 +23,7 @@
 :root{--bg:#f6f8fb;--card:#fff;--text:#172033;--muted:#667085;--primary:#2563eb;--primary-dark:#1d4ed8;--border:#e5e7eb;--danger:#dc2626;--success:#059669;--shadow:0 10px 30px rgba(16,24,40,.07);--radius:18px}
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
 button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.req-badge{display:inline-block;background:#dc2626;color:#fff;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:800;vertical-align:middle}.req-alert{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-weight:600}
 .clinic-offer{border:1px solid #c7d2fe;background:#eef2ff;border-radius:14px;padding:14px 16px;margin:14px 0}.clinic-offer>b{font-size:17px;color:#1e3a8a}.clinic-offer .offer-list{margin:8px 0 12px}
 .proto-tiers{display:inline-flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:4px;margin:0 0 14px}.proto-tier{border:0;background:none;padding:8px 18px;border-radius:9px;font-weight:800;color:#667085;cursor:pointer}.proto-tier.active{background:#1e3a8a;color:#fff}.pro-upsell{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:14px 16px;margin-bottom:14px}.pro-upsell b{display:block;font-size:16px;color:#92400e}.pro-upsell span{color:#78350f;font-size:14px}.account{display:grid;gap:12px;margin-top:8px}.acc-sec{border:1px solid var(--border);border-radius:14px;padding:12px 14px;background:#fff;line-height:1.8}.acc-sec h4{margin:0 0 6px;font-size:16px;color:#1e3a8a}.acc-btn{margin-top:8px}.acc-count{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:999px;padding:0 9px;font-size:13px}.acc-days{display:inline-block;background:#dcfce7;color:#166534;border-radius:999px;padding:0 9px;font-size:13px;font-weight:700}.acc-days.warn{background:#fee2e2;color:#b91c1c}
 .private-badge{background:#fef3c7!important;color:#92400e!important}.my-proto-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:6px 0 12px}.my-proto-head h3{margin:0;font-size:19px}.req-item{border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:8px;background:#fff}.req-item b{color:#172033}.req-st{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;margin-inline-start:6px}.req-st.new{background:#eff6ff;color:#1d4ed8}.req-st.done{background:#dcfce7;color:#166534}.app{min-height:100vh}
@@ -505,7 +506,7 @@ const showPro=subsOn();
 $("proOpenBtn").classList.toggle("hidden",!showPro);
 $("footerProBtn").classList.toggle("hidden",!showPro);
 $("footerProSep").classList.toggle("hidden",!showPro);
-$("proOpenBtn").textContent=proActive||isPreview()?"👤 حسابي":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
+$("proOpenBtn").textContent=proActive||isPreview()?"👤 My account":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
 $("homeProBanner").classList.toggle("hidden",!showPro||hasPro());
 $("protoProTag").classList.toggle("hidden",!showPro);
 renderViewAs();
@@ -657,12 +658,12 @@ box.innerHTML=`<div dir="rtl">
 ${plans.length?`<div class="plans">${plans.map(x=>{const l=proWaLink(x.name);return`<div class="plan ${x.best?"best":""}">${x.best?`<small style="color:#b45309;font-weight:800">⭐ الأوفر</small>`:""}<b>${escapeHtml(x.name)}</b><div class="price">${escapeHtml(x.price||"")}</div><small>${escapeHtml(x.note||"")}</small>${l?`<a class="btn btn-green" href="${escapeHtml(l)}" target="_blank" rel="noopener">اشترك</a>`:""}</div>`;}).join("")}</div>`:""}
 ${!plans.length&&proWaLink("")?`<a class="btn btn-green" href="${escapeHtml(proWaLink(""))}" target="_blank" rel="noopener">اشترك على واتساب</a>`:""}
 ${clinicOfferHtml()}
-<p class="code-meta">👤 بعد التفعيل، زرار ⭐ Pro اللي فوق بيتحول لـ <b>"👤 حسابي"</b>: فيه اشتراكك، وبروتوكولاتك، وتمارينك الخاصة، وطلباتك، وزرار "اطلب تمرين".</p>
+<p class="code-meta">👤 بعد التفعيل، زرار ⭐ Pro اللي فوق بيتحول لـ <b>"👤 My account"</b>: فيه اشتراكك، وبروتوكولاتك، وتمارينك الخاصة، وطلباتك، وزرار "اطلب تمرين".</p>
 <p class="code-meta">الدفع بـ InstaPay أو فودافون كاش، وبعدها بيوصلك كود التفعيل على الواتساب.</p>
 </div>`;
 }
 function openPro(){
-$("proModalTitle").textContent=proActive||isPreview()?"👤 My account · حسابي":"⭐ HomeEx Pro";
+$("proModalTitle").textContent=proActive||isPreview()?"👤 My account":"⭐ HomeEx Pro";
 $("proStatus").innerHTML=proActive||isPreview()?"":proStatusHtml();renderOffer();$("proNotice").innerHTML="";
 $("proCodeInput").value=lsGet(PRO_KEY)||"";
 $("proCodeArea").classList.toggle("hidden",!!(proActive||isPreview()));
@@ -1135,6 +1136,7 @@ function renderAdmin(){
 if(!isAdmin){$("adminContent").innerHTML=`<div class="empty">Admin access required. Please log in from the Admin button.</div>`;return;}
 const list=sortedExercises(exercises.filter(e=>!String(e.id).startsWith("demo")));
 $("adminContent").innerHTML=`<div class="admin-panel">
+<div id="reqAlert" class="req-alert hidden" dir="rtl"></div>
 <div class="admin-toolbar"><div><strong>Exercise library</strong><div style="color:#667085;font-size:13px">${list.length} Firestore exercises</div></div>
 <div style="display:flex;gap:8px"><button class="btn btn-primary" id="addExerciseBtn">+ Add exercise</button><button class="btn btn-outline" id="logoutBtn">Logout</button></div></div>
 <div class="settings-card"><h3>Website appearance</h3><p>Add multiple images using one Google Drive link per line. Header images rotate every 4 seconds. Advertisement images use the interval below.</p>
@@ -1151,7 +1153,7 @@ ${proPageCardHtml()}
 ${clinicsCardHtml()}
 ${codesCardHtml()}
 ${subProtoCardHtml()}
-<div class="settings-card" id="reqAdminCard"><h3>Exercise requests <span style="font-size:14px;color:#667085" dir="rtl">· طلبات المشتركين</span></h3><div id="reqAdminBox" class="code-meta">Loading…</div></div>
+<div class="settings-card" id="reqAdminCard"><h3>Exercise requests <span style="font-size:14px;color:#667085" dir="rtl">· طلبات المشتركين</span> <span class="req-badge hidden" id="reqNewBadge"></span></h3><div id="reqAdminBox" class="code-meta">Loading…</div></div>
 <div class="admin-list">${list.map(e=>`<div class="admin-row"><div class="meta"><div class="admin-number">#${exerciseNumber(e)}</div><img src="${escapeHtml(imageList(e)[0]||PLACEHOLDER_IMG)}" alt=""><div><strong>${escapeHtml(e.name)}</strong><div style="font-size:12px;color:#667085">${escapeHtml(exerciseRegions(e).join(", "))}</div></div></div><div class="admin-row-actions"><button class="btn btn-outline" data-edit="${escapeHtml(e.id)}">Edit</button><button class="btn btn-danger" data-delete="${escapeHtml(e.id)}">Delete</button></div></div>`).join("")||`<div class="empty">No Firestore exercises yet. Add your first one.</div>`}</div></div>`;
 if($("headerIntervalSeconds"))$("headerIntervalSeconds").value=headerIntervalSeconds;if($("adIntervalSeconds"))$("adIntervalSeconds").value=adIntervalSeconds;
 $("addExerciseBtn").onclick=()=>openExerciseModal();$("logoutBtn").onclick=async()=>{await signOut(auth);currentUser=null;isAdmin=false;switchTab("exerciseTab");applyFeatures();};
@@ -1478,7 +1480,8 @@ if(!name){$("reqNotice").innerHTML=`<div class="notice error" dir="rtl">اكتب
 const btn=$("reqSendBtn");btn.disabled=true;
 try{await addDoc(collection(db,"codes",code,"hxRequests"),{name:name.slice(0,120),details:details.slice(0,1500),image:image.slice(0,500),video:video.slice(0,500),status:"new",createdAt:serverTimestamp()});
 $("reqName").value="";$("reqDetails").value="";$("reqImage").value="";$("reqVideo").value="";
-$("reqNotice").innerHTML=`<div class="notice ok" dir="rtl">✓ الطلب اتبعت. هتلاقيه هنا لما يتضاف.</div>`;openRequestModal(true);}
+const wa=waPhone(PRO_PAGE.whatsapp),msg=`📩 طلب تمرين جديد – HomeEx Pro\nمن: ${(proInfo&&proInfo.name)||""} (${code})\n\nالتمرين: ${name}${details?`\nالتفاصيل: ${details}`:""}${image?`\n🖼 ${image}`:""}${video?`\n▶ ${video}`:""}`;
+$("reqNotice").innerHTML=`<div class="notice ok" dir="rtl">✓ الطلب اتبعت. هتلاقيه هنا لما يتضاف.${wa?`<div style="margin-top:8px"><a class="btn btn-green" href="https://wa.me/${wa}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">📲 بلّغ الإدارة على واتساب</a></div>`:""}</div>`;openRequestModal(true);}
 catch(e){console.error(e);$("reqNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
 finally{btn.disabled=false;}
 }
@@ -1487,6 +1490,9 @@ async function loadAdminRequests(){
 const box=$("reqAdminBox");if(!box||!isAdmin)return;
 try{const snap=await getDocs(collectionGroup(db,"hxRequests"));adminRequests=snap.docs.map(d=>({...d.data(),_path:d.ref.path,code:d.ref.parent.parent.id})).sort((a,b)=>(a.status==="done")-(b.status==="done")||(b.createdAt?.toMillis?.()||0)-(a.createdAt?.toMillis?.()||0));}
 catch(e){box.innerHTML=`<div class="notice error" dir="rtl">تعذر تحميل الطلبات: ${escapeHtml(e.message)}<br>غالباً قواعد Firestore لسه محتاجة تتحدث.</div>`;return;}
+const newCount=adminRequests.filter(r=>r.status!=="done").length;
+const badge=$("reqNewBadge");if(badge){badge.textContent=newCount?`${newCount} جديد`:"";badge.classList.toggle("hidden",!newCount);}
+const alertBox=$("reqAlert");if(alertBox){alertBox.classList.toggle("hidden",!newCount);alertBox.innerHTML=newCount?`📩 عندك <b>${newCount}</b> ${newCount===1?"طلب تمرين جديد":"طلبات تمارين جديدة"} من المشتركين <button class="btn btn-primary" type="button" id="reqAlertGo">شوف الطلبات</button>`:"";if($("reqAlertGo"))$("reqAlertGo").onclick=()=>$("reqAdminCard").scrollIntoView({behavior:"smooth",block:"start"});}
 if(!adminRequests.length){box.innerHTML=`<div class="empty">No requests yet · لسه مفيش طلبات</div>`;return;}
 box.innerHTML=adminRequests.map((r,i)=>`<div class="req-item"><b>${escapeHtml(r.name||"")}</b><span class="req-st ${r.status==="done"?"done":"new"}">${r.status==="done"?`✓ Added${r.exerciseNumber?" #"+r.exerciseNumber:""}`:"New"}</span>
 <div style="margin-top:2px">👤 ${escapeHtml(ownerLabel(r.code))} • ${r.createdAt?.toMillis?fmtDate(r.createdAt.toMillis()):""}</div>
