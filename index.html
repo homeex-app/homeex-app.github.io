@@ -816,7 +816,7 @@ const snap=await getDocs(collection(db,"exercises"));
 exercises=snap.docs.map(d=>({id:d.id,...d.data()}));
 }catch(e){exercises=[];$("exerciseSummary").textContent="Could not load exercises from Firestore.";console.error("Firestore exercises load failed:",e);}
 }
-clearTimeout(loadingTimer);exercises=sortedExercises(exercises);renderRegions();renderExercises();renderSend();renderTemplates();
+clearTimeout(loadingTimer);exercises=sortedExercises(exercises);renderRegions();renderExercises();renderSend();renderTemplates();if(isAdmin)renderAdmin();
 }
 async function checkAdmin(user){
 adminCheckError="";
