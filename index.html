@@ -1126,14 +1126,40 @@ text+=`${i+1} - ${e.name}\n${dose?`الجرعة: ${dose}\n`:""}${e.description}\
 if(featureOn("branding")){const b=getBrand(),sig=[b.name,b.clinic,b.phone].filter(Boolean).join("\n");if(sig)text+=`—\n${sig}`;}
 window.open(`https://wa.me/?text=${encodeURIComponent(text)}`,"_blank");
 }
+function pdfDriveId(u){const m=String(u||"").match(/drive\.google\.com\/thumbnail\?id=([\w-]+)/);return m?m[1]:"";}
+function pdfImageUrl(u){if(!u)return"";const id=pdfDriveId(u);return id?`https://lh3.googleusercontent.com/d/${id}=w1000`:u;}
+function pdfImageAlt(u){const id=pdfDriveId(u);return id?"https://images.weserv.nl/?url="+encodeURIComponent(`drive.google.com/thumbnail?id=${id}&sz=w1000`):"";}
+function pdfExerciseHtml(e){
+const img=imageList(e)[0],dose=doseText(e.id,false);
+return `<div style="border:1px solid #e5e7eb;border-radius:12px;padding:14px 16px;margin:0 0 16px">
+<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px"><span style="background:#1e3a8a;color:#fff;border-radius:8px;padding:4px 10px;font-weight:bold;font-size:17px">#${exerciseNumber(e)}</span><b style="font-size:18px">${escapeHtml(e.name)}</b></div>
+${img?`<img src="${escapeHtml(pdfImageUrl(img))}" data-alt="${escapeHtml(pdfImageAlt(img))}" crossorigin="anonymous" style="display:block;width:100%;height:270px;object-fit:contain;background:#f3f4f6;border-radius:8px;margin-bottom:10px">`:""}
+${dose?`<div style="font-weight:bold;color:#1e3a8a;margin-bottom:6px">${escapeHtml(dose)}</div>`:""}
+<div dir="auto" style="white-space:pre-line;line-height:1.7;font-size:14px;color:#1f2937;text-align:start">${escapeHtml(e.description||"")}</div>
+</div>`;
+}
 async function makePdf(){
 const patient=$("patientName").value.trim(),list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));if(!list.length){alert("Select at least one exercise.");return;}
-const clone=$("pdfArea").cloneNode(true);clone.querySelectorAll(".no-print").forEach(x=>x.remove());
-const title=document.createElement("div");title.innerHTML=`<h1 style="font-family:Arial;margin:0 0 8px">Home Exercise Program</h1><p style="font-family:Arial;color:#555">${patient?`Patient: ${escapeHtml(patient)}`:""}</p>`;clone.prepend(title);clone.style.padding="20px";
-if(featureOn("branding")){const b=getBrand();if(b.name||b.clinic||b.phone||b.logo){const h=document.createElement("div");h.style.cssText="display:flex;align-items:center;gap:14px;border-bottom:2px solid #1e3a8a;padding-bottom:12px;margin-bottom:14px;font-family:Arial";h.innerHTML=`${b.logo?`<img src="${escapeHtml(driveToImageUrl(b.logo))}" crossorigin="anonymous" style="height:60px;max-width:140px;object-fit:contain">`:""}<div><div style="font-size:18px;font-weight:bold">${escapeHtml(b.name||"")}</div><div style="color:#555">${escapeHtml([b.clinic,b.phone].filter(Boolean).join(" • "))}</div></div>`;clone.prepend(h);}}
-clone.querySelectorAll("[data-item-id]").forEach(el=>{const t=doseText(el.dataset.itemId,false);if(t){const s=document.createElement("div");s.style.cssText="font-family:Arial;font-weight:bold;color:#1e3a8a;margin-top:4px";s.textContent=t;el.querySelector("div")?.appendChild(s);}});
-const temp=document.createElement("div");temp.style.background="white";temp.appendChild(clone);document.body.appendChild(temp);
-await html2pdf().set({margin:10,filename:`home-exercise-program${patient?"-"+patient.replace(/\s+/g,"-"):""}.pdf`,image:{type:"jpeg",quality:.92},html2canvas:{scale:2,useCORS:true},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"}}).from(temp).save();temp.remove();
+const btn=$("pdfBtn"),label=btn.textContent;btn.disabled=true;btn.textContent="Preparing PDF…";
+let head="";
+if(featureOn("branding")){const b=getBrand();if(b.name||b.clinic||b.phone||b.logo){head+=`<div style="display:flex;align-items:center;gap:14px;border-bottom:2px solid #1e3a8a;padding-bottom:12px;margin-bottom:14px">${b.logo?`<img src="${escapeHtml(pdfImageUrl(driveToImageUrl(b.logo)))}" crossorigin="anonymous" style="height:60px;max-width:140px;object-fit:contain">`:""}<div><div style="font-size:18px;font-weight:bold">${escapeHtml(b.name||"")}</div><div style="color:#555">${escapeHtml([b.clinic,b.phone].filter(Boolean).join(" • "))}</div></div></div>`;}}
+head+=`<h1 style="margin:0 0 4px;font-size:24px">Home Exercise Program</h1>${patient?`<p style="margin:0 0 4px;color:#444;font-size:15px">Patient: ${escapeHtml(patient)}</p>`:""}<p style="margin:0 0 16px;color:#777;font-size:12px">${new Date().toLocaleDateString("en-GB")} • ${list.length} exercise${list.length===1?"":"s"}</p>`;
+const holder=document.createElement("div");holder.style.cssText="position:fixed;left:-10000px;top:0;";document.body.appendChild(holder);
+const pages=[];
+for(let i=0;i<list.length;i+=2){
+const p=document.createElement("div");
+p.style.cssText="width:720px;background:#fff;color:#111827;font-family:Arial,Tahoma,sans-serif;padding:4px";
+p.innerHTML=(i===0?head:"")+list.slice(i,i+2).map(pdfExerciseHtml).join("");
+holder.appendChild(p);pages.push(p);
+}
+await Promise.all([...holder.querySelectorAll("img")].map(im=>new Promise(r=>{const done=()=>r();const fail=()=>{const alt=im.dataset.alt;if(alt&&im.src!==alt){im.src=alt;}else{im.remove();r();}};if(im.complete&&im.naturalWidth){r();return;}if(im.complete&&!im.naturalWidth){fail();}im.onload=done;im.onerror=fail;setTimeout(r,12000);})));
+const opt={margin:10,filename:`home-exercise-program${patient?"-"+patient.replace(/\s+/g,"-"):""}.pdf`,image:{type:"jpeg",quality:.9},html2canvas:{scale:2,useCORS:true,backgroundColor:"#ffffff"},jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},pagebreak:{mode:["css"]}};
+try{
+let w=html2pdf().set(opt).from(pages[0]).toPdf();
+for(const p of pages.slice(1)){w=w.get("pdf").then(pdf=>{pdf.addPage();}).from(p).toContainer().toCanvas().toPdf();}
+await w.save();
+}catch(err){console.error(err);alert("Could not create the PDF. Please try again.");}
+finally{holder.remove();btn.disabled=false;btn.textContent=label;}
 }
 
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
