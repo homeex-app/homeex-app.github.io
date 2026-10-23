@@ -1273,6 +1273,15 @@ async function homeexTrackVisit(){
   document.getElementById("installClose").addEventListener("click",function(){modal.classList.add("hidden");});
   modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.add("hidden");});
   window.addEventListener("appinstalled",function(){modal.classList.add("hidden");});
+  if(/installdebug/.test(location.search)){
+    var box=document.createElement("div");box.style.cssText="position:fixed;left:8px;right:8px;bottom:8px;z-index:999;background:#111827;color:#fff;font:13px/1.5 monospace;padding:10px;border-radius:10px;direction:ltr";
+    document.body.appendChild(box);var t0=Date.now();
+    function show(){
+      var sw=navigator.serviceWorker&&navigator.serviceWorker.controller?"yes":"no";
+      box.innerHTML="Install ready: <b style='color:"+(window.__hxInstallPrompt?"#4ade80'>YES":"#f87171'>NO")+"</b><br>Installed mode: "+(installed()?"yes":"no")+" | SW: "+sw+" | "+Math.round((Date.now()-t0)/1000)+"s<br>"+navigator.userAgent;
+    }
+    show();setInterval(show,1000);
+  }
 })();
 </script>
 <footer class="footer" style="padding:18px 8px 25px;text-align:center;font-size:12px;color:#98a2b3">
