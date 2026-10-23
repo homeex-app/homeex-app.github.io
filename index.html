@@ -579,21 +579,30 @@ let protoTier="free";
 function renderTemplates(){
 const mode=FEATURES.templates||"off";
 const ready=mode==="off"?[]:TEMPLATES.map((t,i)=>({t,i,isPro:mode==="pro"||!!t.pro}));
-const freeList=ready.filter(x=>!x.isPro),proList=ready.filter(x=>x.isPro&&(hasPro()||subsOn()));
-const proAvailable=proList.length>0||!!proCode()||subsOn();
-const bothTabs=subsOn()||(freeList.length>0&&proAvailable);
-const showTab=freeList.length>0||proAvailable;
+const freeList=ready.filter(x=>!x.isPro);
+const proAvailable=ready.some(x=>x.isPro)||!!proCode()||subsOn();
+const tabs=[];
+if(freeList.length||subsOn())tabs.push(["free","Free"]);
+if(proAvailable&&ready.length)tabs.push(["pro","⭐ Pro"]);
+if(subsOn()||proCode())tabs.push(["mine","👤 بروتوكولاتي"]);
+const showTab=tabs.length>0&&(ready.length>0||!!proCode()||subsOn());
 $("protocolsTabBtn").classList.toggle("hidden",!showTab);
 if(!showTab&&!$("protocolsTab").classList.contains("hidden"))switchTab("exerciseTab");
 renderAd();
-if(!bothTabs)protoTier=freeList.length?"free":"pro";
-$("protoTiers").innerHTML=bothTabs?`<button class="proto-tier ${protoTier==="free"?"active":""}" data-tier="free">Free</button><button class="proto-tier ${protoTier==="pro"?"active":""}" data-tier="pro">⭐ Pro</button>`:"";
+if(!tabs.some(t=>t[0]===protoTier))protoTier=tabs.length?tabs[0][0]:"free";
+$("protoTiers").innerHTML=tabs.length>1?tabs.map(([k,l])=>`<button class="proto-tier ${protoTier===k?"active":""}" data-tier="${k}">${l}</button>`).join(""):"";
 document.querySelectorAll("[data-tier]").forEach(b=>b.onclick=()=>{protoTier=b.dataset.tier;protoRegion="";renderTemplates();});
-const onPro=protoTier==="pro";
-renderMyProtocols(onPro);
-const list=onPro?proList:freeList;
 $("templatesList").innerHTML="";$("protoFilters").innerHTML="";
-if(onPro&&!hasPro()&&subsOn()){$("templatesList").innerHTML=`<div class="pro-upsell" dir="rtl"><b>⭐ بروتوكولات Pro</b><span>بروتوكولات جاهزة للمشتركين، وتقدر كمان تحفظ بروتوكولاتك الخاصة بيك.</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">اعرف أكتر</button></div>`;$("protoUpsellBtn").onclick=openPro;}
+if(protoTier==="mine"){
+renderMyProtocols(true);
+if(!proCode())$("myProtoBox").innerHTML=hasPro()?`<div class="empty" dir="rtl">هنا بتظهر البروتوكولات اللي كل مشترك بيعملها لنفسه.</div>`:`<div class="pro-upsell" dir="rtl"><b>👤 بروتوكولاتك الخاصة</b><span>مع Pro تقدر تعمل بروتوكولاتك بنفسك وتحفظها، وتستخدمها بضغطة مع أي مريض.</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">اعرف أكتر</button></div>`;
+if($("protoUpsellBtn"))$("protoUpsellBtn").onclick=openPro;
+return;
+}
+renderMyProtocols(false);
+const onPro=protoTier==="pro";
+const list=onPro?ready:freeList;
+if(onPro&&!hasPro()&&subsOn()){$("templatesList").innerHTML=`<div class="pro-upsell" dir="rtl"><b>⭐ كل البروتوكولات مع Pro</b><span>البروتوكولات الأساسية مجانية، ومع Pro بتفتح كل البروتوكولات التخصصية.</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">اعرف أكتر</button></div>`;$("protoUpsellBtn").onclick=openPro;}
 if(!list.length){if(!onPro)$("templatesList").innerHTML=`<div class="empty" style="grid-column:1/-1" dir="rtl">مفيش بروتوكولات مجانية دلوقتي. شوف تاب ⭐ Pro.</div>`;return;}
 const regions=[...new Set(list.map(x=>x.t.region).filter(Boolean))];
 if(protoRegion&&!regions.includes(protoRegion))protoRegion="";
@@ -608,7 +617,7 @@ return`<div class="proto-card ${locked?"locked":""}">
 ${locked?`<span class="proto-lock">🔒 Pro</span>`:""}
 <div class="proto-top"><div class="proto-icon">${REGION_ICONS[t.region]||"📋"}</div><div><div class="proto-name">${escapeHtml(t.name)}</div>${t.region?`<div class="proto-region">${escapeHtml(t.region)}</div>`:""}</div></div>
 ${t.desc?`<p class="proto-desc" dir="rtl">${escapeHtml(t.desc)}</p>`:""}
-<div class="proto-meta"><span>${t.items.length} exercises</span>${t.items.some(it=>it.reps||it.hold)?`<span>Dosage included</span>`:""}${daily>1?`<span>up to ${daily}×/day</span>`:""}</div>
+<div class="proto-meta"><span>${t.items.length} exercises</span>${t.items.some(it=>it.reps||it.hold)?`<span>Dosage included</span>`:""}${daily>1?`<span>up to ${daily}×/day</span>`:""}${onPro&&!isPro?`<span>Free</span>`:""}</div>
 <div class="proto-ex">${escapeHtml(names.slice(0,4).join(" • "))}${names.length>4?` +${names.length-4}`:""}</div>
 <button class="btn ${locked?"btn-outline":"btn-primary"}" data-tpl="${i}" data-locked="${locked?1:""}">${locked?"Unlock with Pro":"Use protocol →"}</button>
 </div>`;}).join(""));
@@ -1402,7 +1411,7 @@ ${brandOn?`<div class="acc-sec"><h4>🏥 بيانات العيادة</h4>
 </div>`;
 const close=()=>$("proModal").classList.add("hidden");
 if($("accBrandBtn"))$("accBrandBtn").onclick=()=>{close();switchTab("sendTab");if($("brandForm").classList.contains("hidden"))$("brandToggleBtn").click();$("brandBox").scrollIntoView({behavior:"smooth",block:"center"});};
-$("accProtoBtn").onclick=()=>{close();protoTier="pro";switchTab("protocolsTab");renderTemplates();window.scrollTo({top:0,behavior:"smooth"});};
+$("accProtoBtn").onclick=()=>{close();protoTier="mine";switchTab("protocolsTab");renderTemplates();window.scrollTo({top:0,behavior:"smooth"});};
 $("accReqBtn").onclick=()=>{close();openRequestModal();};
 myRequestsHtml().then(h=>{if($("accReqs"))$("accReqs").innerHTML=h;});
 }
