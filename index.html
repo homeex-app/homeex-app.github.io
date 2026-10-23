@@ -63,7 +63,7 @@ body.direct-mode #regions{display:none!important}
 body.direct-mode .select-wrap,
 body.direct-mode input[type="checkbox"]{display:none!important}
 body.direct-mode .direct-only{display:block}
-body.direct-mode .tabs-wrap,body.direct-mode .search-panel,body.direct-mode .section-head:has(#clearFilters),body.direct-mode .check,body.direct-mode .footer #footerAdminBtn{display:none!important}
+body.direct-mode #requestExBtn,body.direct-mode #saveProtoBtn,body.direct-mode #viewAsBar,body.direct-mode #proOpenBtn,body.direct-mode #homeProBanner,body.direct-mode .footer #footerProBtn,body.direct-mode .footer #footerProSep,body.direct-mode .tabs-wrap,body.direct-mode .search-panel,body.direct-mode .section-head:has(#clearFilters),body.direct-mode .check,body.direct-mode .footer #footerAdminBtn{display:none!important}
 .patient-hero{background:linear-gradient(135deg,#ecfdf5,#eff6ff);border:1px solid #bbf7d0;border-radius:16px;padding:16px 18px;margin:22px 0 6px;line-height:1.7}
 .patient-hero b{font-size:18px;display:block;margin-bottom:4px;color:#065f46}
 .patient-hero span{font-size:14px;color:#344054}
@@ -1327,10 +1327,11 @@ currentUrl.search="";
 currentUrl.hash="";
 const base=currentUrl.href.replace(/\/$/,"");
 let directLink=`${base}#ex=${encodeURIComponent(linkNumbers)}`;
-const b=featureOn("branding")?getBrand():{};
+const b={...(featureOn("branding")?getBrand():{})};
+if(proActive&&!b.name&&!b.clinic&&proInfo&&proInfo.name)b.name=proInfo.name;
 const hasBrand=!!(b.name||b.clinic||b.phone||b.logo);
 const win=window.open("about:blank","_blank");
-if(hasBrand||list.some(e=>e.private)||(featureOn("dosage")&&list.some(e=>{const d=dosage.get(e.id)||{};return d.sets||d.reps||d.hold||d.freq;}))){
+if((proActive&&!!proCode())||hasBrand||list.some(e=>e.private)||(featureOn("dosage")&&list.some(e=>{const d=dosage.get(e.id)||{};return d.sets||d.reps||d.hold||d.freq;}))){
 try{const id=await createShare(list,b);directLink=`${base}#s=${id}${patient?"&n="+encodeURIComponent(patient):""}`;}
 catch(e){console.warn("Share link:",e);}
 }
@@ -1606,7 +1607,7 @@ onAuthStateChanged(auth,async user=>{
 currentUser=user;
 if(!user){isAdmin=false;applyFeatures();revealApp();return;}
 isAdmin=user.isAnonymous?false:await checkAdmin(user);
-if(isAdmin && !directExerciseNumbers){
+if(isAdmin && !directExerciseNumbers && !getShareParams()){
 $("loginModal").classList.add("hidden");
 switchTab("adminTab");
 renderAdmin();
