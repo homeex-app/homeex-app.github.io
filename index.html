@@ -23,6 +23,7 @@
 *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
 button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}.app{min-height:100vh}
 header{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;padding:28px 20px 92px;min-height:190px}.header-inner{max-width:1180px;margin:auto;position:relative;z-index:2}.hero-slides{position:absolute;inset:0;z-index:0}.hero-slide{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:0;transition:opacity .8s ease}.hero-slide.active{opacity:1}.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.78),rgba(30,58,138,.58))}.brand{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.brand h1{font-size:28px;margin:0 0 7px}.brand p{margin:0;color:#e2e8f0}
+.install-btn{background:#fff;color:#1e3a8a;border:0;padding:10px 15px;border-radius:12px;font-weight:800;white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.18);cursor:pointer}.install-steps{margin:0;padding:0 0 0 20px;line-height:1.7}.install-steps li{margin:4px 0}.install-ar{direction:rtl;text-align:right;font-family:Tahoma,Arial,sans-serif}.install-ar .install-steps{padding:0 20px 0 0}.install-box{border:1px solid var(--border);border-radius:14px;padding:12px 14px;margin-top:12px}.install-box h4{margin:0 0 6px;font-size:15px}.install-sep{border:0;border-top:1px dashed var(--border);margin:10px 0}@media(max-width:700px){.install-btn{font-size:12px;padding:9px 11px}}
 .admin-btn{background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:11px 17px;border-radius:12px}
 .tabs-wrap{position:sticky;top:0;z-index:50;margin:-58px auto 0;max-width:1180px;padding:0 20px}.tabs{display:flex;gap:8px;background:rgba(255,255,255,.96);backdrop-filter:blur(12px);padding:8px;border:1px solid var(--border);box-shadow:var(--shadow);border-radius:16px}
 .tab{flex:1;border:0;background:transparent;padding:13px 16px;border-radius:11px;font-weight:800;color:var(--muted)}.tab.active{background:#eff6ff;color:var(--primary)}
@@ -168,7 +169,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="header-inner">
 <div class="brand">
 <div><h1 id="homeLink" style="cursor:pointer">Home Exercise Prescription</h1><p>Choose exercises, then send the prescription to your patient.</p></div>
-<div style="display:flex;gap:8px;align-items:center"><button class="pro-btn hidden" id="proOpenBtn">⭐ Pro</button><button class="admin-btn" id="adminOpenBtn">Admin</button></div>
+<div style="display:flex;gap:8px;align-items:center"><button class="install-btn hidden" id="installBtn" type="button">📲 Download App</button><button class="pro-btn hidden" id="proOpenBtn">⭐ Pro</button><button class="admin-btn" id="adminOpenBtn">Admin</button></div>
 </div>
 </div>
 </header>
@@ -1190,7 +1191,7 @@ switchTab("exerciseTab");
 loadSettings().then(async()=>{loadExercises();await refreshPro();if(subsOn()&&/^#pro$/i.test(window.location.hash))openPro();});homeexTrackVisit();
 
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(e=>console.warn("Service worker registration failed",e)));}
-window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();});
+window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.__hxInstallPrompt=e;});
 
 async function homeexTrackVisit(){
   try{
@@ -1225,6 +1226,44 @@ async function homeexTrackVisit(){
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",hxMoveAdminToFooter);
   else hxMoveAdminToFooter();
+})();
+</script>
+<div class="modal hidden" id="installModal"><div class="modal-card" style="max-width:520px">
+<div class="modal-head"><h3 style="margin:0">Install the app <span style="font-weight:600;color:#667085">· تسطيب التطبيق</span></h3><button class="close" type="button" id="installClose">×</button></div>
+<div class="install-box" id="installIos">
+<h4>iPhone / iPad</h4>
+<ol class="install-steps"><li>Tap the <b>Share</b> button <b>⬆︎</b> at the bottom of Safari.</li><li>Choose <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>.</li></ol>
+<hr class="install-sep">
+<div class="install-ar"><ol class="install-steps"><li>اضغط على زر <b>المشاركة ⬆︎</b> أسفل متصفح Safari.</li><li>اختر <b>Add to Home Screen</b> (إضافة إلى الشاشة الرئيسية).</li><li>اضغط <b>Add</b> (إضافة).</li></ol></div>
+</div>
+<div class="install-box" id="installAndroid">
+<h4>Android</h4>
+<ol class="install-steps"><li>Open this page in <b>Chrome</b> and tap the menu <b>⋮</b> at the top.</li><li>Choose <b>Install app</b> or <b>Add to Home screen</b>.</li><li>Tap <b>Install</b>.</li></ol>
+<hr class="install-sep">
+<div class="install-ar"><ol class="install-steps"><li>افتح الصفحة في متصفح <b>Chrome</b> واضغط على القائمة <b>⋮</b> في الأعلى.</li><li>اختر <b>Install app</b> (تثبيت التطبيق) أو <b>Add to Home screen</b>.</li><li>اضغط <b>Install</b> (تثبيت).</li></ol></div>
+</div>
+<p style="font-size:13px;color:#667085;margin:12px 0 0">The app icon will appear on your home screen. · ستظهر أيقونة التطبيق على الشاشة الرئيسية.</p>
+</div></div>
+<script>
+(function(){
+  var btn=document.getElementById("installBtn"),modal=document.getElementById("installModal");
+  if(!btn||!modal)return;
+  function installed(){return (window.matchMedia&&matchMedia("(display-mode: standalone)").matches)||navigator.standalone===true;}
+  var isIos=/iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+  if(!installed())btn.classList.remove("hidden");
+  function openHelp(){
+    document.getElementById("installIos").style.display=isIos||!/android/i.test(navigator.userAgent)?"":"none";
+    document.getElementById("installAndroid").style.display=isIos?"none":"";
+    modal.classList.remove("hidden");
+  }
+  btn.addEventListener("click",function(){
+    var p=window.__hxInstallPrompt;
+    if(p){p.prompt();p.userChoice.then(function(r){if(r&&r.outcome==="accepted")btn.classList.add("hidden");window.__hxInstallPrompt=null;});}
+    else openHelp();
+  });
+  document.getElementById("installClose").addEventListener("click",function(){modal.classList.add("hidden");});
+  modal.addEventListener("click",function(e){if(e.target===modal)modal.classList.add("hidden");});
+  window.addEventListener("appinstalled",function(){btn.classList.add("hidden");modal.classList.add("hidden");});
 })();
 </script>
 <footer class="footer" style="padding:18px 8px 25px;text-align:center;font-size:12px;color:#98a2b3">
