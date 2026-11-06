@@ -67,7 +67,8 @@ body.direct-mode #requestExBtn,body.direct-mode #saveProtoBtn,body.direct-mode #
 .patient-hero{background:linear-gradient(135deg,#ecfdf5,#eff6ff);border:1px solid #bbf7d0;border-radius:16px;padding:16px 18px;margin:22px 0 6px;line-height:1.7}
 .patient-hero b{font-size:18px;display:block;margin-bottom:4px;color:#065f46}
 .patient-hero span{font-size:14px;color:#344054}
-.share-brand{display:flex;align-items:center;gap:14px;padding:4px 0 14px;margin-bottom:12px;border-bottom:1px solid #bbf7d0}.share-brand img{width:64px;height:64px;object-fit:contain;border-radius:12px;background:#fff;border:1px solid #e5e7eb;flex-shrink:0}.sb-clinic{font-size:20px;font-weight:800;color:#1e3a8a;line-height:1.3}.sb-doc{font-size:15px;font-weight:700;color:#0f766e;margin-top:2px}.sb-phone{display:inline-block;margin-top:4px;font-size:14px;color:#334155;text-decoration:none;font-weight:600}.dose-pill{display:inline-block;background:#fef3c7;color:#92400e;font-weight:800;font-size:13px;border-radius:8px;padding:5px 10px;margin:4px 0 2px}
+.share-brand{display:flex;align-items:center;gap:14px;padding:4px 0 14px;margin-bottom:12px;border-bottom:1px solid #bbf7d0}.share-brand img{width:64px;height:64px;object-fit:contain;border-radius:12px;background:#fff;border:1px solid #e5e7eb;flex-shrink:0}.sb-clinic{font-size:20px;font-weight:800;color:#1e3a8a;line-height:1.3}.sb-doc{font-size:15px;font-weight:700;color:#0f766e;margin-top:2px}.sb-phone{display:inline-block;margin-top:4px;font-size:14px;color:#334155;text-decoration:none;font-weight:600}.patient-disc{font-size:12px;color:#667085;margin-top:6px;font-weight:500;line-height:1.5}
+.dose-pill{display:inline-block;background:#fef3c7;color:#92400e;font-weight:800;font-size:13px;border-radius:8px;padding:5px 10px;margin:4px 0 2px}
 </style>
 <style>
 .ad-slot{margin:10px 0 24px;min-height:0;border:1px solid rgba(148,163,184,.18);border-radius:14px;overflow:hidden;background:#fff;box-shadow:0 4px 18px rgba(15,23,42,.05);position:relative}
@@ -189,7 +190,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div id="bootLoader">Loading…</div>
 <main id="appMain" class="app-booting">
 <section id="exerciseTab">
-<div class="direct-only patient-hero" dir="rtl"><div id="shareBrand"></div><b id="patientHeroTitle">💪 برنامج التمارين بتاعك</b></div>
+<div class="direct-only patient-hero" dir="rtl"><div id="shareBrand"></div><b id="patientHeroTitle">💪 برنامج التمارين بتاعك</b><div id="patientDisc" class="patient-disc"></div></div>
 <div class="search-panel no-print">
 <div class="search-row">
 <div class="search-field"><label for="exerciseSearch">Patient</label><input id="exerciseSearch" placeholder="Exercises number (e.g. 1, 4, 7)" inputmode="numeric"></div>
@@ -228,6 +229,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="no-print">
 <div id="proBanner" class="pro-banner hidden"><span dir="rtl">🔒 مع <b>Pro</b>: Sets و Reps لكل تمرين، وبيانات عيادتك على الـ PDF، وبروتوكولات جاهزة.</span><button class="btn btn-dark" type="button" id="bannerProBtn">اعرف أكتر</button></div>
 <div class="field"><label for="patientName">Patient name (optional)</label><input id="patientName" placeholder="e.g. Ahmed Mohamed"></div>
+<div class="field"><label for="progLang">Program language · لغة البرنامج</label><select id="progLang"><option value="ar">العربية</option><option value="en">English</option><option value="es">Español</option><option value="pt">Português</option><option value="fr">Français</option><option value="tr">Türkçe</option></select></div>
 <div id="brandBox" class="brand-box hidden" dir="rtl">
 <div class="brand-head"><div class="brand-logo-mini" id="brandLogoMini"></div><div style="flex:1"><strong>بيانات عيادتك</strong><div id="brandSummary" class="code-meta"></div></div><button class="btn btn-outline" type="button" id="brandToggleBtn">تعديل</button></div>
 <div id="brandForm" class="hidden">
@@ -385,7 +387,41 @@ const fallbackExercises=[
 
 let exercises=[],selectedIds=new Set(),activeRegions=new Set(),currentUser=null,isAdmin=false,searchNumbers=null,adminCheckError="",adminRawRole=null;
 let patientMediaLink=window.location.href.split("#")[0];
-let exVersion=0,IMG_MAP=null;const EX_CACHE_KEY="homeex_ex_cache";
+let exVersion=0,IMG_MAP=null;
+/* ---------- Program language: patient link, PDF and WhatsApp text (exercise texts in lang/<code>.json) ---------- */
+const PROG_LANGS={ar:"العربية",en:"English",es:"Español",pt:"Português",fr:"Français",tr:"Türkçe"};
+const I18N={
+ar:{title:"💪 برنامج التمارين بتاعك",titleFor:"💪 برنامج التمارين لـ {n}",exercises:"التمارين",count:"{n} تمرين",video:"فيديو",dose:"الجرعة",wa:"برنامج التمارين",waFor:"برنامج التمارين لـ {n}",from:"من",open:"لمشاهدة الصور والفيديوهات افتح اللينك ده:",pdf:"Home Exercise Program",patient:"Patient",page:"Page",disc:"التمارين دي لا تغني عن متابعة أخصائي العلاج الطبيعي. لو حسيت بألم شديد وقّف التمرين وكلّم أخصائيك.",sets:"{s} مجموعات",reps:"{r} تكرار",sr:"{s} مجموعات × {r} تكرار",hold:"ثبات {h} ثانية",freq:"{f} مرة في اليوم"},
+en:{title:"💪 Your exercise program",titleFor:"💪 Exercise program for {n}",exercises:"Exercises",count:"{n} exercises",video:"Video",dose:"Dose",wa:"Exercise program",waFor:"Exercise program for {n}",from:"From",open:"To see the pictures and videos, open this link:",pdf:"Home Exercise Program",patient:"Patient",page:"Page",disc:"These exercises do not replace advice from your physiotherapist. If you feel sharp pain, stop the exercise and contact your therapist.",sets:"{s} sets",reps:"{r} reps",sr:"{s} sets × {r} reps",hold:"hold {h} s",freq:"{f}× a day"},
+es:{title:"💪 Tu programa de ejercicios",titleFor:"💪 Programa de ejercicios para {n}",exercises:"Ejercicios",count:"{n} ejercicios",video:"Vídeo",dose:"Dosis",wa:"Programa de ejercicios",waFor:"Programa de ejercicios para {n}",from:"De",open:"Para ver las imágenes y los vídeos, abre este enlace:",pdf:"Programa de ejercicios en casa",patient:"Paciente",page:"Página",disc:"Estos ejercicios no sustituyen el consejo de tu fisioterapeuta. Si sientes un dolor intenso, detén el ejercicio y contacta con tu fisioterapeuta.",sets:"{s} series",reps:"{r} repeticiones",sr:"{s} series × {r} repeticiones",hold:"mantener {h} s",freq:"{f} veces al día"},
+pt:{title:"💪 Seu programa de exercícios",titleFor:"💪 Programa de exercícios para {n}",exercises:"Exercícios",count:"{n} exercícios",video:"Vídeo",dose:"Dose",wa:"Programa de exercícios",waFor:"Programa de exercícios para {n}",from:"De",open:"Para ver as imagens e os vídeos, abra este link:",pdf:"Programa de exercícios em casa",patient:"Paciente",page:"Página",disc:"Estes exercícios não substituem a orientação do seu fisioterapeuta. Se sentir dor forte, pare o exercício e fale com seu fisioterapeuta.",sets:"{s} séries",reps:"{r} repetições",sr:"{s} séries × {r} repetições",hold:"segurar {h} s",freq:"{f} vezes ao dia"},
+fr:{title:"💪 Votre programme d’exercices",titleFor:"💪 Programme d’exercices pour {n}",exercises:"Exercices",count:"{n} exercices",video:"Vidéo",dose:"Dosage",wa:"Programme d’exercices",waFor:"Programme d’exercices pour {n}",from:"De la part de",open:"Pour voir les images et les vidéos, ouvrez ce lien :",pdf:"Programme d’exercices à domicile",patient:"Patient",page:"Page",disc:"Ces exercices ne remplacent pas l’avis de votre kinésithérapeute. En cas de douleur vive, arrêtez l’exercice et contactez votre kinésithérapeute.",sets:"{s} séries",reps:"{r} répétitions",sr:"{s} séries × {r} répétitions",hold:"maintenir {h} s",freq:"{f} fois par jour"},
+tr:{title:"💪 Egzersiz programınız",titleFor:"💪 {n} için egzersiz programı",exercises:"Egzersizler",count:"{n} egzersiz",video:"Video",dose:"Doz",wa:"Egzersiz programı",waFor:"{n} için egzersiz programı",from:"Gönderen",open:"Resimleri ve videoları görmek için bu bağlantıyı açın:",pdf:"Ev egzersiz programı",patient:"Hasta",page:"Sayfa",disc:"Bu egzersizler fizyoterapistinizin önerilerinin yerini tutmaz. Keskin bir ağrı hissederseniz egzersizi bırakın ve fizyoterapistinize danışın.",sets:"{s} set",reps:"{r} tekrar",sr:"{s} set × {r} tekrar",hold:"{h} sn tutun",freq:"günde {f} kez"}
+};
+const REGION_TR={
+en:{"woman health":"Women’s health"},
+es:{"Ankle / Foot":"Tobillo / pie","Aqua therapy":"Terapia acuática","Balance":"Equilibrio","Breathing":"Respiración","Core":"Core (abdomen)","Elbow & Wrist":"Codo y muñeca","Elbow":"Codo","Wrist / Hand":"Muñeca / mano","Hip":"Cadera","Knee":"Rodilla","Lower Back":"Zona lumbar","Neck":"Cuello","Shoulder":"Hombro","TMJ":"Mandíbula (ATM)","Upper Back":"Espalda alta","woman health":"Salud de la mujer","Whole Body":"Cuerpo entero"},
+pt:{"Ankle / Foot":"Tornozelo / pé","Aqua therapy":"Hidroterapia","Balance":"Equilíbrio","Breathing":"Respiração","Core":"Core (abdômen)","Elbow & Wrist":"Cotovelo e punho","Elbow":"Cotovelo","Wrist / Hand":"Punho / mão","Hip":"Quadril","Knee":"Joelho","Lower Back":"Lombar","Neck":"Pescoço","Shoulder":"Ombro","TMJ":"Mandíbula (ATM)","Upper Back":"Parte alta das costas","woman health":"Saúde da mulher","Whole Body":"Corpo inteiro"},
+fr:{"Ankle / Foot":"Cheville / pied","Aqua therapy":"Balnéothérapie","Balance":"Équilibre","Breathing":"Respiration","Core":"Gainage","Elbow & Wrist":"Coude et poignet","Elbow":"Coude","Wrist / Hand":"Poignet / main","Hip":"Hanche","Knee":"Genou","Lower Back":"Bas du dos","Neck":"Cou","Shoulder":"Épaule","TMJ":"Mâchoire (ATM)","Upper Back":"Haut du dos","woman health":"Santé de la femme","Whole Body":"Corps entier"},
+tr:{"Ankle / Foot":"Ayak bileği / ayak","Aqua therapy":"Su terapisi","Balance":"Denge","Breathing":"Solunum","Core":"Gövde (core)","Elbow & Wrist":"Dirsek ve bilek","Elbow":"Dirsek","Wrist / Hand":"El bileği / el","Hip":"Kalça","Knee":"Diz","Lower Back":"Bel","Neck":"Boyun","Shoulder":"Omuz","TMJ":"Çene eklemi","Upper Back":"Üst sırt","woman health":"Kadın sağlığı","Whole Body":"Tüm vücut"}
+};
+let progLang=(()=>{try{const v=localStorage.getItem("homeex_prog_lang");return PROG_LANGS[v]?v:"ar";}catch(e){return"ar";}})();
+// Language of a patient link (#...&l=es); empty = Arabic as before
+const viewLang=(()=>{const m=window.location.hash.match(/[#&]l=([a-z]{2})(?![a-z])/);return m&&PROG_LANGS[m[1]]&&m[1]!=="ar"?m[1]:"";})();
+const LANG_DATA={};
+function T(l,k,vars){let t=(I18N[l]||I18N.en)[k];if(t==null)t=I18N.en[k]||"";if(vars)Object.entries(vars).forEach(([a,b])=>{t=t.replace("{"+a+"}",b);});return t;}
+async function loadLang(l){if(!l||l==="ar"||LANG_DATA[l])return;try{const r=await fetch(`./lang/${l}.json`);if(r.ok)LANG_DATA[l]=(await r.json()).ex||{};}catch(e){console.warn("Language load:",e);}}
+function loadLangs(l){return Promise.all([loadLang(l),l&&l!=="ar"&&l!=="en"?loadLang("en"):null]);}
+// Exercise in another language (falls back to English, then to the original)
+function trEx(e,l){if(!e||!l||l==="ar")return e;const t=(LANG_DATA[l]||{})[e.id]||(LANG_DATA.en||{})[e.id];return t?{...e,name:t.n||e.name,description:t.d||e.description}:e;}
+function trRegion(r,l){return (REGION_TR[l]||{})[r]||r;}
+function fmtDose(d,l){if(!d)return"";const p=[];if(d.sets&&d.reps)p.push(T(l,"sr",{s:d.sets,r:d.reps}));else if(d.sets)p.push(T(l,"sets",{s:d.sets}));else if(d.reps)p.push(T(l,"reps",{r:d.reps}));if(d.hold)p.push(T(l,"hold",{h:d.hold}));if(d.freq)p.push(T(l,"freq",{f:d.freq}));return p.join(" • ");}
+function applyViewLang(){
+if(!document.body.classList.contains("direct-mode"))return;
+const VL=viewLang||"ar",hero=$("patientHeroTitle"),disc=$("patientDisc");
+if(viewLang){document.documentElement.lang=viewLang;if(hero){hero.parentElement.dir="ltr";if(!(shareInfo&&shareInfo.patient))hero.textContent=T(viewLang,"title");}const h2=$("exerciseSummary").previousElementSibling;if(h2)h2.textContent=T(viewLang,"exercises");}
+if(disc)disc.textContent=T(VL,"disc");
+}const EX_CACHE_KEY="homeex_ex_cache";
 let directExerciseNumbers=null,heroImageLinks=[],adImageLinks=[],heroTimer=null,adTimer=null,headerIntervalSeconds=4,adIntervalSeconds=5;
 const galleryIndex=new Map();
 // Feature flags (settings/main.features). "off" = hidden for everyone, "all" = everyone, "pro" = subscribers + admin.
@@ -452,9 +488,10 @@ document.querySelectorAll(".region").forEach(btn=>btn.onclick=()=>{let r=btn.dat
 }
 function renderExercises(){
 const list=filteredExercises();
-$("exerciseSummary").textContent=searchNumbers?`${list.length} matching exercise${list.length===1?"":"s"} • sorted by number`:`${list.length} exercise${list.length===1?"":"s"} available`;
+$("exerciseSummary").textContent=viewLang&&document.body.classList.contains("direct-mode")?T(viewLang,"count",{n:list.length}):searchNumbers?`${list.length} matching exercise${list.length===1?"":"s"} • sorted by number`:`${list.length} exercise${list.length===1?"":"s"} available`;
 if(!list.length){$("exerciseGrid").innerHTML=`<div class="empty">${searchNumbers?"No exercises match those numbers.":"No exercises found for the selected body region."}</div>`;return;}
-$("exerciseGrid").innerHTML=list.map(e=>{
+$("exerciseGrid").innerHTML=list.map(e0=>{
+const e=viewLang?trEx(e0,viewLang):e0,VL=viewLang||"ar";
 const imgs=imageList(e),idx=Math.min(galleryIndex.get(e.id)||0,Math.max(imgs.length-1,0));galleryIndex.set(e.id,idx);
 const selected=selectedIds.has(e.id),src=imgs[idx]||PLACEHOLDER_IMG,count=imgs.length;
 return `<article class="exercise-card ${selected?"selected":""}">
@@ -464,10 +501,10 @@ ${count>1?`<button class="gallery-arrow left" data-prev="${escapeHtml(e.id)}" ar
 ${count?`<div class="image-counter">${idx+1} / ${count}</div>`:""}
 </div>
 <div class="card-body">
-<div class="card-top"><div><h3 class="card-title">${escapeHtml(e.name)}</h3>${exerciseRegions(e).map(r=>`<span class="badge">${escapeHtml(r)}</span>`).join(" ")}${e.private?`<span class="badge private-badge">🔒 ${isAdmin?escapeHtml(ownerLabel(e.code)):"Private"}</span>`:""}</div><div class="number-badge">#${exerciseNumber(e)}</div></div>
-${shareInfo&&shareInfo.dose&&shareInfo.dose[String(exerciseNumber(e))]?`<div class="dose-pill" dir="rtl">الجرعة: ${escapeHtml(fmtDoseAr(shareInfo.dose[String(exerciseNumber(e))]))}</div>`:""}
-<p class="description">${escapeHtml(e.description)}</p>
-<div class="card-actions"><label class="check"><input type="checkbox" data-check="${escapeHtml(e.id)}" ${selected?"checked":""}> Select</label>${e.video?`<a class="video-btn" href="${escapeHtml(e.video)}" target="_blank" rel="noopener">Video</a>`:""}</div>
+<div class="card-top"><div><h3 class="card-title" dir="auto">${escapeHtml(e.name)}</h3>${exerciseRegions(e).map(r=>`<span class="badge">${escapeHtml(viewLang?trRegion(r,viewLang):r)}</span>`).join(" ")}${e.private?`<span class="badge private-badge">🔒 ${isAdmin?escapeHtml(ownerLabel(e.code)):"Private"}</span>`:""}</div><div class="number-badge">#${exerciseNumber(e)}</div></div>
+${shareInfo&&shareInfo.dose&&shareInfo.dose[String(exerciseNumber(e))]?`<div class="dose-pill" dir="${VL==="ar"?"rtl":"ltr"}">${escapeHtml(T(VL,"dose"))}: ${escapeHtml(fmtDose(shareInfo.dose[String(exerciseNumber(e))],VL))}</div>`:""}
+<p class="description" dir="auto" style="white-space:pre-line">${escapeHtml(e.description)}</p>
+<div class="card-actions"><label class="check"><input type="checkbox" data-check="${escapeHtml(e.id)}" ${selected?"checked":""}> Select</label>${e.video?`<a class="video-btn" href="${escapeHtml(e.video)}" target="_blank" rel="noopener">${escapeHtml(viewLang?T(viewLang,"video"):"Video")}</a>`:""}</div>
 </div></article>`;
 }).join("");
 document.querySelectorAll("[data-check]").forEach(input=>input.onchange=()=>{let id=input.dataset.check;input.checked?selectedIds.add(id):selectedIds.delete(id);renderExercises();renderSend();});
@@ -486,15 +523,9 @@ const withDose=featureOn("dosage");
 $("selectedList").innerHTML=list.map(e=>{let image=imageList(e)[0]||PLACEHOLDER_IMG;const d=dosage.get(e.id)||{};return`<div class="selected-item" data-item-id="${escapeHtml(e.id)}"><img src="${escapeHtml(image)}" alt=""><div><strong>#${exerciseNumber(e)} — ${escapeHtml(e.name)}</strong><small>${escapeHtml(exerciseRegions(e).join(", "))}</small>${withDose?`<div class="dose-row no-print">${[["sets","Sets"],["reps","Reps"],["hold","Hold (s)"],["freq","Times/day"]].map(([k,l])=>`<label>${l}<input type="number" min="0" data-dose="${escapeHtml(e.id)}" data-key="${k}" value="${escapeHtml(d[k]||"")}"></label>`).join("")}</div>`:""}</div></div>`;}).join("");
 document.querySelectorAll("[data-dose]").forEach(inp=>inp.oninput=()=>{const id=inp.dataset.dose,d={...(dosage.get(id)||{})};d[inp.dataset.key]=inp.value.trim();dosage.set(id,d);});
 }
-function doseText(id,ar){
+function doseText(id,lang){
 if(!featureOn("dosage"))return"";
-const d=dosage.get(id)||{},p=[];
-if(d.sets&&d.reps)p.push(ar?`${d.sets} مجموعات × ${d.reps} تكرار`:`${d.sets} sets × ${d.reps} reps`);
-else if(d.sets)p.push(ar?`${d.sets} مجموعات`:`${d.sets} sets`);
-else if(d.reps)p.push(ar?`${d.reps} تكرار`:`${d.reps} reps`);
-if(d.hold)p.push(ar?`ثبات ${d.hold} ثانية`:`hold ${d.hold}s`);
-if(d.freq)p.push(ar?`${d.freq} مرة في اليوم`:`${d.freq}× per day`);
-return p.join(" • ");
+return fmtDose(dosage.get(id)||{},typeof lang==="string"?lang:(lang?"ar":"en"));
 }
 
 /* ---------- Pro: feature flags, subscription codes, branding, templates ---------- */
@@ -991,7 +1022,7 @@ renderShareBrand();
 function renderShareBrand(){
 const box=$("shareBrand");if(!box||!shareInfo)return;
 const b=shareInfo.brand||{};
-const title=$("patientHeroTitle");if(title&&shareInfo.patient)title.textContent=`💪 برنامج التمارين لـ ${shareInfo.patient}`;
+const title=$("patientHeroTitle");if(title&&shareInfo.patient)title.textContent=T(viewLang||"ar","titleFor",{n:shareInfo.patient});
 if(!(b.name||b.clinic||b.phone||b.logo)){box.innerHTML="";return;}
 const tel=String(b.phone||"").replace(/[^\d+]/g,"");
 box.innerHTML=`<div class="share-brand">${b.logo?`<img src="${escapeHtml(b.logo)}" alt="">`:""}<div>${b.clinic?`<div class="sb-clinic">${escapeHtml(b.clinic)}</div>`:""}${b.name?`<div class="sb-doc">${escapeHtml(b.name)}</div>`:""}${b.phone?`<a class="sb-phone" href="tel:${escapeHtml(tel)}" dir="ltr">📞 ${escapeHtml(b.phone)}</a>`:""}</div></div>`;
@@ -1362,22 +1393,24 @@ const currentUrl=new URL(window.location.href);
 currentUrl.search="";
 currentUrl.hash="";
 const base=currentUrl.href.replace(/\/$/,"");
-let directLink=`${base}#ex=${encodeURIComponent(linkNumbers)}`;
+const PLg=progLang,langQ=PLg!=="ar"?"&l="+PLg:"";
+let directLink=`${base}#ex=${encodeURIComponent(linkNumbers)}${langQ}`;
 const b={...(featureOn("branding")?getBrand():{})};
 if(proActive&&!b.name&&!b.clinic&&proInfo&&proInfo.name)b.name=proInfo.name;
 const hasBrand=!!(b.name||b.clinic||b.phone||b.logo);
 const win=window.open("about:blank","_blank");
+await loadLangs(PLg);
 if((proActive&&!!proCode())||hasBrand||list.some(e=>e.private)||(featureOn("dosage")&&list.some(e=>{const d=dosage.get(e.id)||{};return d.sets||d.reps||d.hold||d.freq;}))){
-try{const id=await createShare(list,b);directLink=`${base}#s=${id}${patient?"&n="+encodeURIComponent(patient):""}`;}
+try{const id=await createShare(list,b);directLink=`${base}#s=${id}${patient?"&n="+encodeURIComponent(patient):""}${langQ}`;}
 catch(e){console.warn("Share link:",e);}
 }
-let text=`برنامج التمارين${patient?` لـ ${patient}`:""}\n`;
-if(b.clinic||b.name)text+=`من ${[b.clinic,b.name].filter(Boolean).join(" — ")}\n`;
+let text=`${patient?T(PLg,"waFor",{n:patient}):T(PLg,"wa")}\n`;
+if(b.clinic||b.name)text+=`${T(PLg,"from")} ${[b.clinic,b.name].filter(Boolean).join(" — ")}\n`;
 if(b.phone)text+=`📞 ${b.phone}\n`;
-text+=`\nلمشاهدة الصور والفيديوهات افتح اللينك ده:\n${directLink}\n\n`;
-list.forEach((e,i)=>{
-const dose=doseText(e.id,true);
-text+=`${i+1} - ${e.name}\n${dose?`الجرعة: ${dose}\n`:""}${e.description}\n\n`;
+text+=`\n${T(PLg,"open")}\n${directLink}\n\n`;
+list.forEach((e0,i)=>{
+const e=trEx(e0,PLg),dose=doseText(e0.id,PLg);
+text+=`${i+1} - ${e.name}\n${dose?`${T(PLg,"dose")}: ${dose}\n`:""}${e.description}\n\n`;
 });
 const url=`https://wa.me/?text=${encodeURIComponent(text)}`;
 if(win&&!win.closed)win.location.href=url;else window.open(url,"_blank");
@@ -1548,6 +1581,7 @@ async function makePdf(){
 const patient=$("patientName").value.trim(),list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));if(!list.length){alert("Select at least one exercise.");return;}
 const btn=$("pdfBtn"),label=btn.textContent;btn.disabled=true;btn.textContent="Preparing PDF…";
 try{
+const PLg=progLang,LP=PLg==="ar"?"en":PLg;await loadLangs(PLg);
 const PW=1240,PH=1754,M=80,CW=PW-2*M,MM=210/PW,FOOT=60,BOTTOM=PH-M-FOOT;
 const C={navy:"#1e3a8a",ink:"#0f172a",text:"#1f2937",muted:"#64748b",line:"#D6DFEE",band:"#EEF3FB",link:"#1d4ed8",doseBg:"#FEF3C7",doseFg:"#92400E"};
 const FONT="Arial, Tahoma, 'Noto Naskh Arabic', sans-serif";
@@ -1564,14 +1598,15 @@ const right=(t,yy)=>{ctx.direction=pdfIsRtl(t)?"rtl":"ltr";ctx.textAlign="right"
 let ty=y+38;if(b.name){font(40,true);ctx.fillStyle=C.ink;right(b.name,ty);ty+=44;}if(b.clinic){font(28);ctx.fillStyle="#334155";right(b.clinic,ty);ty+=38;}if(b.phone){font(26);ctx.fillStyle=C.muted;right(b.phone,ty);ty+=34;}
 y=Math.max(y+(logo?110:0),ty-20)+30;brandShown=true;}}
 ctx.fillStyle=C.navy;ctx.fillRect(M,y,CW,6);y+=56;
-font(46,true);ctx.fillStyle=C.navy;ctx.fillText("Home Exercise Program",M,y);
-font(26);ctx.fillStyle=C.muted;ctx.textAlign="right";const info=[patient?`Patient: ${patient}`:"",new Date().toLocaleDateString("en-GB"),`${list.length} exercise${list.length===1?"":"s"}`].filter(Boolean);info.forEach((t,i)=>ctx.fillText(t,PW-M,y-14+i*32));ctx.textAlign="left";
-y+=46;font(32);ctx.fillStyle="#334155";drawLine({t:"برنامج التمارين المنزلية",rtl:true},M,ctx.measureText("برنامج التمارين المنزلية").width+4,y);
+{const tt=T(LP,"pdf");let ts=46;font(ts,true);while(ctx.measureText(tt).width>CW*0.6&&ts>30){ts-=2;font(ts,true);}ctx.fillStyle=C.navy;ctx.fillText(tt,M,y);}
+font(26);ctx.fillStyle=C.muted;ctx.textAlign="right";const info=[patient?`${T(LP,"patient")}: ${patient}`:"",new Date().toLocaleDateString("en-GB"),LP==="en"?`${list.length} exercise${list.length===1?"":"s"}`:T(LP,"count",{n:list.length})].filter(Boolean);info.forEach((t,i)=>ctx.fillText(t,PW-M,y-14+i*32));ctx.textAlign="left";
+y+=46;font(32);ctx.fillStyle="#334155";if(PLg==="ar")drawLine({t:"برنامج التمارين المنزلية",rtl:true},M,ctx.measureText("برنامج التمارين المنزلية").width+4,y);
 y=Math.max(y,y-60+info.length*32)+40;
 const PAD=28,BAND=78,LH=46,BODYW=CW-2*PAD;
-for(const e of list){
+for(const e0 of list){
+const e=trEx(e0,PLg);
 font(30);const lines=wrap(e.description||"",BODYW);
-const dose=doseText(e.id,false),regions=exerciseRegions(e).join(" • ");
+const dose=doseText(e0.id,LP),regions=exerciseRegions(e).map(r=>trRegion(r,LP)).join(" • ");
 let bodyH=PAD+(dose?60:0)+lines.length*LH+(e.video?56:0)+PAD-10;
 let need=BAND+bodyH+24;
 if(y+Math.min(need,BAND+PAD+LH*3)>BOTTOM)newPage();
@@ -1589,14 +1624,14 @@ if(y+LH>BOTTOM){ctx.strokeStyle=C.line;ctx.lineWidth=2;rr(M,segTop,CW,y-segTop+1
 y+=34;if(l.t)drawLine(l,M+PAD,BODYW,y);y+=LH-34;
 }
 if(e.video){if(y+56>BOTTOM){rr(M,segTop,CW,y-segTop+10,14,null,C.line);newPage();segTop=y;}
-y+=44;font(26,true);ctx.fillStyle=C.link;const vt="▶  Video: "+pdfVideoLabel(e.video);ctx.fillText(vt,M+PAD,y);const vw=ctx.measureText(vt).width;
+y+=44;font(26,true);ctx.fillStyle=C.link;const vt="▶  "+T(LP,"video")+": "+pdfVideoLabel(e.video);ctx.fillText(vt,M+PAD,y);const vw=ctx.measureText(vt).width;
 links.push({page:pages.length,x:(M+PAD)*MM,y:(y-32)*MM,w:vw*MM,h:42*MM,url:e.video});y+=12;}
 y+=PAD-10;
 rr(M,segTop,CW,y-segTop,14,null,C.line);
 y+=24;
 }
 const total=pages.length;
-pages.forEach((c,i)=>{const x=c.getContext("2d");x.font=`20px ${FONT}`;x.fillStyle="#e2e8f0";x.fillRect(M,PH-M-30,CW,2);x.fillStyle="#94a3b8";x.textAlign="left";x.fillText("Home Exercise Program",M,PH-M);x.textAlign="right";x.fillText(`Page ${i+1} / ${total}`,PW-M,PH-M);});
+pages.forEach((c,i)=>{const x=c.getContext("2d");x.font=`20px ${FONT}`;x.fillStyle="#e2e8f0";x.fillRect(M,PH-M-30,CW,2);x.fillStyle="#94a3b8";x.textAlign="left";x.fillText(T(LP,"pdf"),M,PH-M);x.textAlign="right";x.fillText(`${T(LP,"page")} ${i+1} / ${total}`,PW-M,PH-M);});
 const pdf=await html2pdf().set({margin:0,jsPDF:{unit:"mm",format:"a4",orientation:"portrait"},html2canvas:{scale:1}}).from('<div style="width:10px;height:10px;background:#fff"></div>',"string").toPdf().get("pdf");
 pages.forEach((c,i)=>{if(i>0)pdf.addPage("a4","portrait");pdf.addImage(c.toDataURL("image/jpeg",0.92),"JPEG",0,0,210,297);});
 links.forEach(l=>{pdf.setPage(l.page);pdf.link(l.x,l.y,l.w,l.h,{url:l.url});});
@@ -1661,7 +1696,8 @@ if(directExerciseNumbers){
 document.body.classList.add("direct-mode");
 switchTab("exerciseTab");
 }
-loadSettings().then(async()=>{await loadShare();loadExercises();await refreshPro();if(subsOn()&&/^#pro$/i.test(window.location.hash))openPro();});homeexTrackVisit();
+const progSel=$("progLang");if(progSel){progSel.value=progLang;progSel.onchange=()=>{progLang=progSel.value;lsSet("homeex_prog_lang",progLang);loadLangs(progLang);};}
+loadSettings().then(async()=>{await loadShare();await loadLangs(viewLang);applyViewLang();loadExercises();await refreshPro();if(subsOn()&&/^#pro$/i.test(window.location.hash))openPro();});homeexTrackVisit();
 
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(e=>console.warn("Service worker registration failed",e)));}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.__hxInstallPrompt=e;});
