@@ -385,6 +385,7 @@ const fallbackExercises=[
 
 let exercises=[],selectedIds=new Set(),activeRegions=new Set(),currentUser=null,isAdmin=false,searchNumbers=null,adminCheckError="",adminRawRole=null;
 let patientMediaLink=window.location.href.split("#")[0];
+let exVersion=0,IMG_MAP=null;const EX_CACHE_KEY="homeex_ex_cache";
 let directExerciseNumbers=null,heroImageLinks=[],adImageLinks=[],heroTimer=null,adTimer=null,headerIntervalSeconds=4,adIntervalSeconds=5;
 const galleryIndex=new Map();
 // Feature flags (settings/main.features). "off" = hidden for everyone, "all" = everyone, "pro" = subscribers + admin.
@@ -404,6 +405,8 @@ const $=id=>document.getElementById(id);
 function driveToImageUrl(url){
 if(!url)return"";
 const raw=String(url).trim();
+const did=driveFileId(raw);
+if(did&&IMG_MAP&&IMG_MAP[did])return`./img/${IMG_MAP[did]}`;
 
 // Google Drive sharing links -> image thumbnail.
 // This works better than /uc?export=view for browser <img> elements.
@@ -419,6 +422,13 @@ if(m)return`https://drive.google.com/thumbnail?id=${m[1]}&sz=w1600`;
 
 return raw;
 }
+function driveFileId(raw){
+if(!/drive\.google\.com/i.test(raw))return"";
+const m=raw.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)||raw.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+return m?m[1]:"";
+}
+// List of Drive images already copied into the site (img/map.json, updated every night)
+const imgMapReady=fetch("./img/map.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).then(m=>{IMG_MAP=m&&typeof m==="object"?m:{};}).catch(()=>{IMG_MAP={};});
 function escapeHtml(s=""){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));}
 function exerciseNumber(e){return Number(e.number)||999999;}
 function exerciseRegions(e){
@@ -998,7 +1008,26 @@ const nums=raw.split(/[,\s]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0);
 return [...new Set(nums)];
 }catch(e){return null;}
 }
-async function loadExercises(){
+function readExCache(){try{const c=JSON.parse(lsGet(EX_CACHE_KEY)||"null");return c&&Array.isArray(c.list)?c:null;}catch(e){return null;}}
+function writeExCache(list){
+const clean=list.map(e=>{const x={...e};delete x.updatedAt;delete x.createdAt;return x;});
+lsSet(EX_CACHE_KEY,JSON.stringify({v:exVersion,at:Date.now(),list:clean}));
+}
+function exCacheFresh(c){
+if(!c||!c.list.length)return false;
+const age=Date.now()-(c.at||0);
+if(age>7*864e5)return false;
+// With a version number: valid until the admin changes an exercise. Without one: 6 hours.
+return exVersion?c.v===exVersion:age<6*36e5;
+}
+async function loadExercises(force=false){
+const cached=readExCache();
+if(!force&&!isAdmin&&exCacheFresh(cached)){
+exercises=cached.list.map(e=>({...e}));
+if(sharedCopies.length)exercises=exercises.concat(sharedCopies);exercises=sortedExercises(exercises);renderRegions();renderExercises();renderSend();renderTemplates();
+loadProExtras();
+return;
+}
 const loadingTimer=setTimeout(()=>{
 if(!exercises.length)$("exerciseSummary").textContent="تعذر تحميل التمارين. أعد تحميل الصفحة وتأكد من اتصال الإنترنت.";
 },10000);
@@ -1006,12 +1035,13 @@ try{
 const snap=await getDocs(query(collection(db,"exercises"),orderBy("number","asc")));
 exercises=snap.docs.map(d=>({id:d.id,...d.data()}));
 if(!exercises.length)exercises=[];
+if(exercises.length)writeExCache(exercises);
 }catch(err){
 console.warn("Firestore load:",err);
 try{
 const snap=await getDocs(collection(db,"exercises"));
 exercises=snap.docs.map(d=>({id:d.id,...d.data()}));
-}catch(e){exercises=[];$("exerciseSummary").textContent="Could not load exercises from Firestore.";console.error("Firestore exercises load failed:",e);}
+}catch(e){exercises=cached?cached.list.map(x=>({...x})):[];if(!exercises.length)$("exerciseSummary").textContent="Could not load exercises from Firestore.";console.error("Firestore exercises load failed:",e);}
 }
 clearTimeout(loadingTimer);if(sharedCopies.length)exercises=exercises.concat(sharedCopies);exercises=sortedExercises(exercises);renderRegions();renderExercises();renderSend();renderTemplates();if(isAdmin)renderAdmin();
 loadProExtras();
@@ -1075,6 +1105,7 @@ try{
 const snap=await getDoc(doc(db,"settings","main"));
 if(snap.exists()){
 const d=snap.data();
+exVersion=Number(d.exVersion)||0;
 heroImageLinks=Array.isArray(d.heroImages)?d.heroImages.filter(Boolean):[];
 adImageLinks=Array.isArray(d.adImages)?d.adImages.map(x=>typeof x==="string"?{img:x,link:x}:{img:String(x?.img||"").trim(),link:String(x?.link||x?.img||"").trim()}).filter(x=>x.img):[];
 headerIntervalSeconds=Math.max(2,Number(d.headerIntervalSeconds)||4);
@@ -1086,6 +1117,7 @@ TEMPLATES=tl.length?tl:DEFAULT_TEMPLATES;
 if(d.proPage&&typeof d.proPage==="object")PRO_PAGE={...PRO_PAGE,...d.proPage};
 }
 }catch(e){console.warn("Settings load failed:",e);}
+await imgMapReady;
 renderHero();renderAd();
 }
 function settingLines(values){return (values||[]).join("\n");}
@@ -1265,17 +1297,21 @@ if(id&&oldOwner===owner){await updateDoc(old&&old._path?doc(db,old._path):doc(db
 else{payload.createdAt=serverTimestamp();await addDoc(target,payload);if(id)await deleteDoc(old&&old._path?doc(db,old._path):doc(db,"exercises",id));}
 if(hxPendingRequest){try{await updateDoc(doc(db,hxPendingRequest),{status:"done",doneAt:serverTimestamp(),exerciseNumber:number,private:!!owner});}catch(e){console.warn(e);}hxPendingRequest=null;}
 $("exerciseModal").classList.add("hidden");
-await loadExercises();
+if(!owner||oldOwner!==owner)await bumpExVersion();
+await loadExercises(true);
 renderAdmin();
 }catch(e){
 console.error(e);
 $("formNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;
 }
 }
+async function bumpExVersion(){
+try{exVersion=Date.now();await setDoc(doc(db,"settings","main"),{exVersion},{merge:true});}catch(e){console.warn("exVersion:",e);}
+}
 async function deleteExercise(id){
 if(!isAdmin||!confirm("Delete this exercise?"))return;
 const ex=exercises.find(x=>x.id===id);
-try{await deleteDoc(ex&&ex._path?doc(db,ex._path):doc(db,"exercises",id));selectedIds.delete(id);await loadExercises();renderAdmin();}catch(e){alert(e.message);}
+try{await deleteDoc(ex&&ex._path?doc(db,ex._path):doc(db,"exercises",id));selectedIds.delete(id);if(!(ex&&ex._path))await bumpExVersion();await loadExercises(true);renderAdmin();}catch(e){alert(e.message);}
 }
 async function login(){
 $("loginNotice").innerHTML="";
@@ -1632,12 +1668,16 @@ window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.__hx
 
 async function homeexTrackVisit(){
   try{
-    const ref=doc(db,"stats","usage");
-    const snap=await getDoc(ref);
-    const current=snap.exists()?Number(snap.data().visits||0):0;
-    await setDoc(ref,{visits:current+1},{merge:true});
     const el=document.getElementById("visitCount");
-    if(el)el.textContent=(current+1).toLocaleString("en-US");
+    const today=new Date().toISOString().slice(0,10),last=lsGet("homeex_visit_day"),known=Number(lsGet("homeex_visit_count"))||0;
+    if(last===today&&known){if(el)el.textContent=known.toLocaleString("en-US");return;}
+    const ref=doc(db,"stats","usage");
+    await setDoc(ref,{visits:increment(1)},{merge:true});
+    lsSet("homeex_visit_day",today);
+    const snap=await getDoc(ref);
+    const current=snap.exists()?Number(snap.data().visits||0):known;
+    lsSet("homeex_visit_count",String(current));
+    if(el)el.textContent=current.toLocaleString("en-US");
   }catch(e){
     console.warn("Visit counter unavailable:",e);
   }
