@@ -56,14 +56,20 @@ def parse(code):
 def main():
     ids = number_to_id()
     codes = sorted({p.name.split(".")[0] for p in SRC.glob("*.txt")})
+    # Screen texts (buttons, titles) for every language: lang/src/ui.json {key: {code: text}}
+    ui_src = json.loads((SRC / "ui.json").read_text(encoding="utf-8"))
     ok = True
     for code in codes:
+        ui = {k: v[code] for k, v in ui_src.items() if v.get(code)}
+        missing_ui = [k for k, v in ui_src.items() if not v.get(code)]
+        if missing_ui:
+            print(f"{code}: screen texts missing {missing_ui}")
         items = parse(code)
         missing = sorted(set(ids) - set(items))
         unknown = sorted(set(items) - set(ids))
         empty = [n for n, x in items.items() if not x["n"] or not x["d"]]
         ex = {ids[n]: items[n] for n in sorted(items) if n in ids}
-        (OUT / f"{code}.json").write_text(json.dumps({"ex": ex}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        (OUT / f"{code}.json").write_text(json.dumps({"ui": ui, "ex": ex}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
         print(f"{code}: {len(ex)}/{len(ids)} exercises", f"missing {missing}" if missing else "", f"unknown {unknown}" if unknown else "", f"empty {empty}" if empty else "")
         ok = ok and not unknown and not empty
     return 0 if ok else 1

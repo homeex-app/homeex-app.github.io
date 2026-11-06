@@ -67,7 +67,14 @@ body.direct-mode #requestExBtn,body.direct-mode #saveProtoBtn,body.direct-mode #
 .patient-hero{background:linear-gradient(135deg,#ecfdf5,#eff6ff);border:1px solid #bbf7d0;border-radius:16px;padding:16px 18px;margin:22px 0 6px;line-height:1.7}
 .patient-hero b{font-size:18px;display:block;margin-bottom:4px;color:#065f46}
 .patient-hero span{font-size:14px;color:#344054}
-.share-brand{display:flex;align-items:center;gap:14px;padding:4px 0 14px;margin-bottom:12px;border-bottom:1px solid #bbf7d0}.share-brand img{width:64px;height:64px;object-fit:contain;border-radius:12px;background:#fff;border:1px solid #e5e7eb;flex-shrink:0}.sb-clinic{font-size:20px;font-weight:800;color:#1e3a8a;line-height:1.3}.sb-doc{font-size:15px;font-weight:700;color:#0f766e;margin-top:2px}.sb-phone{display:inline-block;margin-top:4px;font-size:14px;color:#334155;text-decoration:none;font-weight:600}.patient-disc{font-size:12px;color:#667085;margin-top:6px;font-weight:500;line-height:1.5}
+.share-brand{display:flex;align-items:center;gap:14px;padding:4px 0 14px;margin-bottom:12px;border-bottom:1px solid #bbf7d0}.share-brand img{width:64px;height:64px;object-fit:contain;border-radius:12px;background:#fff;border:1px solid #e5e7eb;flex-shrink:0}.sb-clinic{font-size:20px;font-weight:800;color:#1e3a8a;line-height:1.3}.sb-doc{font-size:15px;font-weight:700;color:#0f766e;margin-top:2px}.sb-phone{display:inline-block;margin-top:4px;font-size:14px;color:#334155;text-decoration:none;font-weight:600}.lang-btn{background:rgba(255,255,255,.92);color:#1e3a8a;border:0;border-radius:999px;padding:6px 11px;font-weight:800;font-size:12px;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.lang-menu{position:fixed;z-index:1000;background:#fff;border:1px solid #e4e7ec;border-radius:14px;box-shadow:0 12px 32px rgba(15,23,42,.22);padding:6px;z-index:300;min-width:190px;max-height:70vh;overflow:auto}
+.lang-menu button{display:flex;gap:10px;align-items:center;width:100%;background:none;border:0;padding:9px 10px;border-radius:10px;font-size:14px;color:#1f2937;cursor:pointer;text-align:start}
+.lang-menu button b{min-width:26px;color:#1e3a8a;font-size:12px}
+.lang-menu button.on,.lang-menu button:hover{background:#eef2ff}
+body.direct-mode #uiLangBtn,body.direct-mode #uiLangMenu{display:none!important}
+body.ui-foreign #homeProBanner,body.ui-foreign #proBanner{display:none!important}
+.patient-disc{font-size:12px;color:#667085;margin-top:6px;font-weight:500;line-height:1.5}
 .dose-pill{display:inline-block;background:#fef3c7;color:#92400e;font-weight:800;font-size:13px;border-radius:8px;padding:5px 10px;margin:4px 0 2px}
 </style>
 <style>
@@ -175,16 +182,16 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="hero-slides" id="heroSlides"><div class="hero-overlay"></div></div>
 <div class="header-inner">
 <div class="brand">
-<div><h1 id="homeLink" style="cursor:pointer">Home Exercise Prescription</h1><p>Choose exercises, then send the prescription to your patient.</p></div>
-<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><button class="pro-btn hidden" id="proOpenBtn">⭐ Pro</button><button class="install-btn hidden" id="installBtn" type="button">📲 Download App</button><button class="admin-btn" id="adminOpenBtn">Admin</button></div>
+<div><h1 id="homeLink" style="cursor:pointer">Home Exercise Prescription</h1><p data-i18n="tagline">Choose exercises, then send the prescription to your patient.</p></div>
+<div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end;position:relative"><button class="lang-btn" id="uiLangBtn" type="button" aria-haspopup="true">🌐 AR</button><div id="uiLangMenu" class="lang-menu hidden" role="menu"></div><button class="pro-btn hidden" id="proOpenBtn">⭐ Pro</button><button class="install-btn hidden" id="installBtn" type="button" data-i18n="install">📲 Download App</button><button class="admin-btn" id="adminOpenBtn">Admin</button></div>
 </div>
 </div>
 </header>
 
 <div class="tabs-wrap no-print"><div class="tabs">
-<button class="tab active" data-tab="exerciseTab">Exercise</button>
-<button class="tab hidden" data-tab="protocolsTab" id="protocolsTabBtn">Protocols</button>
-<button class="tab" data-tab="sendTab">Send <span id="selectedCount">(0)</span></button>
+<button class="tab active" data-tab="exerciseTab" data-i18n="tabExercise">Exercise</button>
+<button class="tab hidden" data-tab="protocolsTab" id="protocolsTabBtn" data-i18n="tabProtocols">Protocols</button>
+<button class="tab" data-tab="sendTab"><span data-i18n="tabSend">Send</span> <span id="selectedCount">(0)</span></button>
 </div></div>
 
 <div id="bootLoader">Loading…</div>
@@ -193,11 +200,11 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="direct-only patient-hero" dir="rtl"><div id="shareBrand"></div><b id="patientHeroTitle">💪 برنامج التمارين بتاعك</b><div id="patientDisc" class="patient-disc"></div></div>
 <div class="search-panel no-print">
 <div class="search-row">
-<div class="search-field"><label for="exerciseSearch">Patient</label><input id="exerciseSearch" placeholder="Exercises number (e.g. 1, 4, 7)" inputmode="numeric"></div>
-<button class="btn btn-primary" id="searchBtn">Search</button>
-<button class="btn btn-outline" id="clearSearchBtn">Clear</button>
+<div class="search-field"><label for="exerciseSearch" data-i18n="searchLabel">Search · بحث</label><input id="exerciseSearch" placeholder="Exercise number or name · رقم أو اسم التمرين" data-i18n-ph="searchPh" autocomplete="off"></div>
+<button class="btn btn-primary" id="searchBtn" data-i18n="searchBtn">Search</button>
+<button class="btn btn-outline" id="clearSearchBtn" data-i18n="clear">Clear</button>
 </div>
-<div class="search-help">Write exercise numbers separated by commas or spaces. The results will appear in number order.</div>
+<div class="search-help" data-i18n="searchHelp">Write exercise numbers separated by commas, or part of the exercise name (any language).</div>
 </div>
 
 <div id="homeProBanner" class="home-pro hidden" dir="rtl">
@@ -206,16 +213,16 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <button class="btn" type="button" id="homeProBtn">شوف العروض</button>
 </div>
 
-<div class="section-head"><div><h2>Body regions</h2><p>Select one or more areas to see suitable home exercises.</p></div><button class="btn btn-outline no-print" id="clearFilters">Clear</button></div>
+<div class="section-head"><div><h2 data-i18n="regionsTitle">Body regions</h2><p data-i18n="regionsSub">Select one or more areas to see suitable home exercises.</p></div><button class="btn btn-outline no-print" id="clearFilters" data-i18n="clear">Clear</button></div>
 <div class="regions" id="regions"></div>
 
 <div id="adSlot" class="ad-slot" style="display:none"></div>
-<div class="section-head"><div><h2>Exercises</h2><p id="exerciseSummary">Loading...</p></div><button class="btn btn-outline no-print hidden" id="requestExBtn" type="button">➕ Request an exercise</button></div>
+<div class="section-head"><div><h2 data-i18n="exercisesTitle">Exercises</h2><p id="exerciseSummary">Loading...</p></div><button class="btn btn-outline no-print hidden" id="requestExBtn" type="button" data-i18n="requestEx">➕ Request an exercise</button></div>
 <div class="exercise-grid" id="exerciseGrid"></div>
 </section>
 
 <section id="protocolsTab" class="hidden">
-<div class="section-head"><div><h2>Protocols <span class="pro-tag hidden" id="protoProTag">PRO</span></h2><p>Ready-made programs with dosage. One tap → ready to send.</p></div></div>
+<div class="section-head"><div><h2>Protocols <span class="pro-tag hidden" id="protoProTag">PRO</span></h2><p data-i18n="protoSub">Ready-made programs with dosage. One tap → ready to send.</p></div></div>
 <div id="adSlotProto" class="ad-slot" style="display:none"></div>
 <div class="proto-tiers" id="protoTiers"></div>
 <div class="proto-filters" id="protoFilters"></div>
@@ -224,12 +231,12 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 </section>
 
 <section id="sendTab" class="hidden">
-<div class="section-head"><div><h2>Send prescription</h2><p>The WhatsApp message will contain exercise numbers, names and descriptions.</p></div></div>
+<div class="section-head"><div><h2 data-i18n="sendTitle">Send prescription</h2><p data-i18n="sendSub">The WhatsApp message will contain exercise numbers, names and descriptions.</p></div></div>
 <div class="send-panel" id="pdfArea">
 <div class="no-print">
 <div id="proBanner" class="pro-banner hidden"><span dir="rtl">🔒 مع <b>Pro</b>: Sets و Reps لكل تمرين، وبيانات عيادتك على الـ PDF، وبروتوكولات جاهزة.</span><button class="btn btn-dark" type="button" id="bannerProBtn">اعرف أكتر</button></div>
-<div class="field"><label for="patientName">Patient name (optional)</label><input id="patientName" placeholder="e.g. Ahmed Mohamed"></div>
-<div class="field"><label for="progLang">Program language · لغة البرنامج</label><select id="progLang"><option value="ar">العربية</option><option value="en">English</option><option value="es">Español</option><option value="pt">Português</option><option value="fr">Français</option><option value="tr">Türkçe</option></select></div>
+<div class="field"><label for="patientName" data-i18n="patientName">Patient name (optional)</label><input id="patientName" placeholder="e.g. Ahmed Mohamed" data-i18n-ph="patientPh"></div>
+<div class="field"><label for="progLang" data-i18n="progLang">Program language · لغة البرنامج</label><select id="progLang"><option value="ar">العربية</option><option value="en">English</option><option value="es">Español</option><option value="pt">Português</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="tr">Türkçe</option><option value="hi">हिन्दी</option><option value="ur">اردو</option><option value="id">Bahasa Indonesia</option><option value="ms">Bahasa Melayu</option></select></div>
 <div id="brandBox" class="brand-box hidden" dir="rtl">
 <div class="brand-head"><div class="brand-logo-mini" id="brandLogoMini"></div><div style="flex:1"><strong>بيانات عيادتك</strong><div id="brandSummary" class="code-meta"></div></div><button class="btn btn-outline" type="button" id="brandToggleBtn">تعديل</button></div>
 <div id="brandForm" class="hidden">
@@ -250,10 +257,10 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 </div>
 <div id="selectedList" class="selected-list"></div>
 <div class="send-actions no-print">
-<button class="btn btn-green" id="whatsappBtn">Send on WhatsApp</button>
-<button class="btn btn-dark" id="pdfBtn">Download PDF</button>
-<button class="btn btn-outline hidden" id="saveProtoBtn" type="button">💾 Save as my protocol</button>
-<button class="btn btn-outline" id="backBtn">Back to exercises</button>
+<button class="btn btn-green" id="whatsappBtn" data-i18n="whatsapp">Send on WhatsApp</button>
+<button class="btn btn-dark" id="pdfBtn" data-i18n="pdf">Download PDF</button>
+<button class="btn btn-outline hidden" id="saveProtoBtn" type="button" data-i18n="saveProto">💾 Save as my protocol</button>
+<button class="btn btn-outline" id="backBtn" data-i18n="back">Back to exercises</button>
 </div>
 </div>
 </section>
@@ -263,7 +270,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div id="adminContent"></div>
 </section>
 </main>
-<div class="footer"><a href="mailto:ahmed4nassef@gmail.com">Contact Us</a></div>
+<div class="footer"><a href="mailto:ahmed4nassef@gmail.com" data-i18n="contact">Contact Us</a></div>
 </div>
 
 <div class="modal hidden" id="loginModal">
@@ -385,32 +392,76 @@ const fallbackExercises=[
 {number:3,id:"demo3",name:"Cat-Cow",region:"Lower Back",description:"On hands and knees, gently alternate between rounding the spine and extending it. Keep the movement slow and comfortable.",images:["https://images.unsplash.com/photo-1603988363607-e1e4a66962c6?auto=format&fit=crop&w=1200&q=85"],video:"https://www.youtube.com/results?search_query=cat+cow+exercise"}
 ];
 
+let searchText="";
 let exercises=[],selectedIds=new Set(),activeRegions=new Set(),currentUser=null,isAdmin=false,searchNumbers=null,adminCheckError="",adminRawRole=null;
 let patientMediaLink=window.location.href.split("#")[0];
 let exVersion=0,IMG_MAP=null;
 /* ---------- Program language: patient link, PDF and WhatsApp text (exercise texts in lang/<code>.json) ---------- */
-const PROG_LANGS={ar:"العربية",en:"English",es:"Español",pt:"Português",fr:"Français",tr:"Türkçe"};
+const PROG_LANGS={ar:"العربية",en:"English",es:"Español",pt:"Português",fr:"Français",de:"Deutsch",tr:"Türkçe",hi:"हिन्दी",ur:"اردو",id:"Bahasa Indonesia",ms:"Bahasa Melayu"};
 const I18N={
 ar:{title:"💪 برنامج التمارين بتاعك",titleFor:"💪 برنامج التمارين لـ {n}",exercises:"التمارين",count:"{n} تمرين",video:"فيديو",dose:"الجرعة",wa:"برنامج التمارين",waFor:"برنامج التمارين لـ {n}",from:"من",open:"لمشاهدة الصور والفيديوهات افتح اللينك ده:",pdf:"Home Exercise Program",patient:"Patient",page:"Page",disc:"التمارين دي لا تغني عن متابعة أخصائي العلاج الطبيعي. لو حسيت بألم شديد وقّف التمرين وكلّم أخصائيك.",sets:"{s} مجموعات",reps:"{r} تكرار",sr:"{s} مجموعات × {r} تكرار",hold:"ثبات {h} ثانية",freq:"{f} مرة في اليوم"},
 en:{title:"💪 Your exercise program",titleFor:"💪 Exercise program for {n}",exercises:"Exercises",count:"{n} exercises",video:"Video",dose:"Dose",wa:"Exercise program",waFor:"Exercise program for {n}",from:"From",open:"To see the pictures and videos, open this link:",pdf:"Home Exercise Program",patient:"Patient",page:"Page",disc:"These exercises do not replace advice from your physiotherapist. If you feel sharp pain, stop the exercise and contact your therapist.",sets:"{s} sets",reps:"{r} reps",sr:"{s} sets × {r} reps",hold:"hold {h} s",freq:"{f}× a day"},
 es:{title:"💪 Tu programa de ejercicios",titleFor:"💪 Programa de ejercicios para {n}",exercises:"Ejercicios",count:"{n} ejercicios",video:"Vídeo",dose:"Dosis",wa:"Programa de ejercicios",waFor:"Programa de ejercicios para {n}",from:"De",open:"Para ver las imágenes y los vídeos, abre este enlace:",pdf:"Programa de ejercicios en casa",patient:"Paciente",page:"Página",disc:"Estos ejercicios no sustituyen el consejo de tu fisioterapeuta. Si sientes un dolor intenso, detén el ejercicio y contacta con tu fisioterapeuta.",sets:"{s} series",reps:"{r} repeticiones",sr:"{s} series × {r} repeticiones",hold:"mantener {h} s",freq:"{f} veces al día"},
 pt:{title:"💪 Seu programa de exercícios",titleFor:"💪 Programa de exercícios para {n}",exercises:"Exercícios",count:"{n} exercícios",video:"Vídeo",dose:"Dose",wa:"Programa de exercícios",waFor:"Programa de exercícios para {n}",from:"De",open:"Para ver as imagens e os vídeos, abra este link:",pdf:"Programa de exercícios em casa",patient:"Paciente",page:"Página",disc:"Estes exercícios não substituem a orientação do seu fisioterapeuta. Se sentir dor forte, pare o exercício e fale com seu fisioterapeuta.",sets:"{s} séries",reps:"{r} repetições",sr:"{s} séries × {r} repetições",hold:"segurar {h} s",freq:"{f} vezes ao dia"},
 fr:{title:"💪 Votre programme d’exercices",titleFor:"💪 Programme d’exercices pour {n}",exercises:"Exercices",count:"{n} exercices",video:"Vidéo",dose:"Dosage",wa:"Programme d’exercices",waFor:"Programme d’exercices pour {n}",from:"De la part de",open:"Pour voir les images et les vidéos, ouvrez ce lien :",pdf:"Programme d’exercices à domicile",patient:"Patient",page:"Page",disc:"Ces exercices ne remplacent pas l’avis de votre kinésithérapeute. En cas de douleur vive, arrêtez l’exercice et contactez votre kinésithérapeute.",sets:"{s} séries",reps:"{r} répétitions",sr:"{s} séries × {r} répétitions",hold:"maintenir {h} s",freq:"{f} fois par jour"},
-tr:{title:"💪 Egzersiz programınız",titleFor:"💪 {n} için egzersiz programı",exercises:"Egzersizler",count:"{n} egzersiz",video:"Video",dose:"Doz",wa:"Egzersiz programı",waFor:"{n} için egzersiz programı",from:"Gönderen",open:"Resimleri ve videoları görmek için bu bağlantıyı açın:",pdf:"Ev egzersiz programı",patient:"Hasta",page:"Sayfa",disc:"Bu egzersizler fizyoterapistinizin önerilerinin yerini tutmaz. Keskin bir ağrı hissederseniz egzersizi bırakın ve fizyoterapistinize danışın.",sets:"{s} set",reps:"{r} tekrar",sr:"{s} set × {r} tekrar",hold:"{h} sn tutun",freq:"günde {f} kez"}
+tr:{title:"💪 Egzersiz programınız",titleFor:"💪 {n} için egzersiz programı",exercises:"Egzersizler",count:"{n} egzersiz",video:"Video",dose:"Doz",wa:"Egzersiz programı",waFor:"{n} için egzersiz programı",from:"Gönderen",open:"Resimleri ve videoları görmek için bu bağlantıyı açın:",pdf:"Ev egzersiz programı",patient:"Hasta",page:"Sayfa",disc:"Bu egzersizler fizyoterapistinizin önerilerinin yerini tutmaz. Keskin bir ağrı hissederseniz egzersizi bırakın ve fizyoterapistinize danışın.",sets:"{s} set",reps:"{r} tekrar",sr:"{s} set × {r} tekrar",hold:"{h} sn tutun",freq:"günde {f} kez"},
+de:{title:"💪 Ihr Übungsprogramm",titleFor:"💪 Übungsprogramm für {n}",exercises:"Übungen",count:"{n} Übungen",video:"Video",dose:"Dosierung",wa:"Übungsprogramm",waFor:"Übungsprogramm für {n}",from:"Von",open:"Bilder und Videos finden Sie unter diesem Link:",pdf:"Heimübungsprogramm",patient:"Patient",page:"Seite",disc:"Diese Übungen ersetzen nicht die Beratung durch Ihren Physiotherapeuten. Bei stechenden Schmerzen brechen Sie die Übung ab und wenden Sie sich an Ihren Therapeuten.",sets:"{s} Sätze",reps:"{r} Wiederholungen",sr:"{s} Sätze × {r} Wiederholungen",hold:"{h} s halten",freq:"{f}× täglich"},
+hi:{title:"💪 आपका एक्सरसाइज़ प्रोग्राम",titleFor:"💪 {n} के लिए एक्सरसाइज़ प्रोग्राम",exercises:"एक्सरसाइज़",count:"{n} एक्सरसाइज़",video:"वीडियो",dose:"खुराक",wa:"एक्सरसाइज़ प्रोग्राम",waFor:"{n} के लिए एक्सरसाइज़ प्रोग्राम",from:"भेजने वाले",open:"फ़ोटो और वीडियो देखने के लिए यह लिंक खोलें:",pdf:"घरेलू एक्सरसाइज़ प्रोग्राम",patient:"मरीज़",page:"पेज",disc:"ये एक्सरसाइज़ आपके फ़िज़ियोथेरेपिस्ट की सलाह की जगह नहीं लेतीं। तेज़ दर्द हो तो एक्सरसाइज़ रोकें और अपने थेरेपिस्ट से संपर्क करें।",sets:"{s} सेट",reps:"{r} बार",sr:"{s} सेट × {r} बार",hold:"{h} सेकंड रोकें",freq:"दिन में {f} बार"},
+ur:{title:"💪 آپ کا ورزشی پروگرام",titleFor:"💪 {n} کے لیے ورزشی پروگرام",exercises:"ورزشیں",count:"{n} ورزشیں",video:"ویڈیو",dose:"مقدار",wa:"ورزشی پروگرام",waFor:"{n} کے لیے ورزشی پروگرام",from:"بھیجنے والا",open:"تصاویر اور ویڈیوز دیکھنے کے لیے یہ لنک کھولیں:",pdf:"گھریلو ورزشی پروگرام",patient:"مریض",page:"صفحہ",disc:"یہ ورزشیں آپ کے فزیوتھراپسٹ کے مشورے کا متبادل نہیں ہیں۔ تیز درد ہو تو ورزش روک دیں اور اپنے تھراپسٹ سے رابطہ کریں۔",sets:"{s} سیٹ",reps:"{r} بار",sr:"{s} سیٹ × {r} بار",hold:"{h} سیکنڈ روکیں",freq:"دن میں {f} بار"},
+id:{title:"💪 Program latihan Anda",titleFor:"💪 Program latihan untuk {n}",exercises:"Latihan",count:"{n} latihan",video:"Video",dose:"Dosis",wa:"Program latihan",waFor:"Program latihan untuk {n}",from:"Dari",open:"Untuk melihat gambar dan video, buka tautan ini:",pdf:"Program latihan di rumah",patient:"Pasien",page:"Halaman",disc:"Latihan ini tidak menggantikan saran fisioterapis Anda. Jika terasa nyeri tajam, hentikan latihan dan hubungi fisioterapis Anda.",sets:"{s} set",reps:"{r} repetisi",sr:"{s} set × {r} repetisi",hold:"tahan {h} detik",freq:"{f} kali sehari"},
+ms:{title:"💪 Program senaman anda",titleFor:"💪 Program senaman untuk {n}",exercises:"Senaman",count:"{n} senaman",video:"Video",dose:"Dos",wa:"Program senaman",waFor:"Program senaman untuk {n}",from:"Daripada",open:"Untuk melihat gambar dan video, buka pautan ini:",pdf:"Program senaman di rumah",patient:"Pesakit",page:"Halaman",disc:"Senaman ini tidak menggantikan nasihat ahli fisioterapi anda. Jika terasa sakit yang tajam, hentikan senaman dan hubungi ahli fisioterapi anda.",sets:"{s} set",reps:"{r} ulangan",sr:"{s} set × {r} ulangan",hold:"tahan {h} saat",freq:"{f} kali sehari"}
 };
 const REGION_TR={
 en:{"woman health":"Women’s health"},
 es:{"Ankle / Foot":"Tobillo / pie","Aqua therapy":"Terapia acuática","Balance":"Equilibrio","Breathing":"Respiración","Core":"Core (abdomen)","Elbow & Wrist":"Codo y muñeca","Elbow":"Codo","Wrist / Hand":"Muñeca / mano","Hip":"Cadera","Knee":"Rodilla","Lower Back":"Zona lumbar","Neck":"Cuello","Shoulder":"Hombro","TMJ":"Mandíbula (ATM)","Upper Back":"Espalda alta","woman health":"Salud de la mujer","Whole Body":"Cuerpo entero"},
 pt:{"Ankle / Foot":"Tornozelo / pé","Aqua therapy":"Hidroterapia","Balance":"Equilíbrio","Breathing":"Respiração","Core":"Core (abdômen)","Elbow & Wrist":"Cotovelo e punho","Elbow":"Cotovelo","Wrist / Hand":"Punho / mão","Hip":"Quadril","Knee":"Joelho","Lower Back":"Lombar","Neck":"Pescoço","Shoulder":"Ombro","TMJ":"Mandíbula (ATM)","Upper Back":"Parte alta das costas","woman health":"Saúde da mulher","Whole Body":"Corpo inteiro"},
 fr:{"Ankle / Foot":"Cheville / pied","Aqua therapy":"Balnéothérapie","Balance":"Équilibre","Breathing":"Respiration","Core":"Gainage","Elbow & Wrist":"Coude et poignet","Elbow":"Coude","Wrist / Hand":"Poignet / main","Hip":"Hanche","Knee":"Genou","Lower Back":"Bas du dos","Neck":"Cou","Shoulder":"Épaule","TMJ":"Mâchoire (ATM)","Upper Back":"Haut du dos","woman health":"Santé de la femme","Whole Body":"Corps entier"},
-tr:{"Ankle / Foot":"Ayak bileği / ayak","Aqua therapy":"Su terapisi","Balance":"Denge","Breathing":"Solunum","Core":"Gövde (core)","Elbow & Wrist":"Dirsek ve bilek","Elbow":"Dirsek","Wrist / Hand":"El bileği / el","Hip":"Kalça","Knee":"Diz","Lower Back":"Bel","Neck":"Boyun","Shoulder":"Omuz","TMJ":"Çene eklemi","Upper Back":"Üst sırt","woman health":"Kadın sağlığı","Whole Body":"Tüm vücut"}
+tr:{"Ankle / Foot":"Ayak bileği / ayak","Aqua therapy":"Su terapisi","Balance":"Denge","Breathing":"Solunum","Core":"Gövde (core)","Elbow & Wrist":"Dirsek ve bilek","Elbow":"Dirsek","Wrist / Hand":"El bileği / el","Hip":"Kalça","Knee":"Diz","Lower Back":"Bel","Neck":"Boyun","Shoulder":"Omuz","TMJ":"Çene eklemi","Upper Back":"Üst sırt","woman health":"Kadın sağlığı","Whole Body":"Tüm vücut"},
+de:{"Ankle / Foot":"Sprunggelenk / Fuß","Aqua therapy":"Wassertherapie","Balance":"Gleichgewicht","Breathing":"Atmung","Core":"Rumpf (Core)","Elbow & Wrist":"Ellbogen & Handgelenk","Elbow":"Ellbogen","Wrist / Hand":"Handgelenk / Hand","Hip":"Hüfte","Knee":"Knie","Lower Back":"Unterer Rücken","Neck":"Nacken","Shoulder":"Schulter","TMJ":"Kiefergelenk","Upper Back":"Oberer Rücken","woman health":"Frauengesundheit","Whole Body":"Ganzer Körper"},
+hi:{"Ankle / Foot":"टखना / पैर","Aqua therapy":"पानी में थेरेपी","Balance":"संतुलन","Breathing":"सांस","Core":"कोर (पेट)","Elbow & Wrist":"कोहनी और कलाई","Elbow":"कोहनी","Wrist / Hand":"कलाई / हाथ","Hip":"कूल्हा","Knee":"घुटना","Lower Back":"कमर का निचला हिस्सा","Neck":"गर्दन","Shoulder":"कंधा","TMJ":"जबड़ा (TMJ)","Upper Back":"ऊपरी पीठ","woman health":"महिला स्वास्थ्य","Whole Body":"पूरा शरीर"},
+ur:{"Ankle / Foot":"ٹخنا / پاؤں","Aqua therapy":"پانی میں تھراپی","Balance":"توازن","Breathing":"سانس","Core":"کور (پیٹ)","Elbow & Wrist":"کہنی اور کلائی","Elbow":"کہنی","Wrist / Hand":"کلائی / ہاتھ","Hip":"کولہا","Knee":"گھٹنا","Lower Back":"کمر کا نچلا حصہ","Neck":"گردن","Shoulder":"کندھا","TMJ":"جبڑا (TMJ)","Upper Back":"کمر کا اوپری حصہ","woman health":"خواتین کی صحت","Whole Body":"پورا جسم"},
+id:{"Ankle / Foot":"Pergelangan kaki / kaki","Aqua therapy":"Terapi air","Balance":"Keseimbangan","Breathing":"Pernapasan","Core":"Core (perut)","Elbow & Wrist":"Siku & pergelangan tangan","Elbow":"Siku","Wrist / Hand":"Pergelangan tangan / tangan","Hip":"Panggul","Knee":"Lutut","Lower Back":"Punggung bawah","Neck":"Leher","Shoulder":"Bahu","TMJ":"Rahang (TMJ)","Upper Back":"Punggung atas","woman health":"Kesehatan wanita","Whole Body":"Seluruh tubuh"},
+ms:{"Ankle / Foot":"Buku lali / kaki","Aqua therapy":"Terapi air","Balance":"Keseimbangan","Breathing":"Pernafasan","Core":"Core (perut)","Elbow & Wrist":"Siku & pergelangan tangan","Elbow":"Siku","Wrist / Hand":"Pergelangan tangan / tangan","Hip":"Pinggul","Knee":"Lutut","Lower Back":"Bahagian bawah belakang","Neck":"Leher","Shoulder":"Bahu","TMJ":"Rahang (TMJ)","Upper Back":"Belakang atas","woman health":"Kesihatan wanita","Whole Body":"Seluruh badan"}
 };
-let progLang=(()=>{try{const v=localStorage.getItem("homeex_prog_lang");return PROG_LANGS[v]?v:"ar";}catch(e){return"ar";}})();
+// Screen language chosen with the small button at the top ("ar" = the original bilingual site)
+const UI_LANGS=[["ar","العربية"],["en","English"],["es","Español"],["pt","Português"],["fr","Français"],["de","Deutsch"],["tr","Türkçe"],["hi","हिन्दी"],["ur","اردو"],["id","Bahasa Indonesia"],["ms","Bahasa Melayu"]];
+let uiLang=(()=>{const ok=v=>UI_LANGS.some(x=>x[0]===v);try{const v=localStorage.getItem("homeex_ui_lang");if(ok(v))return v;}catch(e){}const b=(navigator.language||"").slice(0,2).toLowerCase();return ok(b)&&b!=="en"&&b!=="ar"?b:"ar";})();
+const LANG_UI={};
+function U(k,vars){let t=(LANG_UI[uiLang]||{})[k]||"";if(vars)Object.entries(vars).forEach(([a,b])=>{t=t.replace("{"+a+"}",b);});return t;}
+// Text in the screen language, or the original text on the Arabic (original) site
+function UX(k,orig,vars){return uiLang!=="ar"&&U(k,vars)||orig;}
+// Language the exercise texts are shown in: the patient link language, or the screen language
+function showLang(){return document.body.classList.contains("direct-mode")?viewLang:(uiLang==="ar"?"":uiLang);}
+function applyUiLang(rerender=true){
+if(document.body.classList.contains("direct-mode"))return;
+const foreign=uiLang!=="ar";
+document.body.classList.toggle("ui-foreign",foreign);
+document.body.dir=uiLang==="ur"?"rtl":"";
+document.documentElement.lang=foreign?uiLang:"en";
+document.querySelectorAll("[data-i18n]").forEach(el=>{if(el.dataset.orig==null)el.dataset.orig=el.innerHTML;const t=foreign&&U(el.dataset.i18n);if(t)el.textContent=t;else el.innerHTML=el.dataset.orig;});
+document.querySelectorAll("[data-i18n-ph]").forEach(el=>{if(el.dataset.origPh==null)el.dataset.origPh=el.placeholder;el.placeholder=foreign&&U(el.dataset.i18nPh)||el.dataset.origPh;});
+const b=$("uiLangBtn");if(b){b.textContent="🌐 "+uiLang.toUpperCase();b.title=UX("language","Language · اللغة");}
+if(rerender&&exercises.length){renderRegions();renderExercises();renderSend();}
+}
+async function setUiLang(l){
+uiLang=l;lsSet("homeex_ui_lang",l);
+progLang=l;lsSet("homeex_prog_lang",l);const ps=$("progLang");if(ps)ps.value=l;
+await loadLangs(l);applyUiLang();
+}
+function buildLangMenu(){
+const btn=$("uiLangBtn"),menu=$("uiLangMenu");if(!btn||!menu)return;
+if(menu.parentElement!==document.body)document.body.appendChild(menu); // above the header and tabs
+menu.innerHTML=UI_LANGS.map(([c,n])=>`<button type="button" role="menuitem" data-ui-lang="${c}" class="${c===uiLang?"on":""}"><b>${c.toUpperCase()}</b><span>${n}</span></button>`).join("");
+menu.querySelectorAll("[data-ui-lang]").forEach(x=>x.onclick=()=>{menu.classList.add("hidden");setUiLang(x.dataset.uiLang).then(buildLangMenu);});
+btn.onclick=e=>{e.stopPropagation();const r=btn.getBoundingClientRect();menu.style.top=(r.bottom+6)+"px";if(document.body.dir==="rtl"){menu.style.left=Math.max(8,r.left)+"px";menu.style.right="auto";}else{menu.style.right=Math.max(8,innerWidth-r.right)+"px";menu.style.left="auto";}menu.classList.toggle("hidden");};
+document.addEventListener("click",e=>{if(!menu.contains(e.target)&&e.target!==btn)menu.classList.add("hidden");});
+}
+let progLang=(()=>{try{const v=localStorage.getItem("homeex_prog_lang");if(PROG_LANGS[v])return v;}catch(e){}return PROG_LANGS[uiLang]?uiLang:"ar";})();
 // Language of a patient link (#...&l=es); empty = Arabic as before
 const viewLang=(()=>{const m=window.location.hash.match(/[#&]l=([a-z]{2})(?![a-z])/);return m&&PROG_LANGS[m[1]]&&m[1]!=="ar"?m[1]:"";})();
 const LANG_DATA={};
 function T(l,k,vars){let t=(I18N[l]||I18N.en)[k];if(t==null)t=I18N.en[k]||"";if(vars)Object.entries(vars).forEach(([a,b])=>{t=t.replace("{"+a+"}",b);});return t;}
-async function loadLang(l){if(!l||l==="ar"||LANG_DATA[l])return;try{const r=await fetch(`./lang/${l}.json`);if(r.ok)LANG_DATA[l]=(await r.json()).ex||{};}catch(e){console.warn("Language load:",e);}}
+async function loadLang(l){if(!l||l==="ar"||LANG_DATA[l])return;try{const r=await fetch(`./lang/${l}.json`);if(r.ok){const j=await r.json();LANG_DATA[l]=j.ex||{};LANG_UI[l]=j.ui||{};}}catch(e){console.warn("Language load:",e);}}
 function loadLangs(l){return Promise.all([loadLang(l),l&&l!=="ar"&&l!=="en"?loadLang("en"):null]);}
 // Exercise in another language (falls back to English, then to the original)
 function trEx(e,l){if(!e||!l||l==="ar")return e;const t=(LANG_DATA[l]||{})[e.id]||(LANG_DATA.en||{})[e.id];return t?{...e,name:t.n||e.name,description:t.d||e.description}:e;}
@@ -419,7 +470,7 @@ function fmtDose(d,l){if(!d)return"";const p=[];if(d.sets&&d.reps)p.push(T(l,"sr
 function applyViewLang(){
 if(!document.body.classList.contains("direct-mode"))return;
 const VL=viewLang||"ar",hero=$("patientHeroTitle"),disc=$("patientDisc");
-if(viewLang){document.documentElement.lang=viewLang;if(hero){hero.parentElement.dir="ltr";if(!(shareInfo&&shareInfo.patient))hero.textContent=T(viewLang,"title");}const h2=$("exerciseSummary").previousElementSibling;if(h2)h2.textContent=T(viewLang,"exercises");}
+if(viewLang){document.documentElement.lang=viewLang;if(hero){hero.parentElement.dir=viewLang==="ur"?"rtl":"ltr";if(!(shareInfo&&shareInfo.patient))hero.textContent=T(viewLang,"title");}const h2=$("exerciseSummary").previousElementSibling;if(h2)h2.textContent=T(viewLang,"exercises");}
 if(disc)disc.textContent=T(VL,"disc");
 }const EX_CACHE_KEY="homeex_ex_cache";
 let directExerciseNumbers=null,heroImageLinks=[],adImageLinks=[],heroTimer=null,adTimer=null,headerIntervalSeconds=4,adIntervalSeconds=5;
@@ -474,24 +525,31 @@ return[];
 }
 function sortedExercises(list){return [...list].sort((a,b)=>exerciseNumber(a)-exerciseNumber(b));}
 function imageList(e){return(e.images||[]).map(driveToImageUrl).filter(Boolean);}
+function normS(v){return String(v||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f\u064b-\u065f\u0670]/g,"").replace(/[أإآ]/g,"ا").replace(/ة/g,"ه").replace(/ى/g,"ي");}
+// Everything an exercise can be found by: number, original name/description, English and the screen language
+function searchHay(e){const parts=[exerciseNumber(e),e.name,e.description];[uiLang,"en"].forEach(l=>{if(l&&l!=="ar"){const t=(LANG_DATA[l]||{})[e.id];if(t)parts.push(t.n,t.d);}});exerciseRegions(e).forEach(r=>parts.push(r,trRegion(r,uiLang)));return normS(parts.join(" "));}
+function nameHay(e){const parts=[e.name];[uiLang,"en"].forEach(l=>{if(l&&l!=="ar"){const t=(LANG_DATA[l]||{})[e.id];if(t)parts.push(t.n);}});return normS(parts.join(" | "));}
+// Search results: name matches first, then exercises that only mention the words in the description
+function searchRank(list){const words=searchText.split(/\s+/).filter(Boolean),sc=e=>{const n=nameHay(e);return n.includes(searchText)?3:words.every(w=>n.includes(w))?2:1;};return sortedExercises(list).sort((a,b)=>sc(b)-sc(a));}
 function filteredExercises(){
 let list=[...exercises];
 if(isAdmin&&adminView()==="free")list=list.filter(e=>!e.private);
 if(searchNumbers&&searchNumbers.size)list=list.filter(e=>searchNumbers.has(exerciseNumber(e)));
+if(searchText){const words=searchText.split(/\s+/).filter(Boolean);list=list.filter(e=>{const h=searchHay(e);return words.every(w=>h.includes(w));});}
 if(directExerciseNumbers)list=list.filter(e=>directExerciseNumbers.includes(exerciseNumber(e)));
 if(activeRegions.size)list=list.filter(e=>exerciseRegions(e).some(r=>activeRegions.has(r)));
-return sortedExercises(list);
+return searchText?searchRank(list):sortedExercises(list);
 }
 function renderRegions(){
-$("regions").innerHTML=REGIONS.map(r=>`<button class="region ${activeRegions.has(r)?"active":""}" data-region="${escapeHtml(r)}">${escapeHtml(r)}</button>`).join("");
+$("regions").innerHTML=REGIONS.map(r=>`<button class="region ${activeRegions.has(r)?"active":""}" data-region="${escapeHtml(r)}">${escapeHtml(uiLang!=="ar"?trRegion(r,uiLang):r)}</button>`).join("");
 document.querySelectorAll(".region").forEach(btn=>btn.onclick=()=>{let r=btn.dataset.region;activeRegions.has(r)?activeRegions.delete(r):activeRegions.add(r);renderRegions();renderExercises();});
 }
 function renderExercises(){
 const list=filteredExercises();
-$("exerciseSummary").textContent=viewLang&&document.body.classList.contains("direct-mode")?T(viewLang,"count",{n:list.length}):searchNumbers?`${list.length} matching exercise${list.length===1?"":"s"} • sorted by number`:`${list.length} exercise${list.length===1?"":"s"} available`;
-if(!list.length){$("exerciseGrid").innerHTML=`<div class="empty">${searchNumbers?"No exercises match those numbers.":"No exercises found for the selected body region."}</div>`;return;}
+{const dm=document.body.classList.contains("direct-mode"),n=list.length,found=searchNumbers||searchText;$("exerciseSummary").textContent=dm&&viewLang?T(viewLang,"count",{n}):uiLang!=="ar"&&U("countAvail")?U(found?"countMatch":"countAvail",{n}):found?`${n} matching exercise${n===1?"":"s"}${searchNumbers?" • sorted by number":""}`:`${n} exercise${n===1?"":"s"} available`;}
+if(!list.length){$("exerciseGrid").innerHTML=`<div class="empty">${(searchNumbers||searchText)?escapeHtml(UX("noMatch","No exercises match your search.")):escapeHtml(UX("noRegion","No exercises found for the selected body region."))}</div>`;return;}
 $("exerciseGrid").innerHTML=list.map(e0=>{
-const e=viewLang?trEx(e0,viewLang):e0,VL=viewLang||"ar";
+const SL=showLang(),e=SL?trEx(e0,SL):e0,VL=viewLang||"ar";
 const imgs=imageList(e),idx=Math.min(galleryIndex.get(e.id)||0,Math.max(imgs.length-1,0));galleryIndex.set(e.id,idx);
 const selected=selectedIds.has(e.id),src=imgs[idx]||PLACEHOLDER_IMG,count=imgs.length;
 return `<article class="exercise-card ${selected?"selected":""}">
@@ -501,10 +559,10 @@ ${count>1?`<button class="gallery-arrow left" data-prev="${escapeHtml(e.id)}" ar
 ${count?`<div class="image-counter">${idx+1} / ${count}</div>`:""}
 </div>
 <div class="card-body">
-<div class="card-top"><div><h3 class="card-title" dir="auto">${escapeHtml(e.name)}</h3>${exerciseRegions(e).map(r=>`<span class="badge">${escapeHtml(viewLang?trRegion(r,viewLang):r)}</span>`).join(" ")}${e.private?`<span class="badge private-badge">🔒 ${isAdmin?escapeHtml(ownerLabel(e.code)):"Private"}</span>`:""}</div><div class="number-badge">#${exerciseNumber(e)}</div></div>
-${shareInfo&&shareInfo.dose&&shareInfo.dose[String(exerciseNumber(e))]?`<div class="dose-pill" dir="${VL==="ar"?"rtl":"ltr"}">${escapeHtml(T(VL,"dose"))}: ${escapeHtml(fmtDose(shareInfo.dose[String(exerciseNumber(e))],VL))}</div>`:""}
+<div class="card-top"><div><h3 class="card-title" dir="auto">${escapeHtml(e.name)}</h3>${exerciseRegions(e).map(r=>`<span class="badge">${escapeHtml(SL?trRegion(r,SL):r)}</span>`).join(" ")}${e.private?`<span class="badge private-badge">🔒 ${isAdmin?escapeHtml(ownerLabel(e.code)):"Private"}</span>`:""}</div><div class="number-badge">#${exerciseNumber(e)}</div></div>
+${shareInfo&&shareInfo.dose&&shareInfo.dose[String(exerciseNumber(e))]?`<div class="dose-pill" dir="${VL==="ar"||VL==="ur"?"rtl":"ltr"}">${escapeHtml(T(VL,"dose"))}: ${escapeHtml(fmtDose(shareInfo.dose[String(exerciseNumber(e))],VL))}</div>`:""}
 <p class="description" dir="auto" style="white-space:pre-line">${escapeHtml(e.description)}</p>
-<div class="card-actions"><label class="check"><input type="checkbox" data-check="${escapeHtml(e.id)}" ${selected?"checked":""}> Select</label>${e.video?`<a class="video-btn" href="${escapeHtml(e.video)}" target="_blank" rel="noopener">${escapeHtml(viewLang?T(viewLang,"video"):"Video")}</a>`:""}</div>
+<div class="card-actions"><label class="check"><input type="checkbox" data-check="${escapeHtml(e.id)}" ${selected?"checked":""}> ${escapeHtml(UX("select","Select"))}</label>${e.video?`<a class="video-btn" href="${escapeHtml(e.video)}" target="_blank" rel="noopener">${escapeHtml(SL?T(SL,"video"):"Video")}</a>`:""}</div>
 </div></article>`;
 }).join("");
 document.querySelectorAll("[data-check]").forEach(input=>input.onchange=()=>{let id=input.dataset.check;input.checked?selectedIds.add(id):selectedIds.delete(id);renderExercises();renderSend();});
@@ -518,9 +576,9 @@ let idx=galleryIndex.get(id)||0;idx=(idx+delta+imgs.length)%imgs.length;galleryI
 function renderSend(){
 $("selectedCount").textContent=`(${selectedIds.size})`;
 const list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));
-if(!list.length){$("selectedList").innerHTML=`<div class="empty">No exercises selected yet. Go back to Exercise and check what you want the patient to do.</div>`;return;}
+if(!list.length){$("selectedList").innerHTML=`<div class="empty">${escapeHtml(UX("noneSelected","No exercises selected yet. Go back to Exercise and check what you want the patient to do."))}</div>`;return;}
 const withDose=featureOn("dosage");
-$("selectedList").innerHTML=list.map(e=>{let image=imageList(e)[0]||PLACEHOLDER_IMG;const d=dosage.get(e.id)||{};return`<div class="selected-item" data-item-id="${escapeHtml(e.id)}"><img src="${escapeHtml(image)}" alt=""><div><strong>#${exerciseNumber(e)} — ${escapeHtml(e.name)}</strong><small>${escapeHtml(exerciseRegions(e).join(", "))}</small>${withDose?`<div class="dose-row no-print">${[["sets","Sets"],["reps","Reps"],["hold","Hold (s)"],["freq","Times/day"]].map(([k,l])=>`<label>${l}<input type="number" min="0" data-dose="${escapeHtml(e.id)}" data-key="${k}" value="${escapeHtml(d[k]||"")}"></label>`).join("")}</div>`:""}</div></div>`;}).join("");
+$("selectedList").innerHTML=list.map(e=>{let image=imageList(e)[0]||PLACEHOLDER_IMG;const d=dosage.get(e.id)||{};return`<div class="selected-item" data-item-id="${escapeHtml(e.id)}"><img src="${escapeHtml(image)}" alt=""><div><strong dir="auto">#${exerciseNumber(e)} — ${escapeHtml(trEx(e,showLang()).name)}</strong><small>${escapeHtml(exerciseRegions(e).map(r=>uiLang!=="ar"?trRegion(r,uiLang):r).join(", "))}</small>${withDose?`<div class="dose-row no-print">${[["sets",UX("sets","Sets")],["reps",UX("reps","Reps")],["hold",UX("holdS","Hold (s)")],["freq",UX("perDay","Times/day")]].map(([k,l])=>`<label>${l}<input type="number" min="0" data-dose="${escapeHtml(e.id)}" data-key="${k}" value="${escapeHtml(d[k]||"")}"></label>`).join("")}</div>`:""}</div></div>`;}).join("");
 document.querySelectorAll("[data-dose]").forEach(inp=>inp.oninput=()=>{const id=inp.dataset.dose,d={...(dosage.get(id)||{})};d[inp.dataset.key]=inp.value.trim();dosage.set(id,d);});
 }
 function doseText(id,lang){
@@ -673,7 +731,7 @@ selectedIds.clear();
 let count=0;
 t.items.forEach(it=>{const e=byNum.get(it.n);if(!e)return;selectedIds.add(e.id);count++;
 dosage.set(e.id,{sets:it.sets||"",reps:it.reps||"",hold:it.hold||"",freq:it.freq||""});});
-searchNumbers=null;$("exerciseSearch").value="";
+searchNumbers=null;searchText="";$("exerciseSearch").value="";
 renderExercises();switchTab("sendTab");window.scrollTo({top:0,behavior:"smooth"});
 toast(`✓ ${t.name}: ${count} exercises ready`);
 }
@@ -1381,8 +1439,10 @@ btn.textContent="Login";
 }
 }
 function parseSearchNumbers(){
-const raw=$("exerciseSearch").value.trim();if(!raw){searchNumbers=null;renderExercises();return;}
-const nums=raw.split(/[\s,;]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0);searchNumbers=nums.length?new Set(nums):new Set([-1]);renderExercises();
+const raw=$("exerciseSearch").value.trim();if(!raw){searchNumbers=null;searchText="";renderExercises();return;}
+if(/^[\d\s,;]+$/.test(raw)){const nums=raw.split(/[\s,;]+/).map(Number).filter(n=>Number.isInteger(n)&&n>0);searchNumbers=nums.length?new Set(nums):new Set([-1]);searchText="";}
+else{searchNumbers=null;searchText=normS(raw);}
+renderExercises();
 }
 async function whatsapp(){
 const patient=$("patientName").value.trim();
@@ -1642,8 +1702,9 @@ finally{btn.disabled=false;btn.textContent=label;}
 
 document.querySelectorAll(".tab").forEach(t=>t.onclick=()=>switchTab(t.dataset.tab));
 $("clearFilters").onclick=()=>{activeRegions.clear();renderRegions();renderExercises();};
-$("searchBtn").onclick=parseSearchNumbers;$("clearSearchBtn").onclick=()=>{$("exerciseSearch").value="";searchNumbers=null;renderExercises();};
+$("searchBtn").onclick=parseSearchNumbers;$("clearSearchBtn").onclick=()=>{$("exerciseSearch").value="";searchNumbers=null;searchText="";renderExercises();};
 $("exerciseSearch").addEventListener("keydown",e=>{if(e.key==="Enter")parseSearchNumbers();});
+{let st=null;$("exerciseSearch").addEventListener("input",()=>{clearTimeout(st);st=setTimeout(parseSearchNumbers,250);});}
 $("backBtn").onclick=()=>switchTab("exerciseTab");$("saveProtoBtn").onclick=saveMyProtocol;$("requestExBtn").onclick=openRequestModal;$("reqSendBtn").onclick=sendRequest;$("whatsappBtn").onclick=whatsapp;$("pdfBtn").onclick=makePdf;$("adminOpenBtn").onclick=showAdmin;$("footerAdminBtn").onclick=showAdmin;
 $("homeLink").onclick=()=>{
 const u=new URL(window.location.href);
@@ -1697,7 +1758,8 @@ document.body.classList.add("direct-mode");
 switchTab("exerciseTab");
 }
 const progSel=$("progLang");if(progSel){progSel.value=progLang;progSel.onchange=()=>{progLang=progSel.value;lsSet("homeex_prog_lang",progLang);loadLangs(progLang);};}
-loadSettings().then(async()=>{await loadShare();await loadLangs(viewLang);applyViewLang();loadExercises();await refreshPro();if(subsOn()&&/^#pro$/i.test(window.location.hash))openPro();});homeexTrackVisit();
+buildLangMenu();applyUiLang(false);
+loadSettings().then(async()=>{await loadShare();await loadLangs(document.body.classList.contains("direct-mode")?viewLang:(uiLang!=="ar"?uiLang:""));applyViewLang();applyUiLang(false);loadExercises();await refreshPro();if(subsOn()&&/^#pro$/i.test(window.location.hash))openPro();});homeexTrackVisit();
 
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(e=>console.warn("Service worker registration failed",e)));}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.__hxInstallPrompt=e;});
