@@ -102,6 +102,7 @@ body.ui-foreign #homeProBanner,body.ui-foreign #proBanner{display:none!important
 </style><style id="homeex-v15-6-ui-only">
 /* UI-only safety patch: do not alter app/Firebase logic */
 #footerAdminBtn{font-size:11px!important;opacity:.65!important}
+body.in-app #footerAdminBtn,body.in-app #footerAdminSep,body.in-app #adminOpenBtn,body.in-app #adminBtn,body.in-app #loginModal,body.in-app #adminTab{display:none!important}
 </style>
 <style id="homeex-pro">
 /* Pro / subscriptions / feature flags */
@@ -738,10 +739,15 @@ toast(`✓ ${t.name}: ${count} exercises ready`);
 function proStatusHtml(){
 if(proActive)return`<div class="pro-status ok" dir="rtl">✅ اشتراك Pro شغال على الجهاز ده.<br>المشترك: <b>${escapeHtml(proInfo.name||"—")}</b><br>صالح حتى: <b>${fmtDate(proInfo.expiresAt)}</b> (فاضل ${Math.max(0,Math.ceil((proInfo.expiresAt-Date.now())/864e5))} يوم)</div>`;
 if(!proInfo)return"";
-const msg={missing:"الكود ده مش موجود.",other:"الكود ده متفعّل على جهاز تاني.",stopped:"الاشتراك ده متوقف.",expired:`الاشتراك خلص يوم ${fmtDate(proInfo.expiresAt)}. كلمنا عشان تجدد على نفس الكود.`,error:"مقدرناش نتأكد من الاشتراك. اتأكد من النت."}[proInfo.status];
+const msg={missing:"الكود ده مش موجود.",other:"الكود ده متفعّل على جهاز تاني.",stopped:"الاشتراك ده متوقف.",expired:`الاشتراك خلص يوم ${fmtDate(proInfo.expiresAt)}.${IN_APP?"":" كلمنا عشان تجدد على نفس الكود."}`,error:"مقدرناش نتأكد من الاشتراك. اتأكد من النت."}[proInfo.status];
 return msg?`<div class="pro-status bad" dir="rtl">${escapeHtml(msg)}</div>`:"";
 }
+// Inside the Android app (Google Play) we never show prices or ways to pay; only "enter your code".
+const IN_APP=/HomeExApp\//.test(navigator.userAgent);
+if(IN_APP)document.body.classList.add("in-app"); // the admin area is website-only
+
 function proWaLink(planName){
+if(IN_APP)return"";
 const n=waPhone(PRO_PAGE.whatsapp);if(!n)return"";
 const renew=proInfo&&proInfo.status==="expired"?` (تجديد — الكود: ${lsGet(PRO_KEY)})`:"";
 return`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، عايز أشترك في HomeEx Pro${planName?` — باقة ${planName}`:""}${renew}`)}`;
@@ -754,11 +760,11 @@ box.innerHTML=`<div dir="rtl">
 <h3 style="margin:6px 0 0;font-size:20px">${escapeHtml(p.headline||"")}</h3>
 <p class="offer-sub">مع اشتراك Pro هتاخد:</p>
 <ul class="offer-list">${(p.features||[]).filter(Boolean).map(f=>`<li>✅ ${escapeHtml(f)}</li>`).join("")}</ul>
-${plans.length?`<div class="plans">${plans.map(x=>{const l=proWaLink(x.name);return`<div class="plan ${x.best?"best":""}">${x.best?`<small style="color:#b45309;font-weight:800">⭐ الأوفر</small>`:""}<b>${escapeHtml(x.name)}</b><div class="price">${escapeHtml(x.price||"")}</div><small>${escapeHtml(x.note||"")}</small>${l?`<a class="btn btn-green" href="${escapeHtml(l)}" target="_blank" rel="noopener">اشترك</a>`:""}</div>`;}).join("")}</div>`:""}
+${plans.length&&!IN_APP?`<div class="plans">${plans.map(x=>{const l=proWaLink(x.name);return`<div class="plan ${x.best?"best":""}">${x.best?`<small style="color:#b45309;font-weight:800">⭐ الأوفر</small>`:""}<b>${escapeHtml(x.name)}</b><div class="price">${escapeHtml(x.price||"")}</div><small>${escapeHtml(x.note||"")}</small>${l?`<a class="btn btn-green" href="${escapeHtml(l)}" target="_blank" rel="noopener">اشترك</a>`:""}</div>`;}).join("")}</div>`:""}
 ${!plans.length&&proWaLink("")?`<a class="btn btn-green" href="${escapeHtml(proWaLink(""))}" target="_blank" rel="noopener">اشترك على واتساب</a>`:""}
-${clinicOfferHtml()}
+${IN_APP?"":clinicOfferHtml()}
 <p class="code-meta">👤 بعد التفعيل، زرار ⭐ Pro اللي فوق بيتحول لـ <b>"👤 My account"</b>: فيه اشتراكك، وبروتوكولاتك، وتمارينك الخاصة، وطلباتك، وزرار "اطلب تمرين".</p>
-<p class="code-meta">الدفع بـ InstaPay أو فودافون كاش، وبعدها بيوصلك كود التفعيل على الواتساب.</p>
+${IN_APP?"":`<p class="code-meta">الدفع بـ InstaPay أو فودافون كاش، وبعدها بيوصلك كود التفعيل على الواتساب.</p>`}
 </div>`;
 }
 function openPro(){
@@ -1566,7 +1572,7 @@ catch(e){console.warn(e);return"—";}
 function renderAccount(){
 const box=$("proOffer"),code=proCode();const info=isPreview()?{name:"Admin (preview · معاينة)",expiresAt:Date.now()+365*864e5,clinic:null}:info;if(!code||!info){box.innerHTML="";return;}
 const days=Math.max(0,Math.ceil((info.expiresAt-Date.now())/864e5));
-const n=waPhone(PRO_PAGE.whatsapp),renew=n?`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، عايز أجدد اشتراك HomeEx Pro — الكود: ${code}`)}`:"";
+const n=IN_APP?"":waPhone(PRO_PAGE.whatsapp),renew=n?`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، عايز أجدد اشتراك HomeEx Pro — الكود: ${code}`)}`:"";
 const b=getBrand(),priv=sortedExercises(exercises.filter(e=>e.private));
 const brandOn=featureOn("branding");
 box.innerHTML=`<div dir="rtl" class="account">
@@ -1861,12 +1867,14 @@ async function homeexTrackVisit(){
 <footer class="footer" style="padding:18px 8px 25px;text-align:center;font-size:12px;color:#98a2b3">
   <a href="mailto:ahmed4nassef@gmail.com">Contact Us</a>
   <span style="margin:0 7px">•</span>
+  <a href="privacy.html">Privacy</a>
+  <span style="margin:0 7px">•</span>
   <a href="mailto:ahmed4nassef@gmail.com">ahmed4nassef@gmail.com</a>
   <span style="margin:0 7px">•</span>
   <span>Visits: <b id="visitCount">—</b></span>
   <span id="footerProSep" class="hidden" style="margin:0 7px">•</span>
   <button id="footerProBtn" class="hidden" type="button" style="border:0;background:none;padding:0;color:inherit;font:inherit;cursor:pointer">Pro</button>
-  <span style="margin:0 7px">•</span>
+  <span id="footerAdminSep" style="margin:0 7px">•</span>
   <button id="footerAdminBtn" type="button" style="border:0;background:none;padding:0;color:inherit;font:inherit;cursor:pointer">Admin</button>
 </footer></body>
 </html>
