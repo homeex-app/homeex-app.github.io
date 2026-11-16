@@ -599,9 +599,9 @@ function adminView(){try{return sessionStorage.getItem(VIEW_KEY)||"pro";}catch(e
 function hasPro(){return isAdmin?adminView()!=="free":(proActive||GP.pro);}
 function featureOn(k){const m=FEATURES[k]||"off";if(m==="off")return false;if(m==="all")return true;return hasPro();}
 function featureLocked(k){return FEATURES[k]==="pro"&&subsOn()&&!featureOn(k);}
-// Website: Pro = codes sold on WhatsApp. Android app: Pro = Google Play subscription (admin switch "gplay"),
-// plus codes when the code system is on. Google subscribers keep Pro even after the switch is turned off.
-function subsOn(){return IN_APP?(gpOn()||GP.pro||FEATURES.subscriptions==="on"):FEATURES.subscriptions==="on";}
+// Website: Pro = codes sold on WhatsApp. Android app: Pro = Google Play subscription only (admin switch "gplay");
+// codes bought outside are not offered inside the app. Google subscribers keep Pro even after the switch is turned off.
+function subsOn(){return IN_APP?(gpOn()||GP.pro):FEATURES.subscriptions==="on";}
 /* ---------- Google Play subscription (Android app only, through window.HomeExAndroid) ---------- */
 function gpBridge(){try{return IN_APP&&!!window.HomeExAndroid&&typeof window.HomeExAndroid.gpState==="function";}catch(e){return false;}}
 function gpOn(){return FEATURES.gplay==="on"&&gpBridge()&&GP.ready;}
@@ -798,6 +798,16 @@ const n=waPhone(PRO_PAGE.whatsapp);if(!n)return"";
 const renew=proInfo&&proInfo.status==="expired"?` (تجديد — الكود: ${lsGet(PRO_KEY)})`:"";
 return`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، عايز أشترك في HomeEx Pro${planName?` — باقة ${planName}`:""}${renew}`)}`;
 }
+// What a Google Play subscriber really gets with the current Admin settings (never promise more)
+function gpFeatures(){
+const f=[];
+if((Number(LIMITS.app)||0)>0)f.push("إرسال برامج من غير حد يومي");
+if(FEATURES.dosage==="pro")f.push("تحديد Sets و Reps و Hold وعدد المرات في اليوم لكل تمرين");
+if(FEATURES.branding==="pro")f.push("اسمك واسم العيادة ورقمك واللوجو على كل PDF ورسالة واتساب ولينك المريض");
+if(FEATURES.templates==="pro"||(FEATURES.templates==="all"&&TEMPLATES.some(t=>t.pro)))f.push("كل البروتوكولات الجاهزة (Free + Pro)");
+f.push("اعمل بروتوكولاتك الخاصة واحفظها على موبايلك");
+return f;
+}
 function gpOfferHtml(){
 const plans=(GP.plans||[]).filter(x=>x&&x.token);
 if(!plans.length)return`<div class="notice" dir="rtl">الاشتراك مش متاح دلوقتي. اتأكد إن النت شغال وإن جوجل بلاي متحدّث، وجرّب تاني.</div>`;
@@ -833,7 +843,7 @@ if(proActive||isPreview()){renderAccount();return;}
 if(GP.pro){renderGpAccount();return;}
 const p=PRO_PAGE,plans=(p.plans||[]).filter(x=>x&&x.name),gp=IN_APP&&gpOn();
 // Google Play subscribers get exactly these (no code-only extras like private exercises or requests)
-const feats=gp?["إرسال برامج من غير حد يومي","تحديد Sets و Reps و Hold وعدد المرات في اليوم لكل تمرين","اسمك واسم العيادة ورقمك واللوجو على كل PDF ورسالة واتساب ولينك المريض","كل البروتوكولات الجاهزة (Free + Pro)","اعمل بروتوكولاتك الخاصة واحفظها على موبايلك"]:(p.features||[]);
+const feats=gp?gpFeatures():(p.features||[]);
 box.innerHTML=`<div dir="rtl">
 <h3 style="margin:6px 0 0;font-size:20px">${escapeHtml(p.headline||"")}</h3>
 <p class="offer-sub">مع اشتراك Pro هتاخد:</p>
@@ -853,8 +863,8 @@ const acct=proActive||isPreview()||GP.pro;
 $("proModalTitle").textContent=acct?"👤 My account":"⭐ HomeEx Pro";
 $("proStatus").innerHTML=acct?"":proStatusHtml();renderOffer();$("proNotice").innerHTML="";
 $("proCodeInput").value=lsGet(PRO_KEY)||"";
-// Inside the app the code box shows only while the code system is on (website subscribers)
-$("proCodeArea").classList.toggle("hidden",!!acct||(IN_APP&&FEATURES.subscriptions!=="on"));
+// Inside the app there is no code box: Pro is sold only through Google Play
+$("proCodeArea").classList.toggle("hidden",!!acct||IN_APP);
 $("proModal").classList.remove("hidden");
 }
 async function ensureDeviceUser(){
@@ -872,7 +882,7 @@ return{status:"active",expiresAt:exp,name:d.name,clinic:d.clinicId?{id:d.clinicI
 async function refreshPro(){
 proActive=false;proInfo=null;
 const code=lsGet(PRO_KEY);
-if(subsOn()&&code){
+if(!IN_APP&&subsOn()&&code){
 try{
 const user=await ensureDeviceUser();
 const snap=await getDoc(doc(db,"codes",code));
@@ -1119,7 +1129,7 @@ return`<div class="settings-card" dir="rtl"><h3>📱 الحد المجاني و�
 <div class="field"><label>الحد اليومي على الموقع</label><input id="limWeb" type="number" min="0" step="1" value="${Number(LIMITS.web)||0}"></div>
 <div class="field"><label>الحد اليومي في الأبلكيشن</label><input id="limApp" type="number" min="0" step="1" value="${Number(LIMITS.app)||0}"></div>
 <div class="field full"><label>الدفع من جوجل في الأبلكيشن</label><select id="gplaySel"><option value="off" ${FEATURES.gplay!=="on"?"selected":""}>مقفول — الأبلكيشن مجاني من غير حد ولا زرار شراء</option><option value="on" ${FEATURES.gplay==="on"?"selected":""}>شغال — زرار الاشتراك من جوجل + الحد اليومي</option></select>
-<small style="display:block;margin-top:6px;color:#667085;line-height:1.7">حد الأبلكيشن بيشتغل بس والدفع من جوجل شغال. اللي اشترك من جوجل بيفضل Pro حتى لو قفلته. اقفله وقت مراجعة جوجل.<br>المزايا اللي على "للمشتركين بس" (تحت) هي اللي بتتفتح بالاشتراك.</small></div>
+<small style="display:block;margin-top:6px;color:#667085;line-height:1.7">حد الأبلكيشن بيشتغل بس والدفع من جوجل شغال. اللي اشترك من جوجل بيفضل Pro حتى لو قفلته.<br>⚠️ الاشتراك بيفتح بس المزايا اللي على <b>"للمشتركين بس"</b> في كارت المزايا تحت — قبل ما تشغّله حط الجرعات والبراندنج والبروتوكولات على "للمشتركين بس". على الموقع هتفضل مستخبية طول ما نظام الأكواد مقفول.<br>جوه الأبلكيشن مفيش تفعيل أكواد — الاشتراك من جوجل بس.</small></div>
 </div>
 <div style="margin-top:12px"><button class="btn btn-primary" id="saveLimitsBtn">حفظ</button></div><div id="limitsNotice"></div>
 <h3 style="margin-top:18px">👥 الأجهزة اللي فتحت (آخر 7 أيام)</h3><div id="dailyUsers" class="code-meta">Loading…</div>
