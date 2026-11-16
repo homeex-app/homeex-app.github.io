@@ -66,7 +66,9 @@ def main():
             old = json.loads(OUT.read_text(encoding="utf-8"))
         except Exception:
             old = None
-    if old and old.get("v") == version and version and "--force" not in sys.argv:
+    # GitHub turns off scheduled workflows after 60 days without commits: refresh the file once a month
+    stale = not old or time.time() * 1000 - (old.get("at") or 0) > 30 * 864e5
+    if old and old.get("v") == version and version and not stale and "--force" not in sys.argv:
         print(f"up to date (version {version})")
         return
     items, token = [], ""
@@ -84,7 +86,7 @@ def main():
         print("no exercises read; keeping the old file")
         sys.exit(1)
     items.sort(key=lambda e: (e.get("number") if isinstance(e.get("number"), (int, float)) else 10**9, e["id"]))
-    if old and old.get("v") == version and old.get("list") == items:
+    if old and old.get("v") == version and old.get("list") == items and not stale:
         print(f"no change (version {version})")
         return
     OUT.parent.mkdir(exist_ok=True)
