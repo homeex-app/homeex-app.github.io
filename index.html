@@ -477,6 +477,7 @@ const VL=viewLang||"ar",hero=$("patientHeroTitle"),disc=$("patientDisc");
 if(viewLang){document.documentElement.lang=viewLang;if(hero){hero.parentElement.dir=viewLang==="ur"?"rtl":"ltr";if(!(shareInfo&&shareInfo.patient))hero.textContent=T(viewLang,"title");}const h2=$("exerciseSummary").previousElementSibling;if(h2)h2.textContent=T(viewLang,"exercises");}
 if(disc)disc.textContent=T(VL,"disc");
 }const EX_CACHE_KEY="homeex_ex_cache";
+let appHeroImage="";
 let directExerciseNumbers=null,heroImageLinks=[],adImageLinks=[],heroTimer=null,adTimer=null,headerIntervalSeconds=4,adIntervalSeconds=5;
 const galleryIndex=new Map();
 // Feature flags (settings/main.features). "off" = hidden for everyone, "all" = everyone, "pro" = subscribers + admin.
@@ -1347,6 +1348,7 @@ try{
 if(d){
 exVersion=Number(d.exVersion)||0;
 heroImageLinks=Array.isArray(d.heroImages)?d.heroImages.filter(Boolean):[];
+appHeroImage=typeof d.appHeroImage==="string"?d.appHeroImage.trim():"";
 adImageLinks=Array.isArray(d.adImages)?d.adImages.map(x=>typeof x==="string"?{img:x,link:x}:{img:String(x?.img||"").trim(),link:String(x?.link||x?.img||"").trim()}).filter(x=>x.img):[];
 headerIntervalSeconds=Math.max(2,Number(d.headerIntervalSeconds)||4);
 adIntervalSeconds=Math.max(2,Number(d.adIntervalSeconds)||5);
@@ -1373,14 +1375,14 @@ return {img:parts[0],link:parts[1]||parts[0]};
 }
 async function saveSiteSettings(){
 if(!isAdmin)return;
-const hero=parseLines($("heroImageLinks").value), ads=parseAdLines($("adImageLinks").value);
+const hero=parseLines($("heroImageLinks").value), ads=parseAdLines($("adImageLinks").value), appHero=($("appHeroImage")?.value||"").trim();
 const headerSeconds=Math.max(2,Number($("headerIntervalSeconds")?.value)||4);
 const adSeconds=Math.max(2,Number($("adIntervalSeconds")?.value)||5);
 const regions=[...new Set(parseLines($("regionsList")?.value))];
 if(!regions.length){$("siteSettingsNotice").innerHTML=`<div class="notice error">أضف قسم واحد على الأقل قبل الحفظ.</div>`;return;}
 try{
-await setDoc(doc(db,"settings","main"),{heroImages:hero,adImages:ads,headerIntervalSeconds:headerSeconds,adIntervalSeconds:adSeconds,regions,updatedAt:serverTimestamp()},{merge:true});
-heroImageLinks=hero;adImageLinks=ads;headerIntervalSeconds=headerSeconds;adIntervalSeconds=adSeconds;REGIONS=regions;
+await setDoc(doc(db,"settings","main"),{heroImages:hero,appHeroImage:appHero,adImages:ads,headerIntervalSeconds:headerSeconds,adIntervalSeconds:adSeconds,regions,updatedAt:serverTimestamp()},{merge:true});
+heroImageLinks=hero;appHeroImage=appHero;adImageLinks=ads;headerIntervalSeconds=headerSeconds;adIntervalSeconds=adSeconds;REGIONS=regions;
 activeRegions=new Set([...activeRegions].filter(r=>REGIONS.includes(r)));
 renderHero();renderAd();renderRegions();renderExercises();
 $("siteSettingsNotice").innerHTML=`<div class="notice success">Site settings saved successfully.</div>`;
@@ -1391,7 +1393,8 @@ console.error(e);$("siteSettingsNotice").innerHTML=`<div class="notice error">${
 function renderHero(){
 const box=$("heroSlides");if(!box)return;
 const old=box.querySelectorAll(".hero-slide");old.forEach(x=>x.remove());
-const imgs=(heroImageLinks||[]).map(driveToImageUrl).filter(Boolean);
+// Inside the Android app: one fixed header picture (Admin "app header image", or the first header image)
+const imgs=(IN_APP?[appHeroImage||(heroImageLinks||[])[0]]:(heroImageLinks||[])).map(x=>x?driveToImageUrl(x):"").filter(Boolean);
 imgs.forEach((src,i)=>{const s=document.createElement("div");s.className="hero-slide"+(i===0?" active":"");s.style.backgroundImage=`url("${src.replace(/"/g,'\\"')}")`;s.onerror=()=>{};box.insertBefore(s,box.firstChild);});
 if(heroTimer){clearInterval(heroTimer);heroTimer=null;}
 if(imgs.length>1){let i=0;heroTimer=setInterval(()=>{const slides=[...box.querySelectorAll(".hero-slide")];if(!slides.length)return;slides[i].classList.remove("active");i=(i+1)%slides.length;slides[i].classList.add("active");},Math.max(2,Number(headerIntervalSeconds)||4)*1000);}
@@ -1417,7 +1420,7 @@ $("adminContent").innerHTML=`<div class="admin-panel">
 <div class="settings-card"><h3>Website appearance</h3><p>Add multiple images using one Google Drive link per line. Header images rotate every 4 seconds. Advertisement images use the interval below.</p>
 <div class="settings-grid">
 <div class="field"><label>Header images</label><textarea id="heroImageLinks" class="settings-textarea" placeholder="Google Drive image link — one per line">${escapeHtml(settingLines(heroImageLinks))}</textarea><small style="display:block;margin-top:6px;color:#667085">Keep the same header size. Drive files must be shared as “Anyone with the link”.</small><label style="display:block;margin-top:10px">Header change every (seconds)
-<input id="headerIntervalSeconds" type="number" min="2" step="1" value="4"></label></div>
+<input id="headerIntervalSeconds" type="number" min="2" step="1" value="4"></label><label style="display:block;margin-top:10px">📱 صورة الهيدر في الأبلكيشن (صورة واحدة ثابتة)<input id="appHeroImage" placeholder="لينك صورة واحدة — لو فاضي هياخد أول صورة من فوق" value="${escapeHtml(appHeroImage)}"></label><small style="display:block;margin-top:6px;color:#667085">جوه الأبلكيشن الهيدر مش بيتغير؛ متحطش فيها إعلان أو عرض.</small></div>
 <div class="field"><label>Advertisement images</label><label style="display:block;margin-top:10px">Advertisement change every (seconds)
 <input id="adIntervalSeconds" type="number" min="2" step="1" value="5"></label><textarea id="adImageLinks" class="settings-textarea" placeholder="لينك الصورة — أو لينك الصورة | لينك الصفحة اللي هتفتح لما حد يدوس عليها">${escapeHtml(adLinesToText(adImageLinks))}</textarea><small style="display:block;margin-top:6px;color:#667085">سطر لكل صورة. لو عايز الإعلان يفتح لينك مختلف عن الصورة نفسها لما حد يدوس عليه، اكتب بعد لينك الصورة علامة | وبعدها لينك الوجهة. مثال:<br><code>https://drive.google.com/...view | https://example.com/offer</code><br>لو مكتبتش علامة | خالص، الدوس على الإعلان هيفتح الصورة نفسها في تاب جديد زي ما كان.</small></div>
 <div class="field full"><label>Body regions (categories)</label><textarea id="regionsList" class="settings-textarea" placeholder="One region per line">${escapeHtml(settingLines(REGIONS))}</textarea><small style="display:block;margin-top:6px;color:#667085">قسم واحد في كل سطر. أضف قسم جديد بإضافة سطر، أو احذف قسم بمسح سطره — يفضل ما تحذفش قسم لسه فيه تمارين مربوطة بيه.</small></div>
