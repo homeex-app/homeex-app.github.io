@@ -616,7 +616,7 @@ if(was!==GP.pro)loadProExtras();
 if(!$("proModal").classList.contains("hidden"))openPro();
 };
 function gpPeriod(p){return({P1W:"أسبوع",P1M:"شهر",P3M:"3 شهور",P6M:"6 شهور",P1Y:"سنة"})[p]||p||"";}
-function gpTrial(p){const m=String(p||"").match(/^P(\d+)([DWM])$/);if(!m)return"";const n=+m[1];return m[2]==="D"?`${n} يوم`:m[2]==="W"?`${n*7} يوم`:`${n} شهر`;}
+function gpTrial(p){const m=String(p||"").match(/^P(\d+)([DWM])$/);if(!m)return"";const n=m[2]==="W"?+m[1]*7:+m[1],days=n>=3&&n<=10?"أيام":"يوم";return m[2]==="M"?`${n} ${n>=3&&n<=10?"شهور":"شهر"}`:`${n} ${days}`;}
 /* ---------- Free daily sends (counted on the device; one program counts once even if sent by WhatsApp and PDF) ---------- */
 const SENDS_KEY="homeex_sends";
 function sendLimit(){
