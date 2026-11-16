@@ -24,6 +24,14 @@ service cloud.firestore {
                              && request.resource.data.visits is int;
     }
 
+    // Devices that opened the site per day (stats/d-YYYY-MM-DD), shown in Admin
+    match /stats/{day} {
+      allow read: if true;
+      allow create, update: if day.matches('d-[0-9]{4}-[0-9]{2}-[0-9]{2}')
+                             && request.resource.data.keys().hasOnly(['n'])
+                             && request.resource.data.n is int;
+    }
+
     // HomeEx Pro subscription codes
     match /codes/{code} {
       allow get: if request.auth != null;

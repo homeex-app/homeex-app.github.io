@@ -102,6 +102,7 @@ body.ui-foreign #homeProBanner,body.ui-foreign #proBanner{display:none!important
 </style><style id="homeex-v15-6-ui-only">
 /* UI-only safety patch: do not alter app/Firebase logic */
 #footerAdminBtn{font-size:11px!important;opacity:.65!important}
+#installBtn,#installModal{display:none!important} /* "Download App" removed from the website (the app comes from Google Play) */
 body.in-app #footerAdminBtn,body.in-app #footerAdminSep,body.in-app #adminOpenBtn,body.in-app #adminBtn,body.in-app #loginModal,body.in-app #adminTab{display:none!important}
 </style>
 <style id="homeex-pro">
@@ -257,6 +258,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 </div>
 </div>
 <div id="selectedList" class="selected-list"></div>
+<div id="sendsLeft" class="code-meta no-print hidden" dir="rtl" style="margin:10px 0 0"></div>
 <div class="send-actions no-print">
 <button class="btn btn-green" id="whatsappBtn" data-i18n="whatsapp">Send on WhatsApp</button>
 <button class="btn btn-dark" id="pdfBtn" data-i18n="pdf">Download PDF</button>
@@ -479,6 +481,7 @@ const galleryIndex=new Map();
 // Feature flags (settings/main.features). "off" = hidden for everyone, "all" = everyone, "pro" = subscribers + admin.
 let FEATURES={subscriptions:"off",templates:"off",dosage:"off",branding:"off",exAd:"on",protoAd:"on"};
 let TEMPLATES=[],proActive=false,proInfo=null,codesCache=null;
+let GP={ready:false,pro:false,plans:[]},LIMITS={web:0,app:0};
 // Sales page shown inside the Pro window (settings/main.proPage) — editable from Admin.
 let PRO_PAGE={
 headline:"وفّر وقتك واظهر باحترافية أكتر قدام كل مريض",
@@ -593,10 +596,52 @@ function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(
 // Admin can preview the site as a subscriber ("pro") or as a free user ("free").
 const VIEW_KEY="homeex_admin_view";
 function adminView(){try{return sessionStorage.getItem(VIEW_KEY)||"pro";}catch(e){return"pro";}}
-function hasPro(){return isAdmin?adminView()!=="free":proActive;}
+function hasPro(){return isAdmin?adminView()!=="free":(proActive||GP.pro);}
 function featureOn(k){const m=FEATURES[k]||"off";if(m==="off")return false;if(m==="all")return true;return hasPro();}
-function featureLocked(k){return FEATURES[k]==="pro"&&FEATURES.subscriptions==="on"&&!featureOn(k);}
-function subsOn(){return FEATURES.subscriptions==="on";}
+function featureLocked(k){return FEATURES[k]==="pro"&&subsOn()&&!featureOn(k);}
+// Website: Pro = codes sold on WhatsApp. Android app: Pro = Google Play subscription (admin switch "gplay"),
+// plus codes when the code system is on. Google subscribers keep Pro even after the switch is turned off.
+function subsOn(){return IN_APP?(gpOn()||GP.pro||FEATURES.subscriptions==="on"):FEATURES.subscriptions==="on";}
+/* ---------- Google Play subscription (Android app only, through window.HomeExAndroid) ---------- */
+function gpBridge(){try{return IN_APP&&!!window.HomeExAndroid&&typeof window.HomeExAndroid.gpState==="function";}catch(e){return false;}}
+function gpOn(){return FEATURES.gplay==="on"&&gpBridge()&&GP.ready;}
+function gpRead(){if(!gpBridge())return;try{GP={ready:false,pro:false,plans:[],...JSON.parse(window.HomeExAndroid.gpState()||"{}")};}catch(e){console.warn("gpState:",e);}}
+window.__hxGpUpdate=function(ev){
+const was=GP.pro;gpRead();
+if(ev==="purchased")toast("🎉 تم تفعيل Pro — شكراً لاشتراكك");
+else if(ev==="error")toast("الدفع ماتمش. جرّب تاني.");
+else if(ev==="pending")toast("الدفع لسه بيتأكد من جوجل. هيتفعل أول ما يخلص.");
+applyFeatures();
+if(was!==GP.pro)loadProExtras();
+if(!$("proModal").classList.contains("hidden"))openPro();
+};
+function gpPeriod(p){return({P1W:"أسبوع",P1M:"شهر",P3M:"3 شهور",P6M:"6 شهور",P1Y:"سنة"})[p]||p||"";}
+function gpTrial(p){const m=String(p||"").match(/^P(\d+)([DWM])$/);if(!m)return"";const n=+m[1];return m[2]==="D"?`${n} يوم`:m[2]==="W"?`${n*7} يوم`:`${n} شهر`;}
+/* ---------- Free daily sends (counted on the device; one program counts once even if sent by WhatsApp and PDF) ---------- */
+const SENDS_KEY="homeex_sends";
+function sendLimit(){
+if(isAdmin||hasPro())return 0;
+if(IN_APP)return gpOn()?Math.max(0,Number(LIMITS.app)||0):0;
+return Math.max(0,Number(LIMITS.web)||0);
+}
+function todayKey(){const d=new Date();return`${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;}
+function readSends(){try{const s=JSON.parse(lsGet(SENDS_KEY)||"null");if(s&&s.d===todayKey()&&Array.isArray(s.k))return s;}catch(e){}return{d:todayKey(),k:[]};}
+function programKey(list,patient){return list.map(e=>exerciseNumber(e)).join(",")+"|"+String(patient||"").trim().toLowerCase();}
+// true = allowed (and counted); false = blocked with a message
+function useSend(list,patient){
+const lim=sendLimit();if(!lim)return true;
+const s=readSends(),key=programKey(list,patient);
+if(s.k.includes(key))return true;
+if(s.k.length>=lim){
+const canBuy=IN_APP?gpOn():subsOn();
+const msg=`وصلت للحد المجاني النهارده (${lim} ${lim===1?"برنامج":"برامج"} في اليوم).\nتقدر تكمّل بكره${canBuy?"، أو تشترك في Pro وتبعت من غير حد.":"."}`;
+if(canBuy){if(confirm(msg+"\n\nتشوف Pro دلوقتي؟"))openPro();}else alert(msg);
+return false;
+}
+s.k.push(key);lsSet(SENDS_KEY,JSON.stringify(s));renderSendsLeft();return true;
+}
+function renderSendsLeft(){const sl=$("sendsLeft");if(!sl)return;const t=sendsLeftText();sl.textContent=t;sl.classList.toggle("hidden",!t);}
+function sendsLeftText(){const lim=sendLimit();if(!lim)return"";const left=Math.max(0,lim-readSends().k.length);return`باقي ${left} من ${lim} برامج مجانية النهارده`;}
 function fmtDate(ms){return ms?new Date(ms).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"}):"—";}
 function getBrand(){let b={};try{b=JSON.parse(lsGet(BRAND_KEY)||"{}")||{};}catch(e){b={};}
 const c=proActive&&proInfo&&proInfo.clinic;if(c&&c.name)return{...b,clinic:c.name,phone:c.phone||b.phone||"",logo:c.logo||b.logo||""};return b;}
@@ -606,7 +651,8 @@ const showPro=subsOn();
 $("proOpenBtn").classList.toggle("hidden",!showPro);
 $("footerProBtn").classList.toggle("hidden",!showPro);
 $("footerProSep").classList.toggle("hidden",!showPro);
-$("proOpenBtn").textContent=proActive||isPreview()?"👤 My account":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
+$("proOpenBtn").textContent=proActive||isPreview()||GP.pro?"👤 My account":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
+renderSendsLeft();
 $("homeProBanner").classList.toggle("hidden",!showPro||hasPro());
 $("protoProTag").classList.toggle("hidden",!showPro);
 renderViewAs();
@@ -682,12 +728,12 @@ function renderTemplates(){
 const mode=FEATURES.templates||"off";
 const ready=mode==="off"?[]:TEMPLATES.map((t,i)=>({t,i,isPro:mode==="pro"||!!t.pro}));
 const freeList=ready.filter(x=>!x.isPro);
-const proAvailable=ready.some(x=>x.isPro)||!!proCode()||subsOn();
+const proAvailable=ready.some(x=>x.isPro)||!!protoOwner()||subsOn();
 const tabs=[];
 if(freeList.length||subsOn())tabs.push(["free","Free"]);
 if(proAvailable&&ready.length)tabs.push(["pro","⭐ Pro"]);
-if(subsOn()||proCode())tabs.push(["mine","👤 My protocols"]);
-const showTab=tabs.length>0&&(ready.length>0||!!proCode()||subsOn());
+if(subsOn()||protoOwner())tabs.push(["mine","👤 My protocols"]);
+const showTab=tabs.length>0&&(ready.length>0||!!protoOwner()||subsOn());
 $("protocolsTabBtn").classList.toggle("hidden",!showTab);
 if(!showTab&&!$("protocolsTab").classList.contains("hidden"))switchTab("exerciseTab");
 renderAd();
@@ -697,7 +743,7 @@ document.querySelectorAll("[data-tier]").forEach(b=>b.onclick=()=>{protoTier=b.d
 $("templatesList").innerHTML="";$("protoFilters").innerHTML="";
 if(protoTier==="mine"){
 renderMyProtocols(true);
-if(!proCode())$("myProtoBox").innerHTML=hasPro()?`<div class="empty" dir="rtl">هنا بتظهر البروتوكولات اللي كل مشترك بيعملها لنفسه.</div>`:`<div class="pro-upsell" dir="rtl"><b>👤 بروتوكولاتك الخاصة</b><span>مع Pro تقدر تعمل بروتوكولاتك بنفسك وتحفظها، وتستخدمها بضغطة مع أي مريض.</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">اعرف أكتر</button></div>`;
+if(!protoOwner())$("myProtoBox").innerHTML=hasPro()?`<div class="empty" dir="rtl">هنا بتظهر البروتوكولات اللي كل مشترك بيعملها لنفسه.</div>`:`<div class="pro-upsell" dir="rtl"><b>👤 بروتوكولاتك الخاصة</b><span>مع Pro تقدر تعمل بروتوكولاتك بنفسك وتحفظها، وتستخدمها بضغطة مع أي مريض.</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">اعرف أكتر</button></div>`;
 if($("protoUpsellBtn"))$("protoUpsellBtn").onclick=openPro;
 return;
 }
@@ -752,26 +798,63 @@ const n=waPhone(PRO_PAGE.whatsapp);if(!n)return"";
 const renew=proInfo&&proInfo.status==="expired"?` (تجديد — الكود: ${lsGet(PRO_KEY)})`:"";
 return`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، عايز أشترك في HomeEx Pro${planName?` — باقة ${planName}`:""}${renew}`)}`;
 }
+function gpOfferHtml(){
+const plans=(GP.plans||[]).filter(x=>x&&x.token);
+if(!plans.length)return`<div class="notice" dir="rtl">الاشتراك مش متاح دلوقتي. اتأكد إن النت شغال وإن جوجل بلاي متحدّث، وجرّب تاني.</div>`;
+return`<div class="plans">${plans.map((x,i)=>`<div class="plan ${x.period==="P1Y"?"best":""}">${x.period==="P1Y"?`<small style="color:#b45309;font-weight:800">⭐ الأوفر</small>`:""}<b>${escapeHtml(gpPeriod(x.period))}</b><div class="price" dir="ltr">${escapeHtml(x.price||"")}</div><small>${x.trial?`أول ${escapeHtml(gpTrial(x.trial))} مجاناً`:`كل ${escapeHtml(gpPeriod(x.period))}`}</small><button class="btn btn-green" type="button" data-gpbuy="${i}">اشترك</button></div>`).join("")}</div>
+<p class="code-meta">الدفع عن طريق Google Play. الاشتراك بيتجدد تلقائي، وتقدر تلغيه في أي وقت من جوجل بلاي.</p>`;
+}
+function bindGpBuy(){document.querySelectorAll("[data-gpbuy]").forEach(b=>b.onclick=()=>{const x=(GP.plans||[])[Number(b.dataset.gpbuy)];if(!x)return;try{window.HomeExAndroid.gpBuy(x.token);}catch(e){alert("الدفع مش متاح دلوقتي.");}});}
+function gpManage(){try{window.HomeExAndroid.gpManage();}catch(e){}}
+function renderGpAccount(){
+const b=getBrand(),brandOn=featureOn("branding");
+$("proOffer").innerHTML=`<div dir="rtl" class="account">
+<div class="acc-sec"><h4>👤 اشتراكي</h4>
+<div>✅ اشتراك <b>HomeEx Pro</b> شغال عن طريق Google Play.</div>
+<div class="code-meta">التجديد والإلغاء من جوجل بلاي.</div>
+<button class="btn btn-outline acc-btn" type="button" id="gpManageBtn">⚙️ إدارة / إلغاء الاشتراك</button></div>
+${brandOn?`<div class="acc-sec"><h4>🏥 بيانات العيادة</h4>
+<div>${[b.clinic,b.name,b.phone].filter(Boolean).map(escapeHtml).join(" • ")||`<span class="code-meta">لسه مضفتش بيانات عيادتك.</span>`}</div>
+<div class="code-meta">بتظهر في رسالة الواتساب، ولينك المريض، والـ PDF.</div>
+<button class="btn btn-outline acc-btn" type="button" id="accBrandBtn">✏️ تعديل بيانات العيادة</button></div>`:""}
+<div class="acc-sec"><h4>⭐ My protocols <span class="acc-count">${myProtocols.length}</span></h4>
+<div>${myProtocols.length?myProtocols.map(t=>escapeHtml(t.name)).join(" • "):`<span class="code-meta">لسه محفظتش بروتوكولات.</span>`}</div>
+<div class="code-meta">متحفوظة على الموبايل ده.</div>
+<button class="btn btn-outline acc-btn" type="button" id="accProtoBtn">Open My protocols</button></div>
+</div>`;
+const close=()=>$("proModal").classList.add("hidden");
+$("gpManageBtn").onclick=gpManage;
+if($("accBrandBtn"))$("accBrandBtn").onclick=()=>{close();switchTab("sendTab");if($("brandForm").classList.contains("hidden"))$("brandToggleBtn").click();$("brandBox").scrollIntoView({behavior:"smooth",block:"center"});};
+$("accProtoBtn").onclick=()=>{close();protoTier="mine";switchTab("protocolsTab");renderTemplates();window.scrollTo({top:0,behavior:"smooth"});};
+}
 function renderOffer(){
 const box=$("proOffer");
 if(proActive||isPreview()){renderAccount();return;}
-const p=PRO_PAGE,plans=(p.plans||[]).filter(x=>x&&x.name);
+if(GP.pro){renderGpAccount();return;}
+const p=PRO_PAGE,plans=(p.plans||[]).filter(x=>x&&x.name),gp=IN_APP&&gpOn();
+// Google Play subscribers get exactly these (no code-only extras like private exercises or requests)
+const feats=gp?["إرسال برامج من غير حد يومي","تحديد Sets و Reps و Hold وعدد المرات في اليوم لكل تمرين","اسمك واسم العيادة ورقمك واللوجو على كل PDF ورسالة واتساب ولينك المريض","كل البروتوكولات الجاهزة (Free + Pro)","اعمل بروتوكولاتك الخاصة واحفظها على موبايلك"]:(p.features||[]);
 box.innerHTML=`<div dir="rtl">
 <h3 style="margin:6px 0 0;font-size:20px">${escapeHtml(p.headline||"")}</h3>
 <p class="offer-sub">مع اشتراك Pro هتاخد:</p>
-<ul class="offer-list">${(p.features||[]).filter(Boolean).map(f=>`<li>✅ ${escapeHtml(f)}</li>`).join("")}</ul>
+<ul class="offer-list">${feats.filter(Boolean).map(f=>`<li>✅ ${escapeHtml(f)}</li>`).join("")}</ul>
+${gp?gpOfferHtml():""}
 ${plans.length&&!IN_APP?`<div class="plans">${plans.map(x=>{const l=proWaLink(x.name);return`<div class="plan ${x.best?"best":""}">${x.best?`<small style="color:#b45309;font-weight:800">⭐ الأوفر</small>`:""}<b>${escapeHtml(x.name)}</b><div class="price">${escapeHtml(x.price||"")}</div><small>${escapeHtml(x.note||"")}</small>${l?`<a class="btn btn-green" href="${escapeHtml(l)}" target="_blank" rel="noopener">اشترك</a>`:""}</div>`;}).join("")}</div>`:""}
 ${!plans.length&&proWaLink("")?`<a class="btn btn-green" href="${escapeHtml(proWaLink(""))}" target="_blank" rel="noopener">اشترك على واتساب</a>`:""}
 ${IN_APP?"":clinicOfferHtml()}
-<p class="code-meta">👤 بعد التفعيل، زرار ⭐ Pro اللي فوق بيتحول لـ <b>"👤 My account"</b>: فيه اشتراكك، وبروتوكولاتك، وتمارينك الخاصة، وطلباتك، وزرار "اطلب تمرين".</p>
+${gp?"":`<p class="code-meta">👤 بعد التفعيل، زرار ⭐ Pro اللي فوق بيتحول لـ <b>"👤 My account"</b>: فيه اشتراكك، وبروتوكولاتك، وتمارينك الخاصة، وطلباتك، وزرار "اطلب تمرين".</p>`}
 ${IN_APP?"":`<p class="code-meta">الدفع بـ InstaPay أو فودافون كاش، وبعدها بيوصلك كود التفعيل على الواتساب.</p>`}
 </div>`;
+bindGpBuy();
 }
 function openPro(){
-$("proModalTitle").textContent=proActive||isPreview()?"👤 My account":"⭐ HomeEx Pro";
-$("proStatus").innerHTML=proActive||isPreview()?"":proStatusHtml();renderOffer();$("proNotice").innerHTML="";
+gpRead();
+const acct=proActive||isPreview()||GP.pro;
+$("proModalTitle").textContent=acct?"👤 My account":"⭐ HomeEx Pro";
+$("proStatus").innerHTML=acct?"":proStatusHtml();renderOffer();$("proNotice").innerHTML="";
 $("proCodeInput").value=lsGet(PRO_KEY)||"";
-$("proCodeArea").classList.toggle("hidden",!!(proActive||isPreview()));
+// Inside the app the code box shows only while the code system is on (website subscribers)
+$("proCodeArea").classList.toggle("hidden",!!acct||(IN_APP&&FEATURES.subscriptions!=="on"));
 $("proModal").classList.remove("hidden");
 }
 async function ensureDeviceUser(){
@@ -797,7 +880,9 @@ proInfo=snap.exists()?codeState(snap.data(),user.uid):{status:"missing"};
 // A code must be bound to this device to count; an unbound one needs Activate again.
 if(snap.exists()&&!snap.data().deviceUid)proInfo={status:"missing"};
 proActive=proInfo.status==="active";
-}catch(e){console.warn("Pro check failed:",e);proInfo={status:"error"};}
+if(proActive)lsSet("homeex_pro_cache",JSON.stringify({code,at:Date.now(),info:proInfo}));else lsSet("homeex_pro_cache",null);
+}catch(e){console.warn("Pro check failed:",e);proInfo={status:"error"};
+try{const c=JSON.parse(lsGet("homeex_pro_cache")||"null");if(c&&c.code===code&&Date.now()-c.at<3*864e5&&c.info&&c.info.expiresAt>Date.now()){proInfo=c.info;proActive=true;}}catch(x){}}
 }
 applyFeatures();
 loadProExtras();
@@ -1019,13 +1104,44 @@ await loadCodes();
 }catch(e){console.error(e);$("codesNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
 }
 async function saveFeatures(){
-const f={};document.querySelectorAll("[data-feature]").forEach(s=>f[s.dataset.feature]=s.value);
+const f={gplay:FEATURES.gplay==="on"?"on":"off"};document.querySelectorAll("[data-feature]").forEach(s=>f[s.dataset.feature]=s.value);
 const tpl=parseLines($("templatesInput").value).map(parseTemplateLine).filter(Boolean);
 try{
 await setDoc(doc(db,"settings","main"),{features:f,templates:tpl,updatedAt:serverTimestamp()},{merge:true});
 FEATURES={...FEATURES,...f};TEMPLATES=tpl.length?tpl:DEFAULT_TEMPLATES;await refreshPro();
 $("featuresNotice").innerHTML=`<div class="notice ok">اتحفظ. التغيير وصل لكل المستخدمين.</div>`;
 }catch(e){$("featuresNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
+}
+function limitsCardHtml(){
+return`<div class="settings-card" dir="rtl"><h3>📱 الحد المجاني والدفع من جوجل</h3>
+<p>الحد = عدد البرامج المختلفة اللي المستخدم المجاني يقدر يبعتها في اليوم (واتساب أو PDF، والبرنامج الواحد بيتحسب مرة واحدة). <b>0 = من غير حد</b>. المشترك والأدمن مالهمش حد.</p>
+<div class="form-grid">
+<div class="field"><label>الحد اليومي على الموقع</label><input id="limWeb" type="number" min="0" step="1" value="${Number(LIMITS.web)||0}"></div>
+<div class="field"><label>الحد اليومي في الأبلكيشن</label><input id="limApp" type="number" min="0" step="1" value="${Number(LIMITS.app)||0}"></div>
+<div class="field full"><label>الدفع من جوجل في الأبلكيشن</label><select id="gplaySel"><option value="off" ${FEATURES.gplay!=="on"?"selected":""}>مقفول — الأبلكيشن مجاني من غير حد ولا زرار شراء</option><option value="on" ${FEATURES.gplay==="on"?"selected":""}>شغال — زرار الاشتراك من جوجل + الحد اليومي</option></select>
+<small style="display:block;margin-top:6px;color:#667085;line-height:1.7">حد الأبلكيشن بيشتغل بس والدفع من جوجل شغال. اللي اشترك من جوجل بيفضل Pro حتى لو قفلته. اقفله وقت مراجعة جوجل.<br>المزايا اللي على "للمشتركين بس" (تحت) هي اللي بتتفتح بالاشتراك.</small></div>
+</div>
+<div style="margin-top:12px"><button class="btn btn-primary" id="saveLimitsBtn">حفظ</button></div><div id="limitsNotice"></div>
+<h3 style="margin-top:18px">👥 الأجهزة اللي فتحت (آخر 7 أيام)</h3><div id="dailyUsers" class="code-meta">Loading…</div>
+<small style="display:block;margin-top:6px;color:#667085;line-height:1.7">Firebase المجاني بيستحمل حوالي 50,000 قراءة في اليوم. لو العدد ده عدّى 2,000 جهاز في اليوم كلمني نشوف باقة Blaze.</small></div>`;
+}
+async function saveLimits(){
+const limits={web:Math.max(0,Math.floor(Number($("limWeb").value)||0)),app:Math.max(0,Math.floor(Number($("limApp").value)||0))};
+const gplay=$("gplaySel").value==="on"?"on":"off";
+try{
+await setDoc(doc(db,"settings","main"),{limits,features:{gplay},updatedAt:serverTimestamp()},{merge:true});
+LIMITS=limits;FEATURES={...FEATURES,gplay};applyFeatures();
+$("limitsNotice").innerHTML=`<div class="notice ok">اتحفظ. التغيير وصل لكل المستخدمين.</div>`;
+}catch(e){$("limitsNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
+}
+function utcDay(offset){return new Date(Date.now()-offset*864e5).toISOString().slice(0,10);}
+async function loadDailyUsers(){
+const box=$("dailyUsers");if(!box)return;
+try{
+const days=[0,1,2,3,4,5,6].map(utcDay);
+const snaps=await Promise.all(days.map(d=>getDoc(doc(db,"stats","d-"+d))));
+box.innerHTML=days.map((d,i)=>`<div style="display:flex;justify-content:space-between;max-width:260px"><span dir="ltr">${d}${i===0?" (النهارده)":""}</span><b>${snaps[i].exists()?Number(snaps[i].data().n||0).toLocaleString("en-US"):"—"}</b></div>`).join("");
+}catch(e){box.textContent="العداد لسه مش شغال (محتاج تنشر قواعد Firestore الجديدة).";}
 }
 function featuresCardHtml(){
 const modes=k=>["subscriptions","exAd","protoAd"].includes(k)?[["off","مقفول"],["on","شغال"]]:[["off","مقفول"],["all","للكل مجاناً"],["pro","للمشتركين بس"]];
@@ -1127,8 +1243,14 @@ const loadingTimer=setTimeout(()=>{
 if(!exercises.length)$("exerciseSummary").textContent="تعذر تحميل التمارين. أعد تحميل الصفحة وتأكد من اتصال الإنترنت.";
 },10000);
 try{
+// First the exercises file on GitHub (free); used only when it matches the live exercises version.
+let fromFile=null;
+if(!force&&!isAdmin){try{const r=await fetch(`./data/exercises.json?v=${exVersion||"0"}`);if(r.ok){const j=await r.json();if(j&&Array.isArray(j.list)&&j.list.length&&Number(j.v||0)===Number(exVersion||0))fromFile=j.list;}}catch(e){console.warn("Exercises file:",e);}}
+if(fromFile){exercises=fromFile.map(e=>({...e}));}
+else{
 const snap=await getDocs(query(collection(db,"exercises"),orderBy("number","asc")));
 exercises=snap.docs.map(d=>({id:d.id,...d.data()}));
+}
 if(!exercises.length)exercises=[];
 if(exercises.length)writeExCache(exercises);
 }catch(err){
@@ -1195,11 +1317,16 @@ $("loginNotice").innerHTML="";
 $("loginModal").classList.remove("hidden");
 setTimeout(()=>$("loginEmail").focus(),50);
 }
+// The last settings are kept on the device, so the site keeps working if Firestore is unreachable or over its daily quota.
+const SETTINGS_CACHE_KEY="homeex_settings_cache";
 async function loadSettings(){
+let d=null;
 try{
 const snap=await getDoc(doc(db,"settings","main"));
-if(snap.exists()){
-const d=snap.data();
+if(snap.exists()){d=snap.data();try{lsSet(SETTINGS_CACHE_KEY,JSON.stringify(d));}catch(e){}}
+}catch(e){console.warn("Settings load failed, using the saved copy:",e);try{d=JSON.parse(lsGet(SETTINGS_CACHE_KEY)||"null");}catch(x){d=null;}}
+try{
+if(d){
 exVersion=Number(d.exVersion)||0;
 heroImageLinks=Array.isArray(d.heroImages)?d.heroImages.filter(Boolean):[];
 adImageLinks=Array.isArray(d.adImages)?d.adImages.map(x=>typeof x==="string"?{img:x,link:x}:{img:String(x?.img||"").trim(),link:String(x?.link||x?.img||"").trim()}).filter(x=>x.img):[];
@@ -1210,8 +1337,10 @@ if(d.features&&typeof d.features==="object")FEATURES={...FEATURES,...d.features}
 const tl=Array.isArray(d.templates)?d.templates.map(normalizeTemplate).filter(Boolean):[];
 TEMPLATES=tl.length?tl:DEFAULT_TEMPLATES;
 if(d.proPage&&typeof d.proPage==="object")PRO_PAGE={...PRO_PAGE,...d.proPage};
+if(d.limits&&typeof d.limits==="object")LIMITS={web:Number(d.limits.web)||0,app:Number(d.limits.app)||0};
 }
-}catch(e){console.warn("Settings load failed:",e);}
+}catch(e){console.warn("Settings apply failed:",e);}
+gpRead();
 await imgMapReady;
 renderHero();renderAd();
 }
@@ -1275,6 +1404,7 @@ $("adminContent").innerHTML=`<div class="admin-panel">
 <div class="field full"><label>Body regions (categories)</label><textarea id="regionsList" class="settings-textarea" placeholder="One region per line">${escapeHtml(settingLines(REGIONS))}</textarea><small style="display:block;margin-top:6px;color:#667085">قسم واحد في كل سطر. أضف قسم جديد بإضافة سطر، أو احذف قسم بمسح سطره — يفضل ما تحذفش قسم لسه فيه تمارين مربوطة بيه.</small></div>
 <div><button class="btn btn-primary" id="saveSiteSettingsBtn">Save appearance</button></div><div id="siteSettingsNotice"></div>
 </div></div>
+${limitsCardHtml()}
 ${featuresCardHtml()}
 ${proPageCardHtml()}
 ${clinicsCardHtml()}
@@ -1285,7 +1415,7 @@ ${subProtoCardHtml()}
 if($("headerIntervalSeconds"))$("headerIntervalSeconds").value=headerIntervalSeconds;if($("adIntervalSeconds"))$("adIntervalSeconds").value=adIntervalSeconds;
 $("addExerciseBtn").onclick=()=>openExerciseModal();$("logoutBtn").onclick=async()=>{await signOut(auth);currentUser=null;isAdmin=false;switchTab("exerciseTab");applyFeatures();};
 $("saveSiteSettingsBtn").onclick=saveSiteSettings;
-$("saveFeaturesBtn").onclick=saveFeatures;$("createCodeBtn").onclick=createCode;$("createClinicBtn").onclick=createClinic;$("clinicLogoFile").onchange=pickClinicLogo;
+$("saveFeaturesBtn").onclick=saveFeatures;$("saveLimitsBtn").onclick=saveLimits;loadDailyUsers();$("createCodeBtn").onclick=createCode;$("createClinicBtn").onclick=createClinic;$("clinicLogoFile").onchange=pickClinicLogo;
 $("saveProPageBtn").onclick=saveProPage;$("previewProPageBtn").onclick=openPro;
 renderCodes();loadCodes();loadAdminRequests();initSubProto();
 document.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openExerciseModal(b.dataset.edit));document.querySelectorAll("[data-delete]").forEach(b=>b.onclick=()=>deleteExercise(b.dataset.delete));
@@ -1454,6 +1584,7 @@ async function whatsapp(){
 const patient=$("patientName").value.trim();
 const list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));
 if(!list.length){alert("Select at least one exercise.");return;}
+if(!useSend(list,patient))return;
 const linkNumbers=list.map(e=>exerciseNumber(e)).join(",");
 const currentUrl=new URL(window.location.href);
 currentUrl.search="";
@@ -1502,6 +1633,11 @@ let hxPendingRequest=null,myProtocols=[],activeMyProto=null;
 const ADMIN_PREVIEW_CODE="ADMIN-PREVIEW";
 function proCode(){if(proActive)return lsGet(PRO_KEY);return isAdmin&&subsOn()&&adminView()==="pro"?ADMIN_PREVIEW_CODE:null;}
 function isPreview(){return!proActive&&proCode()===ADMIN_PREVIEW_CODE;}
+// Where "My protocols" live: the subscription code in Firestore, or (Google Play subscribers) this device.
+function protoOwner(){return proCode()||(GP.pro?"local":null);}
+const LOCAL_PROTO_KEY="homeex_my_protocols";
+function readLocalProtos(){try{const a=JSON.parse(lsGet(LOCAL_PROTO_KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return[];}}
+function writeLocalProtos(a){lsSet(LOCAL_PROTO_KEY,JSON.stringify(a));}
 function ownerLabel(code){const c=Array.isArray(codesCache)?codesCache.find(x=>x.id===code):null;return c&&c.name?c.name:(code||"");}
 function nextPrivateNumber(){const nums=exercises.filter(e=>e.private).map(exerciseNumber).filter(Number.isFinite);return Math.max(1000,...nums)+1;}
 function fillOwnerSelect(){
@@ -1521,6 +1657,7 @@ else if(code){const snap=await getDocs(collection(db,"codes",code,"privateExerci
 }catch(e){console.warn("Private exercises:",e);}
 myProtocols=[];
 if(code){try{const snap=await getDocs(collection(db,"codes",code,"protocols"));myProtocols=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.name).localeCompare(String(b.name)));}catch(e){console.warn("My protocols:",e);}}
+else if(GP.pro)myProtocols=readLocalProtos().sort((a,b)=>String(a.name).localeCompare(String(b.name)));
 const had=exercises.some(e=>e.private);
 exercises=sortedExercises(exercises.filter(e=>!e.private).concat(priv));
 if(had||priv.length){renderExercises();renderSend();}
@@ -1532,32 +1669,32 @@ try{await proExtrasBusy;}finally{proExtrasBusy=null;if(proExtrasAgain){proExtras
 function updateProButtons(){
 const code=proCode();
 $("requestExBtn").classList.toggle("hidden",!code);
-$("saveProtoBtn").classList.toggle("hidden",!code);
+$("saveProtoBtn").classList.toggle("hidden",!protoOwner());
 }
 function renderMyProtocols(show=true){
 const box=$("myProtoBox");if(!box)return;
-if(!show||!proCode()){box.innerHTML="";return;}
+if(!show||!protoOwner()){box.innerHTML="";return;}
 const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
-box.innerHTML=`<div class="my-proto-head"><div><h3>⭐ My protocols</h3><div class="code-meta" dir="rtl">خاصة بيك إنت بس ومتحفوظة على كود اشتراكك. اختار تمارين وجرعات، وبعدين من Send اضغط "Save as my protocol".</div></div></div>
+box.innerHTML=`<div class="my-proto-head"><div><h3>⭐ My protocols</h3><div class="code-meta" dir="rtl">خاصة بيك إنت بس ومتحفوظة ${proCode()?"على كود اشتراكك":"على الموبايل ده"}. اختار تمارين وجرعات، وبعدين من Send اضغط "Save as my protocol".</div></div></div>
 ${myProtocols.length?`<div class="proto-grid" style="margin-bottom:22px">${myProtocols.map(t=>{const names=(t.items||[]).map(it=>byNum.get(it.n)?.name).filter(Boolean);return`<div class="proto-card"><div class="proto-top"><div class="proto-icon">⭐</div><div><div class="proto-name">${escapeHtml(t.name)}</div><div class="proto-region">${t.byAdmin?"Added for you":"My protocol"}</div></div></div>
 <div class="proto-meta"><span>${(t.items||[]).length} exercises</span>${(t.items||[]).some(it=>it.reps||it.sets||it.hold)?`<span>Dosage included</span>`:""}</div>
 <div class="proto-ex">${escapeHtml(names.slice(0,4).join(" • "))}${names.length>4?` +${names.length-4}`:""}</div>
 <div style="display:flex;gap:8px;margin-top:auto"><button class="btn btn-primary" style="flex:1" data-myproto="${escapeHtml(t.id)}">Use →</button><button class="btn btn-danger" data-delproto="${escapeHtml(t.id)}">Delete</button></div></div>`;}).join("")}</div>`:`<div class="empty" style="margin-bottom:22px" dir="rtl">لسه معندكش بروتوكولات. اختار التمارين وحط الجرعات، وبعدين من صفحة Send اضغط <b>💾 Save as my protocol</b>.</div>`}`;
 box.querySelectorAll("[data-myproto]").forEach(b=>b.onclick=()=>{const t=myProtocols.find(x=>x.id===b.dataset.myproto);if(!t)return;applyTemplate({name:t.name,items:t.items||[]});activeMyProto=t.id;});
-box.querySelectorAll("[data-delproto]").forEach(b=>b.onclick=async()=>{const t=myProtocols.find(x=>x.id===b.dataset.delproto);if(!t||!confirm(`Delete "${t.name}"?`))return;try{await deleteDoc(doc(db,"codes",proCode(),"protocols",t.id));if(activeMyProto===t.id)activeMyProto=null;await loadProExtras();toast("✓ Deleted");}catch(e){alert(e.message);}});
+box.querySelectorAll("[data-delproto]").forEach(b=>b.onclick=async()=>{const t=myProtocols.find(x=>x.id===b.dataset.delproto);if(!t||!confirm(`Delete "${t.name}"?`))return;try{if(proCode())await deleteDoc(doc(db,"codes",proCode(),"protocols",t.id));else writeLocalProtos(readLocalProtos().filter(x=>x.id!==t.id));if(activeMyProto===t.id)activeMyProto=null;await loadProExtras();toast("✓ Deleted");}catch(e){alert(e.message);}});
 }
 async function saveMyProtocol(){
-const code=proCode();if(!code)return;
+const code=proCode();if(!protoOwner())return;
 const list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));
 if(!list.length){alert("Select at least one exercise.");return;}
 const items=list.map(e=>{const d=dosage.get(e.id)||{};return{n:exerciseNumber(e),sets:d.sets||"",reps:d.reps||"",hold:d.hold||"",freq:d.freq||""};});
 const cur=activeMyProto&&myProtocols.find(t=>t.id===activeMyProto);
 try{
 if(cur&&confirm(`Update "${cur.name}" with the current exercises?\n(Cancel = save as a new protocol)`)){
-await updateDoc(doc(db,"codes",code,"protocols",cur.id),{items,updatedAt:serverTimestamp()});toast(`✓ "${cur.name}" updated`);
+if(!code)writeLocalProtos(readLocalProtos().map(x=>x.id===cur.id?{...x,items}:x));else await updateDoc(doc(db,"codes",code,"protocols",cur.id),{items,updatedAt:serverTimestamp()});toast(`✓ "${cur.name}" updated`);
 }else{
 const name=(prompt("Protocol name · اسم البروتوكول","")||"").trim().slice(0,80);if(!name)return;
-const ref=await addDoc(collection(db,"codes",code,"protocols"),{name,items,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});activeMyProto=ref.id;toast(`✓ "${name}" saved`);
+if(!code){const id="L"+Date.now().toString(36);writeLocalProtos(readLocalProtos().concat({id,name,items}));activeMyProto=id;}else{const ref=await addDoc(collection(db,"codes",code,"protocols"),{name,items,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});activeMyProto=ref.id;}toast(`✓ "${name}" saved`);
 }
 await loadProExtras();
 }catch(e){console.error(e);alert("Could not save: "+e.message);}
@@ -1570,7 +1707,7 @@ return rows.length?rows.map(r=>`<div class="req-item"><b>${escapeHtml(r.name||""
 catch(e){console.warn(e);return"—";}
 }
 function renderAccount(){
-const box=$("proOffer"),code=proCode();const info=isPreview()?{name:"Admin (preview · معاينة)",expiresAt:Date.now()+365*864e5,clinic:null}:info;if(!code||!info){box.innerHTML="";return;}
+const box=$("proOffer"),code=proCode();const info=isPreview()?{name:"Admin (preview · معاينة)",expiresAt:Date.now()+365*864e5,clinic:null}:proInfo;if(!code||!info){box.innerHTML="";return;}
 const days=Math.max(0,Math.ceil((info.expiresAt-Date.now())/864e5));
 const n=IN_APP?"":waPhone(PRO_PAGE.whatsapp),renew=n?`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، عايز أجدد اشتراك HomeEx Pro — الكود: ${code}`)}`:"";
 const b=getBrand(),priv=sortedExercises(exercises.filter(e=>e.private));
@@ -1645,6 +1782,7 @@ function pdfIsRtl(t){const m=String(t).match(/[A-Za-z؀-ۿ]/);return !!m&&/[؀-�
 function pdfLoadImg(src){return new Promise(r=>{if(!src){r(null);return;}const im=new Image();im.crossOrigin="anonymous";im.onload=()=>r(im);im.onerror=()=>r(null);im.src=src;setTimeout(()=>r(null),8000);});}
 async function makePdf(){
 const patient=$("patientName").value.trim(),list=sortedExercises(exercises.filter(e=>selectedIds.has(e.id)));if(!list.length){alert("Select at least one exercise.");return;}
+if(!useSend(list,patient))return;
 const btn=$("pdfBtn"),label=btn.textContent;btn.disabled=true;btn.textContent="Preparing PDF…";
 try{
 const PLg=progLang,LP=PLg==="ar"?"en":PLg;await loadLangs(PLg);
@@ -1778,6 +1916,7 @@ async function homeexTrackVisit(){
     const ref=doc(db,"stats","usage");
     await setDoc(ref,{visits:increment(1)},{merge:true});
     lsSet("homeex_visit_day",today);
+    setDoc(doc(db,"stats","d-"+today),{n:increment(1)},{merge:true}).catch(()=>{});
     const snap=await getDoc(ref);
     const current=snap.exists()?Number(snap.data().visits||0):known;
     lsSet("homeex_visit_count",String(current));

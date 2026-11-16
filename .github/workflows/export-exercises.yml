@@ -1,0 +1,30 @@
+name: Export exercises file
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"   # every 15 minutes; does nothing unless an exercise changed
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: export-exercises
+  cancel-in-progress: false
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python tools/export_exercises.py
+      - name: Save the exercises file
+        run: |
+          git add data/exercises.json
+          if git diff --cached --quiet; then echo "nothing new"; exit 0; fi
+          git -c user.name="Home Ex" -c user.email=noreply@homeex-app.github.io commit -m "Update exercises file"
+          git pull --rebase -q
+          git push
