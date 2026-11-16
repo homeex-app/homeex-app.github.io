@@ -103,6 +103,7 @@ body.ui-foreign #homeProBanner,body.ui-foreign #proBanner{display:none!important
 /* UI-only safety patch: do not alter app/Firebase logic */
 #footerAdminBtn{font-size:11px!important;opacity:.65!important}
 #installBtn,#installModal{display:none!important} /* "Download App" removed from the website (the app comes from Google Play) */
+body.in-app .ad-slot{display:none!important}
 body.in-app #footerAdminBtn,body.in-app #footerAdminSep,body.in-app #adminOpenBtn,body.in-app #adminBtn,body.in-app #loginModal,body.in-app #adminTab{display:none!important}
 </style>
 <style id="homeex-pro">
@@ -1396,7 +1397,8 @@ if(heroTimer){clearInterval(heroTimer);heroTimer=null;}
 if(imgs.length>1){let i=0;heroTimer=setInterval(()=>{const slides=[...box.querySelectorAll(".hero-slide")];if(!slides.length)return;slides[i].classList.remove("active");i=(i+1)%slides.length;slides[i].classList.add("active");},Math.max(2,Number(headerIntervalSeconds)||4)*1000);}
 }
 function renderAd(){
-const boxes=[FEATURES.exAd!=="off"?$("adSlot"):null,FEATURES.protoAd!=="off"?$("adSlotProto"):null].filter(Boolean);
+// No ad images inside the Android app (Google Play counts them as ads); the website keeps them.
+const boxes=IN_APP?[]:[FEATURES.exAd!=="off"?$("adSlot"):null,FEATURES.protoAd!=="off"?$("adSlotProto"):null].filter(Boolean);
 [$("adSlot"),$("adSlotProto")].forEach(b=>{if(b&&!boxes.includes(b)){b.style.display="none";b.innerHTML="";}});
 if(!boxes.length){if(adTimer){clearInterval(adTimer);adTimer=null;}return;}
 const imgs=(adImageLinks||[]).map(x=>({src:driveToImageUrl(x.img),href:x.link?driveToImageUrl(x.link):driveToImageUrl(x.img)})).filter(x=>x.src);
