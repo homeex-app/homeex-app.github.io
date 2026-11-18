@@ -170,6 +170,7 @@ body.has-viewas{padding-bottom:70px}
 body.direct-mode #homeProBanner{display:none!important}
 .offer-sub{color:#667085;margin:4px 0 12px;font-size:14px}
 .offer-list{list-style:none;padding:0;margin:0 0 16px;display:grid;gap:7px}
+.cmp{width:100%;border-collapse:separate;border-spacing:0;margin:4px 0 16px;font-size:13.5px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden}.cmp th,.cmp td{padding:9px 8px;text-align:center;border-bottom:1px solid #eef2f7;line-height:1.45}.cmp td:first-child,.cmp th:first-child{text-align:right;width:52%}.cmp thead th{background:#f8fafc;font-weight:800}.cmp th:last-child,.cmp td.pro{background:#fffbeb;color:#92400e;font-weight:700}.cmp tr:last-child td{border-bottom:0}
 .offer-list li{font-size:14px;line-height:1.5}
 .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
 .plan{border:1px solid var(--border);border-radius:14px;padding:14px;text-align:center}
@@ -805,14 +806,23 @@ const renew=proInfo&&proInfo.status==="expired"?` (تجديد — الكود: ${
 return`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، عايز أشترك في HomeEx Pro${planName?` — باقة ${planName}`:""}${renew}`)}`;
 }
 // What a Google Play subscriber really gets with the current Admin settings (never promise more)
-function gpFeatures(){
-const f=[];
-if((Number(LIMITS.app)||0)>0)f.push("إرسال برامج من غير حد يومي");
-if(FEATURES.dosage==="pro")f.push("تحديد Sets و Reps و Hold وعدد المرات في اليوم لكل تمرين");
-if(FEATURES.branding==="pro")f.push("اسمك واسم العيادة ورقمك واللوجو على كل PDF ورسالة واتساب ولينك المريض");
-if(FEATURES.templates==="pro"||(FEATURES.templates==="all"&&TEMPLATES.some(t=>t.pro)))f.push("كل البروتوكولات الجاهزة (Free + Pro)");
-f.push("اعمل بروتوكولاتك الخاصة واحفظها على موبايلك");
-return f;
+// Free vs Pro, built from the live Admin settings (never promise more than the subscription unlocks)
+function gpCompareRows(){
+const lim=Math.max(0,Number(LIMITS.app)||0),Y="✅",N="—",rows=[];
+rows.push(["إرسال البرامج (واتساب + PDF + لينك المريض)",lim?`${lim} ${lim===1?"برنامج":lim<=10?"برامج":"برنامج"} في اليوم`:"من غير حد","من غير حد ♾️"]);
+rows.push(["مكتبة التمارين كلها بالصور والفيديو + 11 لغة",Y,Y]);
+const m=k=>FEATURES[k]||"off";
+if(m("dosage")!=="off")rows.push(["Sets و Reps و Hold وعدد المرات لكل تمرين",m("dosage")==="all"?Y:N,Y]);
+if(m("branding")!=="off")rows.push(["اسمك والعيادة ورقمك واللوجو على الـ PDF والواتساب ولينك المريض",m("branding")==="all"?Y:N,Y]);
+const t=m("templates");
+if(t==="pro")rows.push(["البروتوكولات الجاهزة",N,"كلها ✅"]);
+else if(t==="all")rows.push(["البروتوكولات الجاهزة",TEMPLATES.some(x=>x.pro)?"الأساسية":Y,TEMPLATES.some(x=>x.pro)?"كلها ✅":Y]);
+rows.push(["بروتوكولاتك الخاصة (تحفظها وتستخدمها بضغطة)",N,Y]);
+return rows;
+}
+function gpFeatures(){return gpCompareRows().filter(r=>r[1]!==r[2]).map(r=>r[0]+(r[2].includes("حد")?" — من غير حد":""));}
+function gpCompareHtml(){
+return`<table class="cmp"><thead><tr><th></th><th>مجاني</th><th>⭐ Pro</th></tr></thead><tbody>${gpCompareRows().map(r=>`<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td><td class="pro">${escapeHtml(r[2])}</td></tr>`).join("")}</tbody></table>`;
 }
 function gpOfferHtml(){
 const plans=(GP.plans||[]).filter(x=>x&&x.token);
@@ -827,6 +837,7 @@ const b=getBrand(),brandOn=featureOn("branding");
 $("proOffer").innerHTML=`<div dir="rtl" class="account">
 <div class="acc-sec"><h4>👤 اشتراكي</h4>
 <div>✅ اشتراك <b>HomeEx Pro</b> شغال عن طريق Google Play.</div>
+<ul class="offer-list" style="margin:8px 0">${gpCompareRows().map(r=>`<li>✅ ${escapeHtml(r[0])}${r[2].includes("حد")?" — <b>من غير حد</b>":""}</li>`).join("")}</ul>
 <div class="code-meta">التجديد والإلغاء من جوجل بلاي.</div>
 <button class="btn btn-outline acc-btn" type="button" id="gpManageBtn">⚙️ إدارة / إلغاء الاشتراك</button></div>
 ${brandOn?`<div class="acc-sec"><h4>🏥 بيانات العيادة</h4>
@@ -852,8 +863,8 @@ const p=PRO_PAGE,plans=(p.plans||[]).filter(x=>x&&x.name),gp=IN_APP&&gpOn();
 const feats=gp?gpFeatures():(p.features||[]);
 box.innerHTML=`<div dir="rtl">
 <h3 style="margin:6px 0 0;font-size:20px">${escapeHtml(p.headline||"")}</h3>
-<p class="offer-sub">مع اشتراك Pro هتاخد:</p>
-<ul class="offer-list">${feats.filter(Boolean).map(f=>`<li>✅ ${escapeHtml(f)}</li>`).join("")}</ul>
+<p class="offer-sub">${IN_APP&&gpOn()?"قارن بين المجاني و Pro:":"مع اشتراك Pro هتاخد:"}</p>
+${gp?gpCompareHtml():`<ul class="offer-list">${feats.filter(Boolean).map(f=>`<li>✅ ${escapeHtml(f)}</li>`).join("")}</ul>`}
 ${gp?gpOfferHtml():""}
 ${plans.length&&!IN_APP?`<div class="plans">${plans.map(x=>{const l=proWaLink(x.name);return`<div class="plan ${x.best?"best":""}">${x.best?`<small style="color:#b45309;font-weight:800">⭐ الأوفر</small>`:""}<b>${escapeHtml(x.name)}</b><div class="price">${escapeHtml(x.price||"")}</div><small>${escapeHtml(x.note||"")}</small>${l?`<a class="btn btn-green" href="${escapeHtml(l)}" target="_blank" rel="noopener">اشترك</a>`:""}</div>`;}).join("")}</div>`:""}
 ${!plans.length&&proWaLink("")?`<a class="btn btn-green" href="${escapeHtml(proWaLink(""))}" target="_blank" rel="noopener">اشترك على واتساب</a>`:""}
