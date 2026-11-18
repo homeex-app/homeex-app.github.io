@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-title" content="HomeEx">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Readex+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 <style>body{padding-bottom:0}
 .app-booting{display:none}
@@ -170,6 +170,27 @@ body.has-viewas{padding-bottom:70px}
 body.direct-mode #homeProBanner{display:none!important}
 .offer-sub{color:#667085;margin:4px 0 12px;font-size:14px}
 .offer-list{list-style:none;padding:0;margin:0 0 16px;display:grid;gap:7px}
+.gpx{--gx-ink:#13275e;--gx-amber:#b45309;--gx-honey:#fff4dc;--gx-line:#e6e9f0;--gx-muted:#6b7489;font-family:"Readex Pro",Tahoma,sans-serif;color:var(--gx-ink)}
+.gpx h3{font-size:22px;line-height:1.35;font-weight:700;margin:2px 0 14px;letter-spacing:-.2px}
+.gpx-limit{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;border:1px solid var(--gx-line);border-radius:16px;padding:12px 10px;margin-bottom:14px}
+.gpx-limit div{text-align:center}.gpx-limit small{display:block;font-size:12px;color:var(--gx-muted);margin-bottom:2px}
+.gpx-limit b{font-size:15px;font-weight:600;line-height:1.4}.gpx-limit .pro{background:var(--gx-honey);border-radius:12px;padding:8px 4px;color:var(--gx-amber)}
+.gpx-limit .pro b{font-size:26px;line-height:1}.gpx-limit .arrow{color:var(--gx-muted);font-size:18px}
+.gpx-feats{list-style:none;margin:0 0 16px;padding:0}
+.gpx-feats li{display:grid;grid-template-columns:1fr 44px 44px;align-items:center;gap:4px;padding:9px 2px;border-bottom:1px solid var(--gx-line);font-size:14px;line-height:1.5}
+.gpx-feats li:last-child{border-bottom:0}.gpx-feats .hd{font-size:12px;color:var(--gx-muted);padding-top:0}
+.gpx-feats span{text-align:center}.gpx-feats .hd span:last-child{color:var(--gx-amber);font-weight:600}
+.gpx-ck{width:18px;height:18px;vertical-align:middle}.gpx-no{color:#c3c9d6}
+.gpx-plans{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.gpx-plan{position:relative;border:1.5px solid var(--gx-line);border-radius:16px;padding:14px 10px 12px;text-align:center;background:#fff;cursor:pointer;font:inherit;color:inherit}
+.gpx-plan[aria-checked="true"]{border-color:var(--gx-ink);box-shadow:0 0 0 3px rgba(19,39,94,.12)}
+.gpx-plan:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+.gpx-plan .per{font-size:13px;color:var(--gx-muted)}.gpx-plan .amt{display:block;font-size:18px;font-weight:700;margin:4px 0 2px;direction:ltr;white-space:nowrap}
+.gpx-plan .sub{font-size:12px;color:var(--gx-muted)}
+.gpx-save{position:absolute;top:-10px;inset-inline-start:50%;transform:translateX(50%);background:var(--gx-amber);color:#fff;font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 10px;white-space:nowrap}
+.gpx-cta{width:100%;border:0;border-radius:14px;background:var(--gx-ink);color:#fff;font:inherit;font-size:16px;font-weight:600;padding:14px;cursor:pointer}
+.gpx-cta:active{transform:scale(.99)}.gpx-cta:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
+.gpx-fine{font-size:12px;color:var(--gx-muted);line-height:1.7;margin:10px 2px 0;text-align:center}
 .cmp{width:100%;border-collapse:separate;border-spacing:0;margin:4px 0 16px;font-size:13.5px;border:1px solid #e2e8f0;border-radius:12px;overflow:hidden}.cmp th,.cmp td{padding:9px 8px;text-align:center;border-bottom:1px solid #eef2f7;line-height:1.45}.cmp td:first-child,.cmp th:first-child{text-align:right;width:52%}.cmp thead th{background:#f8fafc;font-weight:800}.cmp th:last-child,.cmp td.pro{background:#fffbeb;color:#92400e;font-weight:700}.cmp tr:last-child td{border-bottom:0}
 .offer-list li{font-size:14px;line-height:1.5}
 .plans{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
@@ -824,6 +845,37 @@ function gpFeatures(){return gpCompareRows().filter(r=>r[1]!==r[2]).map(r=>r[0]+
 function gpCompareHtml(){
 return`<table class="cmp"><thead><tr><th></th><th>مجاني</th><th>⭐ Pro</th></tr></thead><tbody>${gpCompareRows().map(r=>`<tr><td>${escapeHtml(r[0])}</td><td>${escapeHtml(r[1])}</td><td class="pro">${escapeHtml(r[2])}</td></tr>`).join("")}</tbody></table>`;
 }
+const GX_CK=`<svg class="gpx-ck" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#fde7b0"/><path d="M5.6 10.4l2.9 2.9 5.9-6.2" fill="none" stroke="#b45309" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const GX_CK_FREE=`<svg class="gpx-ck" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.6 10.4l2.9 2.9 5.9-6.2" fill="none" stroke="#6b7489" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+function gpNum(p){const s=String(p||"").replace(/[^\d.,]/g,"");if(!s)return NaN;const t=/,\d{1,2}$/.test(s)?s.replace(/\./g,"").replace(",","."):s.replace(/,/g,"");return parseFloat(t);}
+function gpCur(p){return String(p||"").replace(/[\d.,\s ]+/g," ").trim();}
+let gpSel="";
+function gpPanelHtml(){
+const rows=gpCompareRows(),send=rows[0],rest=rows.slice(1);
+const plans=(GP.plans||[]).filter(x=>x&&x.token).sort((a,b)=>(a.period==="P1Y"?0:1)-(b.period==="P1Y"?0:1));
+const mo=plans.find(x=>x.period==="P1M"),yr=plans.find(x=>x.period==="P1Y");
+if(!plans.some(x=>x.token===gpSel))gpSel=(yr||plans[0]||{}).token||"";
+let save="",perMonth="";
+if(mo&&yr){const m=gpNum(mo.price),y=gpNum(yr.price);if(m>0&&y>0){const pct=Math.round((1-y/(m*12))*100);if(pct>=5)save=`وفّر ${pct}%`;const pm=y/12;perMonth=`يعني ${gpCur(yr.price)} ${pm>=10?Math.round(pm):pm.toFixed(2)} في الشهر`;}}
+const free=v=>v==="—"?`<span class="gpx-no">—</span>`:v==="✅"?`<span>${GX_CK_FREE}</span>`:`<span style="font-size:12px">${escapeHtml(v)}</span>`;
+const pro=v=>/✅/.test(v)&&v.replace("✅","").trim()?`<span style="font-size:12px;color:#b45309;font-weight:600">${escapeHtml(v.replace("✅","").trim())}</span>`:`<span>${GX_CK}</span>`;
+const limitOn=send[1]!==send[2]&&!/من غير حد/.test(send[1]);
+return`<div class="gpx" dir="rtl">
+<h3>ابعت لمرضاك من غير حد، وباسم عيادتك</h3>
+${limitOn?`<div class="gpx-limit"><div><small>مجاني</small><b>${escapeHtml(send[1])}</b></div><div class="arrow" aria-hidden="true">←</div><div class="pro"><small style="color:#b45309">Pro</small><b>∞</b><small style="color:#b45309;margin:2px 0 0">من غير حد</small></div></div>`:""}
+<ul class="gpx-feats"><li class="hd"><span></span><span>مجاني</span><span>Pro</span></li>
+${rest.map(r=>`<li><div>${escapeHtml(r[0])}</div>${free(r[1])}${pro(r[2])}</li>`).join("")}</ul>
+${plans.length?`<div class="gpx-plans" role="radiogroup" aria-label="اختار الباقة">${plans.map(x=>`<button type="button" class="gpx-plan" role="radio" aria-checked="${x.token===gpSel}" data-gpsel="${escapeHtml(x.token)}">${x.period==="P1Y"&&save?`<span class="gpx-save">${save}</span>`:""}<span class="per">${x.period==="P1Y"?"سنوي":x.period==="P1M"?"شهري":escapeHtml(gpPeriod(x.period))}</span><span class="amt">${escapeHtml(x.price||"")}</span><span class="sub">${x.trial?`أول ${escapeHtml(gpTrial(x.trial))} مجاناً`:x.period==="P1Y"&&perMonth?escapeHtml(perMonth):`كل ${escapeHtml(gpPeriod(x.period))}`}</span></button>`).join("")}</div>
+<button type="button" class="gpx-cta" id="gpxCta"></button>`:`<div class="notice" dir="rtl">الاشتراك مش متاح دلوقتي. اتأكد إن النت شغال وإن جوجل بلاي متحدّث، وجرّب تاني.</div>`}
+<p class="gpx-fine">الدفع عن طريق Google Play. الاشتراك بيتجدد تلقائي، وتقدر تلغيه في أي وقت من جوجل بلاي.</p>
+</div>`;
+}
+function bindGpPanel(){
+const upd=()=>{const x=(GP.plans||[]).find(p=>p.token===gpSel);document.querySelectorAll("[data-gpsel]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.gpsel===gpSel)));const c=$("gpxCta");if(c&&x)c.textContent=`اشترك ${x.period==="P1Y"?"سنوي":"شهري"} — ${x.price}`;};
+document.querySelectorAll("[data-gpsel]").forEach(b=>b.onclick=()=>{gpSel=b.dataset.gpsel;upd();});
+const c=$("gpxCta");if(c)c.onclick=()=>{try{window.HomeExAndroid.gpBuy(gpSel);}catch(e){alert("الدفع مش متاح دلوقتي.");}};
+upd();
+}
 function gpOfferHtml(){
 const plans=(GP.plans||[]).filter(x=>x&&x.token);
 if(!plans.length)return`<div class="notice" dir="rtl">الاشتراك مش متاح دلوقتي. اتأكد إن النت شغال وإن جوجل بلاي متحدّث، وجرّب تاني.</div>`;
@@ -837,7 +889,7 @@ const b=getBrand(),brandOn=featureOn("branding");
 $("proOffer").innerHTML=`<div dir="rtl" class="account">
 <div class="acc-sec"><h4>👤 اشتراكي</h4>
 <div>✅ اشتراك <b>HomeEx Pro</b> شغال عن طريق Google Play.</div>
-<ul class="offer-list" style="margin:8px 0">${gpCompareRows().map(r=>`<li>✅ ${escapeHtml(r[0])}${r[2].includes("حد")?" — <b>من غير حد</b>":""}</li>`).join("")}</ul>
+<ul class="offer-list" style="margin:8px 0">${gpCompareRows().map(r=>`<li>${GX_CK} ${escapeHtml(r[0])}${r[2].includes("حد")?" — <b>من غير حد</b>":""}</li>`).join("")}</ul>
 <div class="code-meta">التجديد والإلغاء من جوجل بلاي.</div>
 <button class="btn btn-outline acc-btn" type="button" id="gpManageBtn">⚙️ إدارة / إلغاء الاشتراك</button></div>
 ${brandOn?`<div class="acc-sec"><h4>🏥 بيانات العيادة</h4>
@@ -858,6 +910,7 @@ function renderOffer(){
 const box=$("proOffer");
 if(proActive||isPreview()){renderAccount();return;}
 if(GP.pro){renderGpAccount();return;}
+if(IN_APP&&gpOn()){box.innerHTML=gpPanelHtml();bindGpPanel();return;}
 const p=PRO_PAGE,plans=(p.plans||[]).filter(x=>x&&x.name),gp=IN_APP&&gpOn();
 // Google Play subscribers get exactly these (no code-only extras like private exercises or requests)
 const feats=gp?gpFeatures():(p.features||[]);
