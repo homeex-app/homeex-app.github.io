@@ -471,7 +471,7 @@ document.documentElement.lang=foreign?uiLang:"en";
 document.querySelectorAll("[data-i18n]").forEach(el=>{if(el.dataset.orig==null)el.dataset.orig=el.innerHTML;const t=foreign&&U(el.dataset.i18n);if(t)el.textContent=t;else el.innerHTML=el.dataset.orig;});
 document.querySelectorAll("[data-i18n-ph]").forEach(el=>{if(el.dataset.origPh==null)el.dataset.origPh=el.placeholder;el.placeholder=foreign&&U(el.dataset.i18nPh)||el.dataset.origPh;});
 const b=$("uiLangBtn");if(b){b.textContent="🌐 "+uiLang.toUpperCase();b.title=UX("language","Language · اللغة");}
-if(rerender&&exercises.length){renderRegions();renderExercises();renderSend();}
+if(rerender&&exercises.length){renderRegions();renderExercises();renderSend();renderTemplates();}
 }
 async function setUiLang(l){
 uiLang=l;lsSet("homeex_ui_lang",l);
@@ -787,34 +787,37 @@ document.querySelectorAll("[data-tier]").forEach(b=>b.onclick=()=>{protoTier=b.d
 $("templatesList").innerHTML="";$("protoFilters").innerHTML="";
 if(protoTier==="mine"){
 renderMyProtocols(true);
-if(!protoOwner())$("myProtoBox").innerHTML=hasPro()?`<div class="empty" dir="rtl">هنا بتظهر البروتوكولات اللي كل مشترك بيعملها لنفسه.</div>`:`<div class="pro-upsell" dir="rtl"><b>👤 بروتوكولاتك الخاصة</b><span>مع Pro تقدر تعمل بروتوكولاتك بنفسك وتحفظها، وتستخدمها بضغطة مع أي مريض.</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">اعرف أكتر</button></div>`;
+if(!protoOwner())$("myProtoBox").innerHTML=hasPro()?`<div class="empty" dir="rtl">هنا بتظهر البروتوكولات اللي كل مشترك بيعملها لنفسه.</div>`:`<div class="pro-upsell" dir="auto"><b>${escapeHtml(UX("pc_ownTitle","👤 بروتوكولاتك الخاصة"))}</b><span>${escapeHtml(UX("pc_ownText","مع Pro تقدر تعمل بروتوكولاتك بنفسك وتحفظها، وتستخدمها بضغطة مع أي مريض."))}</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">${escapeHtml(UX("pc_more","اعرف أكتر"))}</button></div>`;
 if($("protoUpsellBtn"))$("protoUpsellBtn").onclick=openPro;
 return;
 }
 renderMyProtocols(false);
 const onPro=protoTier==="pro";
 const list=onPro?ready:freeList;
-if(onPro&&!hasPro()&&subsOn()){$("templatesList").innerHTML=`<div class="pro-upsell" dir="rtl"><b>⭐ كل البروتوكولات مع Pro</b><span>البروتوكولات الأساسية مجانية، ومع Pro بتفتح كل البروتوكولات التخصصية.</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">اعرف أكتر</button></div>`;$("protoUpsellBtn").onclick=openPro;}
-if(!list.length){if(!onPro)$("templatesList").innerHTML=`<div class="empty" style="grid-column:1/-1" dir="rtl">مفيش بروتوكولات مجانية دلوقتي. شوف تاب ⭐ Pro.</div>`;return;}
+if(onPro&&!hasPro()&&subsOn()){$("templatesList").innerHTML=`<div class="pro-upsell" dir="auto"><b>${escapeHtml(UX("pc_upTitle","⭐ كل البروتوكولات مع Pro"))}</b><span>${escapeHtml(UX("pc_upText","البروتوكولات الأساسية مجانية، ومع Pro بتفتح كل البروتوكولات التخصصية."))}</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">${escapeHtml(UX("pc_more","اعرف أكتر"))}</button></div>`;$("protoUpsellBtn").onclick=openPro;}
+if(!list.length){if(!onPro)$("templatesList").innerHTML=`<div class="empty" style="grid-column:1/-1" dir="auto">${escapeHtml(UX("pc_noneFree","مفيش بروتوكولات مجانية دلوقتي. شوف تاب ⭐ Pro."))}</div>`;return;}
 const regions=[...new Set(list.map(x=>x.t.region).filter(Boolean))];
 if(protoRegion&&!regions.includes(protoRegion))protoRegion="";
-$("protoFilters").innerHTML=regions.length>1?[["","All"],...regions.map(r=>[r,`${REGION_ICONS[r]||"•"} ${r}`])].map(([v,l])=>`<button class="proto-filter ${protoRegion===v?"active":""}" data-proto-region="${escapeHtml(v)}">${escapeHtml(l)}</button>`).join(""):"";
+$("protoFilters").innerHTML=regions.length>1?[["",UX("pc_all","All")],...regions.map(r=>[r,`${REGION_ICONS[r]||"•"} ${tplRegion(r)}`])].map(([v,l])=>`<button class="proto-filter ${protoRegion===v?"active":""}" data-proto-region="${escapeHtml(v)}">${escapeHtml(l)}</button>`).join(""):"";
 document.querySelectorAll("[data-proto-region]").forEach(b=>b.onclick=()=>{protoRegion=b.dataset.protoRegion;renderTemplates();});
 const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
 $("templatesList").insertAdjacentHTML("beforeend",list.filter(({t})=>!protoRegion||t.region===protoRegion).map(({t,i,isPro})=>{
 const locked=isPro&&!hasPro();
-const names=t.items.map(it=>byNum.get(it.n)?.name).filter(Boolean);
+const names=t.items.map(it=>{const e=byNum.get(it.n);return e?trEx(e,showLang()).name:"";}).filter(Boolean);
 const daily=Math.max(0,...t.items.map(it=>Number(it.freq)||1));
 return`<div class="proto-card ${locked?"locked":""}">
 ${locked?`<span class="proto-lock">🔒 Pro</span>`:""}
-<div class="proto-top"><div class="proto-icon">${REGION_ICONS[t.region]||"📋"}</div><div><div class="proto-name">${escapeHtml(t.name)}</div>${t.region?`<div class="proto-region">${escapeHtml(t.region)}</div>`:""}</div></div>
-${t.desc?`<p class="proto-desc" dir="rtl">${escapeHtml(t.desc)}</p>`:""}
-<div class="proto-meta"><span>${t.items.length} exercises</span>${t.items.some(it=>it.reps||it.hold)?`<span>Dosage included</span>`:""}${daily>1?`<span>up to ${daily}×/day</span>`:""}${onPro&&!isPro?`<span>Free</span>`:""}</div>
+<div class="proto-top"><div class="proto-icon">${REGION_ICONS[t.region]||"📋"}</div><div><div class="proto-name">${escapeHtml(tplName(t))}</div>${t.region?`<div class="proto-region">${escapeHtml(tplRegion(t.region))}</div>`:""}</div></div>
+${tplDesc(t)?`<p class="proto-desc" dir="auto">${escapeHtml(tplDesc(t))}</p>`:""}
+<div class="proto-meta"><span>${escapeHtml(UX("pc_ex",`${t.items.length} exercises`,{n:t.items.length}))}</span>${t.items.some(it=>it.reps||it.hold)?`<span>${escapeHtml(UX("pc_dose","Dosage included"))}</span>`:""}${daily>1?`<span>${escapeHtml(UX("pc_upto",`up to ${daily}×/day`,{n:daily}))}</span>`:""}${onPro&&!isPro?`<span>${escapeHtml(UX("pc_free","Free"))}</span>`:""}</div>
 <div class="proto-ex">${escapeHtml(names.slice(0,4).join(" • "))}${names.length>4?` +${names.length-4}`:""}</div>
-<button class="btn ${locked?"btn-outline":"btn-primary"}" data-tpl="${i}" data-locked="${locked?1:""}">${locked?"Unlock with Pro":"Use protocol →"}</button>
+<button class="btn ${locked?"btn-outline":"btn-primary"}" data-tpl="${i}" data-locked="${locked?1:""}">${escapeHtml(locked?UX("pc_unlock","Unlock with Pro"):UX("pc_use","Use protocol →"))}</button>
 </div>`;}).join(""));
 document.querySelectorAll("[data-tpl]").forEach(b=>b.onclick=()=>b.dataset.locked?openPro():applyTemplate(TEMPLATES[Number(b.dataset.tpl)]));
 }
+function tplName(t){return uiLang!=="ar"&&U("pn:"+t.name)||t.name;}
+function tplDesc(t){return uiLang!=="ar"&&U("pd:"+t.name)||t.desc;}
+function tplRegion(r){return uiLang!=="ar"?trRegion(r,uiLang):r;}
 function toast(msg){const t=document.createElement("div");t.className="toast";t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2600);}
 function applyTemplate(t){
 const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
@@ -824,7 +827,7 @@ t.items.forEach(it=>{const e=byNum.get(it.n);if(!e)return;selectedIds.add(e.id);
 dosage.set(e.id,{sets:it.sets||"",reps:it.reps||"",hold:it.hold||"",freq:it.freq||""});});
 searchNumbers=null;searchText="";$("exerciseSearch").value="";
 renderExercises();switchTab("sendTab");window.scrollTo({top:0,behavior:"smooth"});
-toast(`✓ ${t.name}: ${count} exercises ready`);
+toast("✓ "+UX("pc_ready",`${t.name}: ${count} exercises ready`,{name:tplName(t),n:count}));
 }
 function proStatusHtml(){
 if(proActive)return`<div class="pro-status ok" dir="rtl">✅ اشتراك Pro شغال على الجهاز ده.<br>المشترك: <b>${escapeHtml(proInfo.name||"—")}</b><br>صالح حتى: <b>${fmtDate(proInfo.expiresAt)}</b> (فاضل ${Math.max(0,Math.ceil((proInfo.expiresAt-Date.now())/864e5))} يوم)</div>`;
