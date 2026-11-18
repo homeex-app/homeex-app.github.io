@@ -624,12 +624,24 @@ function lsSet(k,v){try{v==null?localStorage.removeItem(k):localStorage.setItem(
 // Admin can preview the site as a subscriber ("pro") or as a free user ("free").
 const VIEW_KEY="homeex_admin_view";
 function adminView(){try{return sessionStorage.getItem(VIEW_KEY)||"pro";}catch(e){return"pro";}}
-function hasPro(){return isAdmin?adminView()!=="free":(proActive||GP.pro);}
+// Google Play review access: Admin sets a review code (only its SHA-256 is stored in settings). Entering it inside
+// the app unlocks Pro on that phone for 30 days, so Google's reviewers can see the paid features. Clearing it stops it.
+let REVIEW_HASH="";
+const REVIEW_KEY="homeex_review_until";
+function reviewOn(){if(!IN_APP||!REVIEW_HASH)return false;const r=(()=>{try{return JSON.parse(lsGet(REVIEW_KEY)||"null");}catch(e){return null;}})();return!!(r&&r.h===REVIEW_HASH&&r.until>Date.now());}
+async function sha256hex(t){const h=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(t));return[...new Uint8Array(h)].map(x=>x.toString(16).padStart(2,"0")).join("");}
+async function tryReviewCode(){
+const c=(prompt(UX("gx_reviewAsk","اكتب رمز المراجعة"),"")||"").trim();if(!c)return;
+const h=await sha256hex(c.toUpperCase());
+if(REVIEW_HASH&&h===REVIEW_HASH){lsSet(REVIEW_KEY,JSON.stringify({h,until:Date.now()+30*864e5}));toast("✓ "+UX("gx_reviewOk","تم فتح Pro للمراجعة على الموبايل ده"));applyFeatures();loadProExtras();openPro();}
+else alert(UX("gx_reviewBad","الرمز ده مش صحيح."));
+}
+function hasPro(){return isAdmin?adminView()!=="free":(proActive||GP.pro||reviewOn());}
 function featureOn(k){const m=FEATURES[k]||"off";if(m==="off")return false;if(m==="all")return true;return hasPro();}
 function featureLocked(k){return FEATURES[k]==="pro"&&subsOn()&&!featureOn(k);}
 // Website: Pro = codes sold on WhatsApp. Android app: Pro = Google Play subscription only (admin switch "gplay");
 // codes bought outside are not offered inside the app. Google subscribers keep Pro even after the switch is turned off.
-function subsOn(){return IN_APP?(gpOn()||GP.pro):FEATURES.subscriptions==="on";}
+function subsOn(){return IN_APP?(gpOn()||GP.pro||reviewOn()):FEATURES.subscriptions==="on";}
 /* ---------- Google Play subscription (Android app only, through window.HomeExAndroid) ---------- */
 function gpBridge(){try{return IN_APP&&!!window.HomeExAndroid&&typeof window.HomeExAndroid.gpState==="function";}catch(e){return false;}}
 function gpOn(){return FEATURES.gplay==="on"&&gpBridge()&&GP.ready;}
@@ -681,7 +693,7 @@ const showPro=subsOn();
 $("proOpenBtn").classList.toggle("hidden",!showPro);
 $("footerProBtn").classList.toggle("hidden",!showPro);
 $("footerProSep").classList.toggle("hidden",!showPro);
-$("proOpenBtn").textContent=proActive||isPreview()||GP.pro?"👤 My account":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
+$("proOpenBtn").textContent=proActive||isPreview()||GP.pro||reviewOn()?"👤 My account":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
 renderSendsLeft();
 $("homeProBanner").classList.toggle("hidden",!showPro||hasPro());
 $("protoProTag").classList.toggle("hidden",!showPro);
@@ -873,10 +885,12 @@ ${send.limited?`<div class="gpx-limit"><div><small>${escapeHtml(UX("gx_free","م
 ${rest.map(r=>`<li><div>${escapeHtml(r.label)}</div>${cellF(r.free)}${cellP(r.pro)}</li>`).join("")}</ul>
 ${plans.length?`<div class="gpx-plans" role="radiogroup" aria-label="${escapeHtml(UX("gx_pick","اختار الباقة"))}">${plans.map(x=>`<button type="button" class="gpx-plan" role="radio" aria-checked="${x.token===gpSel}" data-gpsel="${escapeHtml(x.token)}">${x.period==="P1Y"&&save?`<span class="gpx-save">${escapeHtml(save)}</span>`:""}<span class="per">${escapeHtml(per(x))}</span><span class="amt">${escapeHtml(x.price||"")}</span><span class="sub">${escapeHtml(sub(x))}</span></button>`).join("")}</div>
 <button type="button" class="gpx-cta" id="gpxCta"></button>`:`<div class="notice">${escapeHtml(UX("gx_unavail","الاشتراك مش متاح دلوقتي. اتأكد إن النت شغال وإن جوجل بلاي متحدّث، وجرّب تاني."))}</div>`}
+${REVIEW_HASH?`<p class="gpx-fine" style="margin-top:4px"><button type="button" id="gpxReview" style="background:none;border:0;color:inherit;text-decoration:underline;font:inherit;cursor:pointer;padding:4px">${escapeHtml(UX("gx_review","رمز المراجعة"))}</button></p>`:""}
 <p class="gpx-fine">${escapeHtml(UX("gx_fine","الدفع عن طريق Google Play. الاشتراك بيتجدد تلقائي، وتقدر تلغيه في أي وقت من جوجل بلاي."))}</p>
 </div>`;
 }
 function bindGpPanel(){
+if($("gpxReview"))$("gpxReview").onclick=tryReviewCode;
 const upd=()=>{const x=(GP.plans||[]).find(p=>p.token===gpSel);document.querySelectorAll("[data-gpsel]").forEach(b=>b.setAttribute("aria-checked",String(b.dataset.gpsel===gpSel)));const c=$("gpxCta");if(c&&x)c.textContent=x.period==="P1Y"?UX("gx_ctaY",`اشترك سنوي — ${x.price}`,{p:x.price}):UX("gx_ctaM",`اشترك شهري — ${x.price}`,{p:x.price});};
 document.querySelectorAll("[data-gpsel]").forEach(b=>b.onclick=()=>{gpSel=b.dataset.gpsel;upd();});
 const c=$("gpxCta");if(c)c.onclick=()=>{try{window.HomeExAndroid.gpBuy(gpSel);}catch(e){alert("الدفع مش متاح دلوقتي.");}};
@@ -915,7 +929,7 @@ $("accProtoBtn").onclick=()=>{close();protoTier="mine";switchTab("protocolsTab")
 function renderOffer(){
 const box=$("proOffer");
 if(proActive||isPreview()){renderAccount();return;}
-if(GP.pro){renderGpAccount();return;}
+if(GP.pro||reviewOn()){renderGpAccount();return;}
 if(IN_APP&&gpOn()){box.innerHTML=gpPanelHtml();bindGpPanel();return;}
 const p=PRO_PAGE,plans=(p.plans||[]).filter(x=>x&&x.name),gp=IN_APP&&gpOn();
 // Google Play subscribers get exactly these (no code-only extras like private exercises or requests)
@@ -935,7 +949,7 @@ bindGpBuy();
 }
 function openPro(){
 gpRead();
-const acct=proActive||isPreview()||GP.pro;
+const acct=proActive||isPreview()||GP.pro||reviewOn();
 $("proModalTitle").textContent=acct?"👤 My account":"⭐ HomeEx Pro";
 $("proStatus").innerHTML=acct?"":proStatusHtml();renderOffer();$("proNotice").innerHTML="";
 $("proCodeInput").value=lsGet(PRO_KEY)||"";
@@ -1207,6 +1221,7 @@ return`<div class="settings-card" dir="rtl"><h3>📱 الحد المجاني و�
 <div class="field full"><label>الدفع من جوجل في الأبلكيشن</label><select id="gplaySel"><option value="off" ${FEATURES.gplay!=="on"?"selected":""}>مقفول — الأبلكيشن مجاني من غير حد ولا زرار شراء</option><option value="on" ${FEATURES.gplay==="on"?"selected":""}>شغال — زرار الاشتراك من جوجل + الحد اليومي</option></select>
 <small style="display:block;margin-top:6px;color:#667085;line-height:1.7">حد الأبلكيشن بيشتغل بس والدفع من جوجل شغال. اللي اشترك من جوجل بيفضل Pro حتى لو قفلته.<br>⚠️ الاشتراك بيفتح بس المزايا اللي على <b>"للمشتركين بس"</b> في كارت المزايا تحت — قبل ما تشغّله حط الجرعات والبراندنج والبروتوكولات على "للمشتركين بس". على الموقع هتفضل مستخبية طول ما نظام الأكواد مقفول.<br>جوه الأبلكيشن مفيش تفعيل أكواد — الاشتراك من جوجل بس.</small></div>
 </div>
+<div class="field full" style="margin-top:10px"><label>🔑 رمز مراجعة جوجل (اختياري)</label><input id="reviewCodeIn" placeholder="${REVIEW_HASH?"فيه رمز شغال — اكتب رمز جديد لتغييره أو امسح الخانة واكتب - لإلغائه":"مثلاً HOMEEX-REVIEW-2026"}" autocomplete="off"><small style="display:block;margin-top:6px;color:#667085;line-height:1.7">الرمز ده بتديه لجوجل في Play Console (Sign-in details). اللي يكتبه في الأبلكيشن (زرار "رمز المراجعة" تحت في شاشة Pro) بيتفتح له Pro 30 يوم على موبايله. بيتحفظ مشفّر ومحدش يقدر يقراه. اكتب <b>-</b> واحفظ عشان تلغيه بعد القبول.</small></div>
 <div style="margin-top:12px"><button class="btn btn-primary" id="saveLimitsBtn">حفظ</button></div><div id="limitsNotice"></div>
 <h3 style="margin-top:18px">👥 الأجهزة اللي فتحت (آخر 7 أيام)</h3><div id="dailyUsers" class="code-meta">Loading…</div>
 <small style="display:block;margin-top:6px;color:#667085;line-height:1.7">Firebase المجاني بيستحمل حوالي 50,000 قراءة في اليوم. لو العدد ده عدّى 2,000 جهاز في اليوم كلمني نشوف باقة Blaze.</small></div>`;
@@ -1215,7 +1230,10 @@ async function saveLimits(){
 const limits={web:Math.max(0,Math.floor(Number($("limWeb").value)||0)),app:Math.max(0,Math.floor(Number($("limApp").value)||0))};
 const gplay=$("gplaySel").value==="on"?"on":"off";
 try{
-await setDoc(doc(db,"settings","main"),{limits,features:{gplay},updatedAt:serverTimestamp()},{merge:true});
+const rc=($("reviewCodeIn")?.value||"").trim();const upd={limits,features:{gplay},updatedAt:serverTimestamp()};
+if(rc==="-")upd.reviewHash="";else if(rc){if(rc.length<8){$("limitsNotice").innerHTML=`<div class="notice error">رمز المراجعة لازم يبقى 8 حروف على الأقل.</div>`;return;}upd.reviewHash=await sha256hex(rc.toUpperCase());}
+await setDoc(doc(db,"settings","main"),upd,{merge:true});
+if("reviewHash" in upd)REVIEW_HASH=upd.reviewHash;
 LIMITS=limits;FEATURES={...FEATURES,gplay};applyFeatures();
 $("limitsNotice").innerHTML=`<div class="notice ok">اتحفظ. التغيير وصل لكل المستخدمين.</div>`;
 }catch(e){$("limitsNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
@@ -1428,6 +1446,7 @@ const tl=Array.isArray(d.templates)?d.templates.map(normalizeTemplate).filter(Bo
 TEMPLATES=tl.length?tl:DEFAULT_TEMPLATES;
 if(d.proPage&&typeof d.proPage==="object")PRO_PAGE={...PRO_PAGE,...d.proPage};
 if(d.limits&&typeof d.limits==="object")LIMITS={web:Number(d.limits.web)||0,app:Number(d.limits.app)||0};
+REVIEW_HASH=typeof d.reviewHash==="string"&&/^[a-f0-9]{64}$/.test(d.reviewHash)?d.reviewHash:"";
 }
 }catch(e){console.warn("Settings apply failed:",e);}
 gpRead();
@@ -1739,7 +1758,7 @@ const ADMIN_PREVIEW_CODE="ADMIN-PREVIEW";
 function proCode(){if(proActive)return lsGet(PRO_KEY);return isAdmin&&subsOn()&&adminView()==="pro"?ADMIN_PREVIEW_CODE:null;}
 function isPreview(){return!proActive&&proCode()===ADMIN_PREVIEW_CODE;}
 // Where "My protocols" live: the subscription code in Firestore, or (Google Play subscribers) this device.
-function protoOwner(){return proCode()||(GP.pro?"local":null);}
+function protoOwner(){return proCode()||(GP.pro||reviewOn()?"local":null);}
 const LOCAL_PROTO_KEY="homeex_my_protocols";
 function readLocalProtos(){try{const a=JSON.parse(lsGet(LOCAL_PROTO_KEY)||"[]");return Array.isArray(a)?a:[];}catch(e){return[];}}
 function writeLocalProtos(a){lsSet(LOCAL_PROTO_KEY,JSON.stringify(a));}
@@ -1762,7 +1781,7 @@ else if(code){const snap=await getDocs(collection(db,"codes",code,"privateExerci
 }catch(e){console.warn("Private exercises:",e);}
 myProtocols=[];
 if(code){try{const snap=await getDocs(collection(db,"codes",code,"protocols"));myProtocols=snap.docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>String(a.name).localeCompare(String(b.name)));}catch(e){console.warn("My protocols:",e);}}
-else if(GP.pro)myProtocols=readLocalProtos().sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+else if(GP.pro||reviewOn())myProtocols=readLocalProtos().sort((a,b)=>String(a.name).localeCompare(String(b.name)));
 const had=exercises.some(e=>e.private);
 exercises=sortedExercises(exercises.filter(e=>!e.private).concat(priv));
 if(had||priv.length){renderExercises();renderSend();}

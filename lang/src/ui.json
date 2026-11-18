@@ -934,5 +934,53 @@
   "ur": "Google ابھی ادائیگی کی تصدیق کر رہا ہے۔ مکمل ہوتے ہی Pro فعال ہو جائے گا۔",
   "id": "Google masih mengonfirmasi pembayaran. Pro aktif setelah selesai.",
   "ms": "Google masih mengesahkan pembayaran. Pro akan aktif sebaik selesai."
+ },
+ "gx_review": {
+  "en": "Review access code",
+  "es": "Código de revisión",
+  "pt": "Código de revisão",
+  "fr": "Code de vérification",
+  "de": "Prüfcode",
+  "tr": "İnceleme kodu",
+  "hi": "रिव्यू कोड",
+  "ur": "ریویو کوڈ",
+  "id": "Kode peninjauan",
+  "ms": "Kod semakan"
+ },
+ "gx_reviewAsk": {
+  "en": "Enter the review access code",
+  "es": "Escribe el código de revisión",
+  "pt": "Digite o código de revisão",
+  "fr": "Saisissez le code de vérification",
+  "de": "Prüfcode eingeben",
+  "tr": "İnceleme kodunu girin",
+  "hi": "रिव्यू कोड डालें",
+  "ur": "ریویو کوڈ لکھیں",
+  "id": "Masukkan kode peninjauan",
+  "ms": "Masukkan kod semakan"
+ },
+ "gx_reviewOk": {
+  "en": "Pro unlocked for review on this phone",
+  "es": "Pro desbloqueado para revisión en este teléfono",
+  "pt": "Pro liberado para revisão neste celular",
+  "fr": "Pro débloqué pour la vérification sur ce téléphone",
+  "de": "Pro zur Prüfung auf diesem Handy freigeschaltet",
+  "tr": "Pro bu telefonda inceleme için açıldı",
+  "hi": "इस फ़ोन पर रिव्यू के लिए Pro खुल गया",
+  "ur": "اس فون پر ریویو کے لیے Pro کھل گیا",
+  "id": "Pro dibuka untuk peninjauan di ponsel ini",
+  "ms": "Pro dibuka untuk semakan di telefon ini"
+ },
+ "gx_reviewBad": {
+  "en": "That code isn't correct.",
+  "es": "Ese código no es correcto.",
+  "pt": "Esse código não está correto.",
+  "fr": "Ce code n'est pas correct.",
+  "de": "Dieser Code ist nicht korrekt.",
+  "tr": "Bu kod doğru değil.",
+  "hi": "यह कोड सही नहीं है।",
+  "ur": "یہ کوڈ درست نہیں۔",
+  "id": "Kode itu tidak benar.",
+  "ms": "Kod itu tidak betul."
  }
 }
