@@ -168,6 +168,7 @@ body.has-viewas{padding-bottom:70px}
 .home-pro-title{font-size:18px;font-weight:800;margin-bottom:4px}.home-pro-text{font-size:13px;color:#dbeafe;line-height:1.6}
 .home-pro .btn{background:#f59e0b;color:#fff;white-space:nowrap}
 body.direct-mode #homeProBanner{display:none!important}
+body:not(.in-app) #homeProBanner{display:none!important} /* website: no "see offers" banner */
 .offer-sub{color:#667085;margin:4px 0 12px;font-size:14px}
 .offer-list{list-style:none;padding:0;margin:0 0 16px;display:grid;gap:7px}
 .gpx{--gx-ink:#13275e;--gx-amber:#5e8a1c;--gx-honey:#f0f6e3;--gx-line:#e6e9f0;--gx-muted:#6b7489;font-family:"Readex Pro",Tahoma,sans-serif;color:var(--gx-ink)}
@@ -328,10 +329,10 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="modal-head"><h3 id="proModalTitle">⭐ HomeEx Pro</h3><button class="close" data-close="proModal">×</button></div>
 <div id="proStatus"></div>
 <div id="proOffer"></div>
-<div id="proCodeArea"><div class="field" style="margin-top:16px"><label for="proCodeInput">معاك كود؟ اكتبه هنا</label><input id="proCodeInput" placeholder="HX-XXXX-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase"></div>
-<div class="form-actions"><button class="btn btn-primary" id="proActivateBtn">تفعيل</button></div>
+<div id="proCodeArea"><div class="field" style="margin-top:16px"><label for="proCodeInput" data-i18n="gx_haveCode">معاك كود؟ اكتبه هنا</label><input id="proCodeInput" placeholder="HX-XXXX-XXXX-XXXX" autocomplete="off" style="text-transform:uppercase"></div>
+<div class="form-actions"><button class="btn btn-primary" id="proActivateBtn" data-i18n="gx_activate">تفعيل</button></div>
 <div id="proNotice"></div>
-<p class="code-meta" style="margin-top:14px" dir="rtl">الكود بيشتغل على جهاز واحد بس. التجديد بيتم على نفس الكود.</p></div>
+<p class="code-meta" style="margin-top:14px" dir="auto" data-i18n="gx_codeNote">الكود بيشتغل على جهاز واحد بس. التجديد بيتم على نفس الكود.</p></div>
 </div>
 </div>
 
@@ -845,7 +846,7 @@ return`https://wa.me/${n}?text=${encodeURIComponent(`السلام عليكم، �
 // Free vs Pro, built from the live Admin settings (never promise more than the subscription unlocks).
 // Cells: "Y" = included, "N" = not included, {t:"text"} = a short value. Texts follow the screen language.
 function gpCompareRows(){
-const lim=Math.max(0,Number(LIMITS.app)||0),rows=[];
+const lim=Math.max(0,Number(IN_APP?LIMITS.app:LIMITS.web)||0),rows=[];
 const arDay=n=>`${n} ${n===1?"برنامج":n<=10?"برامج":"برنامج"} في اليوم`;
 rows.push({label:UX("gx_send","إرسال البرامج (واتساب + PDF + لينك المريض)"),free:lim?{t:UX("gx_perDay",arDay(lim),{n:lim})}:"Y",pro:"Y",send:true,limited:!!lim});
 rows.push({label:UX("gx_lib","مكتبة التمارين كلها بالصور والفيديو + 11 لغة"),free:"Y",pro:"Y"});
@@ -868,6 +869,36 @@ const GX_CK_FREE=`<svg class="gpx-ck" viewBox="0 0 20 20" aria-hidden="true"><pa
 function gpNum(p){const s=String(p||"").replace(/[^\d.,]/g,"");if(!s)return NaN;const t=/,\d{1,2}$/.test(s)?s.replace(/\./g,"").replace(",","."):s.replace(/,/g,"");return parseFloat(t);}
 function gpCur(p){return String(p||"").replace(/[\d.,\s ]+/g," ").trim();}
 let gpSel="";
+function gpxTopHtml(){
+const rows=gpCompareRows(),send=rows[0],rest=rows.slice(1),rtl=gxRtl();
+const cellF=v=>v==="N"?`<span class="gpx-no">—</span>`:v==="Y"?`<span>${GX_CK_FREE}</span>`:`<span class="gpx-txt">${escapeHtml(v.t)}</span>`;
+const cellP=v=>v==="Y"?`<span>${GX_CK}</span>`:`<span class="gpx-txt pro">${escapeHtml(v.t)}</span>`;
+return`<h3>${escapeHtml(UX("gx_head","ابعت لمرضاك من غير حد، وباسم عيادتك"))}</h3>
+${send.limited?`<div class="gpx-limit"><div><small>${escapeHtml(UX("gx_free","مجاني"))}</small><b>${escapeHtml(send.free.t)}</b></div><div class="arrow" aria-hidden="true">${rtl?"←":"→"}</div><div class="pro"><small>Pro</small><b>∞</b><small class="u">${escapeHtml(UX("gx_unlimited","من غير حد"))}</small></div></div>`:""}
+<ul class="gpx-feats"><li class="hd"><span></span><span>${escapeHtml(UX("gx_free","مجاني"))}</span><span>Pro</span></li>
+${rest.map(r=>`<li><div>${escapeHtml(r.label)}</div>${cellF(r.free)}${cellP(r.pro)}</li>`).join("")}</ul>
+`;
+}
+// Website Pro window: same design as the app; plans and prices come from Admin (Pro page); paying = WhatsApp, then the code.
+let webSel=-1;
+function webPanelHtml(){
+const rtl=gxRtl(),plans=(PRO_PAGE.plans||[]).filter(x=>x&&x.name);
+if(!(webSel>=0&&webSel<plans.length)){const b=plans.findIndex(x=>x.best);webSel=b>=0?b:0;}
+const wa=!!proWaLink("");
+return`<div class="gpx" dir="${rtl?"rtl":"ltr"}">
+${gpxTopHtml()}
+${plans.length?`<div class="gpx-plans" role="radiogroup" aria-label="${escapeHtml(UX("gx_pick","اختار الباقة"))}">${plans.map((x,i)=>`<button type="button" class="gpx-plan" role="radio" aria-checked="${i===webSel}" data-websel="${i}">${x.best?`<span class="gpx-save">${escapeHtml(UX("gx_best","الأوفر"))}</span>`:""}<span class="per">${escapeHtml(x.name)}</span><span class="amt" dir="auto">${escapeHtml(x.price||"")}</span><span class="sub">${escapeHtml(x.note||"")}</span></button>`).join("")}</div>
+${wa?`<button type="button" class="gpx-cta" id="webCta"></button>`:""}`:(wa?`<button type="button" class="gpx-cta" id="webCta"></button>`:"")}
+<p class="gpx-fine">${escapeHtml(UX("gx_payWeb","الدفع بـ InstaPay أو فودافون كاش، وبعدها بيوصلك كود التفعيل على الواتساب تكتبه تحت."))}</p>
+</div>${clinicOfferHtml()}`;
+}
+function bindWebPanel(){
+const plans=(PRO_PAGE.plans||[]).filter(x=>x&&x.name);
+const upd=()=>{document.querySelectorAll("[data-websel]").forEach(b=>b.setAttribute("aria-checked",String(Number(b.dataset.websel)===webSel)));const c=$("webCta"),x=plans[webSel];if(c)c.textContent=x?UX("gx_ctaWa",`اشترك ${x.name} على واتساب — ${x.price||""}`,{plan:x.name,p:x.price||""}):UX("gx_ctaWa0","اشترك على واتساب");};
+document.querySelectorAll("[data-websel]").forEach(b=>b.onclick=()=>{webSel=Number(b.dataset.websel);upd();});
+const c=$("webCta");if(c)c.onclick=()=>{const x=plans[webSel],l=proWaLink(x?x.name:"");if(l)window.open(l,"_blank","noopener");};
+upd();
+}
 function gpPanelHtml(){
 const rows=gpCompareRows(),send=rows[0],rest=rows.slice(1),rtl=gxRtl();
 const plans=(GP.plans||[]).filter(x=>x&&x.token).sort((a,b)=>(a.period==="P1Y"?0:1)-(b.period==="P1Y"?0:1));
@@ -875,15 +906,10 @@ const mo=plans.find(x=>x.period==="P1M"),yr=plans.find(x=>x.period==="P1Y");
 if(!plans.some(x=>x.token===gpSel))gpSel=(yr||plans[0]||{}).token||"";
 let save="",perMonth="";
 if(mo&&yr){const m=gpNum(mo.price),y=gpNum(yr.price);if(m>0&&y>0){const pct=Math.round((1-y/(m*12))*100);if(pct>=5)save=UX("gx_save",`وفّر ${pct}%`,{n:pct});const pm=y/12,pv=`${gpCur(yr.price)} ${pm>=10?Math.round(pm):pm.toFixed(2)}`;perMonth=UX("gx_perMonthEq",`يعني ${pv} في الشهر`,{p:pv});}}
-const cellF=v=>v==="N"?`<span class="gpx-no">—</span>`:v==="Y"?`<span>${GX_CK_FREE}</span>`:`<span class="gpx-txt">${escapeHtml(v.t)}</span>`;
-const cellP=v=>v==="Y"?`<span>${GX_CK}</span>`:`<span class="gpx-txt pro">${escapeHtml(v.t)}</span>`;
 const per=x=>x.period==="P1Y"?UX("gx_yearly","سنوي"):x.period==="P1M"?UX("gx_monthly","شهري"):gpPeriod(x.period);
 const sub=x=>x.trial?UX("gx_trial",`أول ${gpTrial(x.trial)} مجاناً`,{n:gpTrialDays(x.trial)}):x.period==="P1Y"&&perMonth?perMonth:x.period==="P1Y"?UX("gx_everyYear","كل سنة"):UX("gx_everyMonth","كل شهر");
 return`<div class="gpx" dir="${rtl?"rtl":"ltr"}">
-<h3>${escapeHtml(UX("gx_head","ابعت لمرضاك من غير حد، وباسم عيادتك"))}</h3>
-${send.limited?`<div class="gpx-limit"><div><small>${escapeHtml(UX("gx_free","مجاني"))}</small><b>${escapeHtml(send.free.t)}</b></div><div class="arrow" aria-hidden="true">${rtl?"←":"→"}</div><div class="pro"><small>Pro</small><b>∞</b><small class="u">${escapeHtml(UX("gx_unlimited","من غير حد"))}</small></div></div>`:""}
-<ul class="gpx-feats"><li class="hd"><span></span><span>${escapeHtml(UX("gx_free","مجاني"))}</span><span>Pro</span></li>
-${rest.map(r=>`<li><div>${escapeHtml(r.label)}</div>${cellF(r.free)}${cellP(r.pro)}</li>`).join("")}</ul>
+${gpxTopHtml()}
 ${plans.length?`<div class="gpx-plans" role="radiogroup" aria-label="${escapeHtml(UX("gx_pick","اختار الباقة"))}">${plans.map(x=>`<button type="button" class="gpx-plan" role="radio" aria-checked="${x.token===gpSel}" data-gpsel="${escapeHtml(x.token)}">${x.period==="P1Y"&&save?`<span class="gpx-save">${escapeHtml(save)}</span>`:""}<span class="per">${escapeHtml(per(x))}</span><span class="amt">${escapeHtml(x.price||"")}</span><span class="sub">${escapeHtml(sub(x))}</span></button>`).join("")}</div>
 <button type="button" class="gpx-cta" id="gpxCta"></button>`:`<div class="notice">${escapeHtml(UX("gx_unavail","الاشتراك مش متاح دلوقتي. اتأكد إن النت شغال وإن جوجل بلاي متحدّث، وجرّب تاني."))}</div>`}
 ${REVIEW_HASH?`<p class="gpx-fine" style="margin-top:4px"><button type="button" id="gpxReview" style="background:none;border:0;color:inherit;text-decoration:underline;font:inherit;cursor:pointer;padding:4px">${escapeHtml(UX("gx_review","رمز المراجعة"))}</button></p>`:""}
@@ -932,6 +958,7 @@ const box=$("proOffer");
 if(proActive||isPreview()){renderAccount();return;}
 if(GP.pro||reviewOn()){renderGpAccount();return;}
 if(IN_APP&&gpOn()){box.innerHTML=gpPanelHtml();bindGpPanel();return;}
+if(!IN_APP){box.innerHTML=webPanelHtml();bindWebPanel();return;}
 const p=PRO_PAGE,plans=(p.plans||[]).filter(x=>x&&x.name),gp=IN_APP&&gpOn();
 // Google Play subscribers get exactly these (no code-only extras like private exercises or requests)
 const feats=gp?gpFeatures():(p.features||[]);

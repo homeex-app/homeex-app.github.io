@@ -1210,5 +1210,89 @@
   "ur": "محفوظ نہیں ہوا۔ لوگو بڑا ہو تو چھوٹی تصویر آزمائیں۔",
   "id": "Gagal menyimpan. Jika logo besar, coba gambar yang lebih kecil.",
   "ms": "Tidak dapat disimpan. Jika logo besar, cuba gambar yang lebih kecil."
+ },
+ "gx_best": {
+  "en": "Best value",
+  "es": "Mejor precio",
+  "pt": "Melhor preço",
+  "fr": "Meilleur prix",
+  "de": "Bester Preis",
+  "tr": "En avantajlı",
+  "hi": "सबसे किफ़ायती",
+  "ur": "سب سے سستا",
+  "id": "Paling hemat",
+  "ms": "Paling jimat"
+ },
+ "gx_ctaWa": {
+  "en": "Subscribe {plan} on WhatsApp — {p}",
+  "es": "Suscribirse ({plan}) por WhatsApp — {p}",
+  "pt": "Assinar ({plan}) pelo WhatsApp — {p}",
+  "fr": "S'abonner ({plan}) via WhatsApp — {p}",
+  "de": "Abonnieren ({plan}) per WhatsApp — {p}",
+  "tr": "WhatsApp'tan abone ol ({plan}) — {p}",
+  "hi": "WhatsApp पर सब्सक्राइब करें ({plan}) — {p}",
+  "ur": "واٹس ایپ پر سبسکرائب کریں ({plan}) — {p}",
+  "id": "Langganan ({plan}) lewat WhatsApp — {p}",
+  "ms": "Langgan ({plan}) melalui WhatsApp — {p}"
+ },
+ "gx_ctaWa0": {
+  "en": "Subscribe on WhatsApp",
+  "es": "Suscribirse por WhatsApp",
+  "pt": "Assinar pelo WhatsApp",
+  "fr": "S'abonner via WhatsApp",
+  "de": "Per WhatsApp abonnieren",
+  "tr": "WhatsApp'tan abone ol",
+  "hi": "WhatsApp पर सब्सक्राइब करें",
+  "ur": "واٹس ایپ پر سبسکرائب کریں",
+  "id": "Langganan lewat WhatsApp",
+  "ms": "Langgan melalui WhatsApp"
+ },
+ "gx_payWeb": {
+  "en": "Pay by InstaPay or Vodafone Cash; your activation code then arrives on WhatsApp — enter it below.",
+  "es": "Paga con InstaPay o Vodafone Cash; luego recibirás el código de activación por WhatsApp. Escríbelo abajo.",
+  "pt": "Pague com InstaPay ou Vodafone Cash; depois o código de ativação chega pelo WhatsApp. Digite-o abaixo.",
+  "fr": "Payez par InstaPay ou Vodafone Cash ; le code d'activation arrive ensuite sur WhatsApp. Saisissez-le ci-dessous.",
+  "de": "Zahlung per InstaPay oder Vodafone Cash; der Aktivierungscode kommt dann per WhatsApp. Unten eingeben.",
+  "tr": "InstaPay veya Vodafone Cash ile ödeyin; etkinleştirme kodu WhatsApp'tan gelir. Aşağıya girin.",
+  "hi": "InstaPay या Vodafone Cash से भुगतान करें; फिर एक्टिवेशन कोड WhatsApp पर आएगा — नीचे डालें।",
+  "ur": "InstaPay یا Vodafone Cash سے ادائیگی کریں؛ پھر ایکٹیویشن کوڈ واٹس ایپ پر آئے گا — نیچے لکھیں۔",
+  "id": "Bayar lewat InstaPay atau Vodafone Cash; kode aktivasi lalu dikirim lewat WhatsApp. Masukkan di bawah.",
+  "ms": "Bayar melalui InstaPay atau Vodafone Cash; kod pengaktifan akan dihantar melalui WhatsApp. Masukkan di bawah."
+ },
+ "gx_haveCode": {
+  "en": "Have a code? Enter it here",
+  "es": "¿Tienes un código? Escríbelo aquí",
+  "pt": "Tem um código? Digite aqui",
+  "fr": "Vous avez un code ? Saisissez-le ici",
+  "de": "Code vorhanden? Hier eingeben",
+  "tr": "Kodunuz var mı? Buraya girin",
+  "hi": "कोड है? यहाँ डालें",
+  "ur": "کوڈ ہے؟ یہاں لکھیں",
+  "id": "Punya kode? Masukkan di sini",
+  "ms": "Ada kod? Masukkan di sini"
+ },
+ "gx_activate": {
+  "en": "Activate",
+  "es": "Activar",
+  "pt": "Ativar",
+  "fr": "Activer",
+  "de": "Aktivieren",
+  "tr": "Etkinleştir",
+  "hi": "एक्टिवेट करें",
+  "ur": "فعال کریں",
+  "id": "Aktifkan",
+  "ms": "Aktifkan"
+ },
+ "gx_codeNote": {
+  "en": "A code works on one device only. Renewals keep the same code.",
+  "es": "Un código funciona en un solo dispositivo. La renovación mantiene el mismo código.",
+  "pt": "O código funciona em um só aparelho. A renovação mantém o mesmo código.",
+  "fr": "Un code ne fonctionne que sur un appareil. Le renouvellement garde le même code.",
+  "de": "Ein Code gilt nur für ein Gerät. Verlängerungen behalten denselben Code.",
+  "tr": "Kod yalnızca bir cihazda çalışır. Yenileme aynı kodla yapılır.",
+  "hi": "कोड सिर्फ़ एक डिवाइस पर चलता है। रिन्यू उसी कोड पर होता है।",
+  "ur": "کوڈ صرف ایک ڈیوائس پر چلتا ہے۔ تجدید اسی کوڈ پر ہوتی ہے۔",
+  "id": "Kode hanya berlaku di satu perangkat. Perpanjangan memakai kode yang sama.",
+  "ms": "Kod hanya berfungsi pada satu peranti. Pembaharuan menggunakan kod yang sama."
  }
 }
