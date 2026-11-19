@@ -774,9 +774,9 @@ const ready=mode==="off"?[]:TEMPLATES.map((t,i)=>({t,i,isPro:mode==="pro"||!!t.p
 const freeList=ready.filter(x=>!x.isPro);
 const proAvailable=ready.some(x=>x.isPro)||!!protoOwner()||subsOn();
 const tabs=[];
-if(freeList.length||subsOn())tabs.push(["free","Free"]);
+if(freeList.length||subsOn())tabs.push(["free",UX("pc_free","Free")]);
 if(proAvailable&&ready.length)tabs.push(["pro","⭐ Pro"]);
-if(subsOn()||protoOwner())tabs.push(["mine","👤 My protocols"]);
+if(subsOn()||protoOwner())tabs.push(["mine","👤 "+UX("mp_title","My protocols")]);
 const showTab=tabs.length>0&&(ready.length>0||!!protoOwner()||subsOn());
 $("protocolsTabBtn").classList.toggle("hidden",!showTab);
 if(!showTab&&!$("protocolsTab").classList.contains("hidden"))switchTab("exerciseTab");
@@ -787,7 +787,7 @@ document.querySelectorAll("[data-tier]").forEach(b=>b.onclick=()=>{protoTier=b.d
 $("templatesList").innerHTML="";$("protoFilters").innerHTML="";
 if(protoTier==="mine"){
 renderMyProtocols(true);
-if(!protoOwner())$("myProtoBox").innerHTML=hasPro()?`<div class="empty" dir="rtl">هنا بتظهر البروتوكولات اللي كل مشترك بيعملها لنفسه.</div>`:`<div class="pro-upsell" dir="auto"><b>${escapeHtml(UX("pc_ownTitle","👤 بروتوكولاتك الخاصة"))}</b><span>${escapeHtml(UX("pc_ownText","مع Pro تقدر تعمل بروتوكولاتك بنفسك وتحفظها، وتستخدمها بضغطة مع أي مريض."))}</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">${escapeHtml(UX("pc_more","اعرف أكتر"))}</button></div>`;
+if(!protoOwner())$("myProtoBox").innerHTML=hasPro()?`<div class="empty" dir="auto">${escapeHtml(UX("mp_adminHint","هنا بتظهر البروتوكولات اللي كل مشترك بيعملها لنفسه."))}</div>`:`<div class="pro-upsell" dir="auto"><b>${escapeHtml(UX("pc_ownTitle","👤 بروتوكولاتك الخاصة"))}</b><span>${escapeHtml(UX("pc_ownText","مع Pro تقدر تعمل بروتوكولاتك بنفسك وتحفظها، وتستخدمها بضغطة مع أي مريض."))}</span><button class="btn btn-dark" type="button" id="protoUpsellBtn">${escapeHtml(UX("pc_more","اعرف أكتر"))}</button></div>`;
 if($("protoUpsellBtn"))$("protoUpsellBtn").onclick=openPro;
 return;
 }
@@ -1830,13 +1830,13 @@ function renderMyProtocols(show=true){
 const box=$("myProtoBox");if(!box)return;
 if(!show||!protoOwner()){box.innerHTML="";return;}
 const byNum=new Map(exercises.map(e=>[exerciseNumber(e),e]));
-box.innerHTML=`<div class="my-proto-head"><div><h3>⭐ My protocols</h3><div class="code-meta" dir="rtl">خاصة بيك إنت بس ومتحفوظة ${proCode()?"على كود اشتراكك":"على الموبايل ده"}. اختار تمارين وجرعات، وبعدين من Send اضغط "Save as my protocol".</div></div></div>
-${myProtocols.length?`<div class="proto-grid" style="margin-bottom:22px">${myProtocols.map(t=>{const names=(t.items||[]).map(it=>byNum.get(it.n)?.name).filter(Boolean);return`<div class="proto-card"><div class="proto-top"><div class="proto-icon">⭐</div><div><div class="proto-name">${escapeHtml(t.name)}</div><div class="proto-region">${t.byAdmin?"Added for you":"My protocol"}</div></div></div>
-<div class="proto-meta"><span>${(t.items||[]).length} exercises</span>${(t.items||[]).some(it=>it.reps||it.sets||it.hold)?`<span>Dosage included</span>`:""}</div>
+box.innerHTML=`<div class="my-proto-head"><div><h3>⭐ ${escapeHtml(UX("mp_title","My protocols"))}</h3><div class="code-meta" dir="auto">${escapeHtml(proCode()?UX("mp_introCode",`خاصة بيك إنت بس ومتحفوظة على كود اشتراكك. اختار تمارين وجرعات، وبعدين من Send اضغط "Save as my protocol".`):UX("mp_introPhone",`خاصة بيك إنت بس ومتحفوظة على الموبايل ده. اختار تمارين وجرعات، وبعدين من Send اضغط "Save as my protocol".`))}</div></div></div>
+${myProtocols.length?`<div class="proto-grid" style="margin-bottom:22px">${myProtocols.map(t=>{const names=(t.items||[]).map(it=>{const e=byNum.get(it.n);return e?trEx(e,showLang()).name:"";}).filter(Boolean);return`<div class="proto-card"><div class="proto-top"><div class="proto-icon">⭐</div><div><div class="proto-name">${escapeHtml(t.name)}</div><div class="proto-region">${escapeHtml(t.byAdmin?UX("mp_added","Added for you"):UX("mp_mine","My protocol"))}</div></div></div>
+<div class="proto-meta"><span>${escapeHtml(UX("pc_ex",`${(t.items||[]).length} exercises`,{n:(t.items||[]).length}))}</span>${(t.items||[]).some(it=>it.reps||it.sets||it.hold)?`<span>${escapeHtml(UX("pc_dose","Dosage included"))}</span>`:""}</div>
 <div class="proto-ex">${escapeHtml(names.slice(0,4).join(" • "))}${names.length>4?` +${names.length-4}`:""}</div>
-<div style="display:flex;gap:8px;margin-top:auto"><button class="btn btn-primary" style="flex:1" data-myproto="${escapeHtml(t.id)}">Use →</button><button class="btn btn-danger" data-delproto="${escapeHtml(t.id)}">Delete</button></div></div>`;}).join("")}</div>`:`<div class="empty" style="margin-bottom:22px" dir="rtl">لسه معندكش بروتوكولات. اختار التمارين وحط الجرعات، وبعدين من صفحة Send اضغط <b>💾 Save as my protocol</b>.</div>`}`;
+<div style="display:flex;gap:8px;margin-top:auto"><button class="btn btn-primary" style="flex:1" data-myproto="${escapeHtml(t.id)}">${escapeHtml(UX("mp_use","Use →"))}</button><button class="btn btn-danger" data-delproto="${escapeHtml(t.id)}">${escapeHtml(UX("mp_delete","Delete"))}</button></div></div>`;}).join("")}</div>`:`<div class="empty" style="margin-bottom:22px" dir="auto">${escapeHtml(UX("mp_empty","لسه معندكش بروتوكولات. اختار التمارين وحط الجرعات، وبعدين من صفحة Send اضغط 💾 Save as my protocol."))}</div>`}`;
 box.querySelectorAll("[data-myproto]").forEach(b=>b.onclick=()=>{const t=myProtocols.find(x=>x.id===b.dataset.myproto);if(!t)return;applyTemplate({name:t.name,items:t.items||[]});activeMyProto=t.id;});
-box.querySelectorAll("[data-delproto]").forEach(b=>b.onclick=async()=>{const t=myProtocols.find(x=>x.id===b.dataset.delproto);if(!t||!confirm(`Delete "${t.name}"?`))return;try{if(proCode())await deleteDoc(doc(db,"codes",proCode(),"protocols",t.id));else writeLocalProtos(readLocalProtos().filter(x=>x.id!==t.id));if(activeMyProto===t.id)activeMyProto=null;await loadProExtras();toast("✓ Deleted");}catch(e){alert(e.message);}});
+box.querySelectorAll("[data-delproto]").forEach(b=>b.onclick=async()=>{const t=myProtocols.find(x=>x.id===b.dataset.delproto);if(!t||!confirm(UX("mp_confirmDel",`Delete "${t.name}"?`,{name:t.name})))return;try{if(proCode())await deleteDoc(doc(db,"codes",proCode(),"protocols",t.id));else writeLocalProtos(readLocalProtos().filter(x=>x.id!==t.id));if(activeMyProto===t.id)activeMyProto=null;await loadProExtras();toast("✓ "+UX("mp_deleted","Deleted"));}catch(e){alert(e.message);}});
 }
 async function saveMyProtocol(){
 const code=proCode();if(!protoOwner())return;
@@ -1845,11 +1845,11 @@ if(!list.length){alert("Select at least one exercise.");return;}
 const items=list.map(e=>{const d=dosage.get(e.id)||{};return{n:exerciseNumber(e),sets:d.sets||"",reps:d.reps||"",hold:d.hold||"",freq:d.freq||""};});
 const cur=activeMyProto&&myProtocols.find(t=>t.id===activeMyProto);
 try{
-if(cur&&confirm(`Update "${cur.name}" with the current exercises?\n(Cancel = save as a new protocol)`)){
-if(!code)writeLocalProtos(readLocalProtos().map(x=>x.id===cur.id?{...x,items}:x));else await updateDoc(doc(db,"codes",code,"protocols",cur.id),{items,updatedAt:serverTimestamp()});toast(`✓ "${cur.name}" updated`);
+if(cur&&confirm(UX("mp_confirmUpd",`Update "${cur.name}" with the current exercises?\n(Cancel = save as a new protocol)`,{name:cur.name}))){
+if(!code)writeLocalProtos(readLocalProtos().map(x=>x.id===cur.id?{...x,items}:x));else await updateDoc(doc(db,"codes",code,"protocols",cur.id),{items,updatedAt:serverTimestamp()});toast("✓ "+UX("mp_updated",`"${cur.name}" updated`,{name:cur.name}));
 }else{
-const name=(prompt("Protocol name · اسم البروتوكول","")||"").trim().slice(0,80);if(!name)return;
-if(!code){const id="L"+Date.now().toString(36);writeLocalProtos(readLocalProtos().concat({id,name,items}));activeMyProto=id;}else{const ref=await addDoc(collection(db,"codes",code,"protocols"),{name,items,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});activeMyProto=ref.id;}toast(`✓ "${name}" saved`);
+const name=(prompt(UX("mp_namePrompt","Protocol name · اسم البروتوكول"),"")||"").trim().slice(0,80);if(!name)return;
+if(!code){const id="L"+Date.now().toString(36);writeLocalProtos(readLocalProtos().concat({id,name,items}));activeMyProto=id;}else{const ref=await addDoc(collection(db,"codes",code,"protocols"),{name,items,createdAt:serverTimestamp(),updatedAt:serverTimestamp()});activeMyProto=ref.id;}toast("✓ "+UX("mp_saved",`"${name}" saved`,{name}));
 }
 await loadProExtras();
 }catch(e){console.error(e);alert("Could not save: "+e.message);}
