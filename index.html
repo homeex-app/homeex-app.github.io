@@ -73,7 +73,7 @@ body.direct-mode #requestExBtn,body.direct-mode #saveProtoBtn,body.direct-mode #
 .lang-menu button b{min-width:26px;color:#1e3a8a;font-size:12px}
 .lang-menu button.on,.lang-menu button:hover{background:#eef2ff}
 body.direct-mode #uiLangBtn,body.direct-mode #uiLangMenu{display:none!important}
-body.ui-foreign #homeProBanner,body.ui-foreign #proBanner{display:none!important}
+body.ui-foreign #proBanner{display:none!important}
 .patient-disc{font-size:12px;color:#667085;margin-top:6px;font-weight:500;line-height:1.5}
 .dose-pill{display:inline-block;background:#fef3c7;color:#92400e;font-weight:800;font-size:13px;border-radius:8px;padding:5px 10px;margin:4px 0 2px}
 </style>
@@ -164,14 +164,14 @@ body.has-viewas{padding-bottom:70px}
 .viewas button{border:0;border-radius:999px;padding:8px 12px;background:transparent;color:#e5e7eb;font-weight:700;font-size:12px}
 .viewas button.active{background:#f59e0b;color:#fff}
 .toast{position:fixed;left:50%;top:18px;transform:translateX(-50%);z-index:120;background:#059669;color:#fff;padding:11px 16px;border-radius:12px;font-weight:700;box-shadow:var(--shadow);font-size:14px}
-.home-pro{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;margin:18px 0 6px;padding:16px 18px;border-radius:16px;background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;box-shadow:var(--shadow)}
-.home-pro-title{font-size:18px;font-weight:800;margin-bottom:4px}.home-pro-text{font-size:13px;color:#dbeafe;line-height:1.6}
-.home-pro .btn{background:#f59e0b;color:#fff;white-space:nowrap}
+.home-pro{display:flex;align-items:center;gap:8px;width:100%;box-sizing:border-box;margin:14px 0 4px;border:1px solid #d6e6fb;background:#f2f8ff;color:#1e3a8a;border-radius:999px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer;text-align:start}
+.home-pro.hidden{display:none}.home-pro b{font-weight:800;white-space:nowrap}.home-pro .hp-t{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#3b5b9a}.home-pro .hp-go{color:#2563eb;font-weight:800}
+
 body.direct-mode #homeProBanner{display:none!important}
 body:not(.in-app) #homeProBanner{display:none!important} /* website: no "see offers" banner */
 .offer-sub{color:#667085;margin:4px 0 12px;font-size:14px}
 .offer-list{list-style:none;padding:0;margin:0 0 16px;display:grid;gap:7px}
-.gpx{--gx-ink:#13275e;--gx-amber:#5e8a1c;--gx-honey:#f0f6e3;--gx-line:#e6e9f0;--gx-muted:#6b7489;font-family:"Readex Pro",Tahoma,sans-serif;color:var(--gx-ink)}
+.gpx{--gx-ink:#13275e;--gx-amber:#23913a;--gx-honey:#e8f7e6;--gx-line:#e6e9f0;--gx-muted:#6b7489;font-family:"Readex Pro",Tahoma,sans-serif;color:var(--gx-ink)}
 .gpx h3{font-size:22px;line-height:1.35;font-weight:700;margin:2px 0 14px;letter-spacing:-.2px}
 .gpx-limit{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;border:1px solid var(--gx-line);border-radius:16px;padding:12px 10px;margin-bottom:14px}
 .gpx-limit div{text-align:center}.gpx-limit small{display:block;font-size:12px;color:var(--gx-muted);margin-bottom:2px}
@@ -235,11 +235,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="search-help" data-i18n="searchHelp">Write exercise numbers separated by commas, or part of the exercise name (any language).</div>
 </div>
 
-<div id="homeProBanner" class="home-pro hidden" dir="rtl">
-<div><div class="home-pro-title">⭐ جديد: HomeEx Pro</div>
-<div class="home-pro-text">اكتب Sets و Reps لكل تمرين • اسم عيادتك ورقمك على الـ PDF • بروتوكولات جاهزة بضغطة واحدة</div></div>
-<button class="btn" type="button" id="homeProBtn">شوف العروض</button>
-</div>
+<button id="homeProBanner" class="home-pro hidden" type="button"><span class="hp-star">⭐</span><b id="hpTitle">افتح <bdi>Pro</bdi></b><span class="hp-t" id="hpText">· <bdi>Sets</bdi> و<bdi>Reps</bdi>، اسم عيادتك، بروتوكولات جاهزة</span><span class="hp-go">›</span></button>
 
 <div class="section-head"><div><h2 data-i18n="regionsTitle">Body regions</h2><p data-i18n="regionsSub">Select one or more areas to see suitable home exercises.</p></div><button class="btn btn-outline no-print" id="clearFilters" data-i18n="clear">Clear</button></div>
 <div class="regions" id="regions"></div>
@@ -697,7 +693,7 @@ $("footerProBtn").classList.toggle("hidden",!showPro);
 $("footerProSep").classList.toggle("hidden",!showPro);
 $("proOpenBtn").textContent=proActive||isPreview()||GP.pro||reviewOn()?"👤 My account":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
 renderSendsLeft();
-$("homeProBanner").classList.toggle("hidden",!showPro||hasPro());
+$("homeProBanner").classList.toggle("hidden",!showPro||hasPro());$("homeProBanner").dir=uiLang==="ar"||uiLang==="ur"?"rtl":"ltr";if(uiLang!=="ar"){$("hpTitle").textContent=UX("hp_title","افتح Pro");$("hpText").textContent="· "+UX("hp_text","");}
 $("protoProTag").classList.toggle("hidden",!showPro);
 renderViewAs();
 $("proBanner").classList.toggle("hidden",!["dosage","branding","templates"].some(featureLocked));
@@ -867,7 +863,7 @@ function gpFeatures(){return gpCompareRows().filter(gpDiff).map(r=>r.label);}
 function gpCompareHtml(){const c=v=>v==="Y"?"✅":v==="N"?"—":v.t;return`<table class="cmp"><thead><tr><th></th><th>${escapeHtml(UX("gx_free","مجاني"))}</th><th>Pro</th></tr></thead><tbody>${gpCompareRows().map(r=>`<tr><td>${escapeHtml(r.label)}</td><td>${escapeHtml(c(r.free))}</td><td class="pro">${escapeHtml(r.send?UX("gx_unlimited","من غير حد"):c(r.pro))}</td></tr>`).join("")}</tbody></table>`;}
 function gxRtl(){return uiLang==="ar"||uiLang==="ur";}
 function gpTrialDays(p){const m=String(p||"").match(/^P(\d+)([DWM])$/);if(!m)return 0;return m[2]==="W"?+m[1]*7:m[2]==="M"?+m[1]*30:+m[1];}
-const GX_CK=`<svg class="gpx-ck" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#dcebc2"/><path d="M5.6 10.4l2.9 2.9 5.9-6.2" fill="none" stroke="#5e8a1c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const GX_CK=`<svg class="gpx-ck" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="10" fill="#d3f0cf"/><path d="M5.6 10.4l2.9 2.9 5.9-6.2" fill="none" stroke="#23913a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 const GX_CK_FREE=`<svg class="gpx-ck" viewBox="0 0 20 20" aria-hidden="true"><path d="M5.6 10.4l2.9 2.9 5.9-6.2" fill="none" stroke="#6b7489" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 function gpNum(p){const s=String(p||"").replace(/[^\d.,]/g,"");if(!s)return NaN;const t=/,\d{1,2}$/.test(s)?s.replace(/\./g,"").replace(",","."):s.replace(/,/g,"");return parseFloat(t);}
 function gpCur(p){return String(p||"").replace(/[\d.,\s ]+/g," ").trim();}
@@ -2010,7 +2006,7 @@ const u=new URL(window.location.href);
 u.search="";u.hash="";
 window.location.href=u.href;
 };
-$("proOpenBtn").onclick=openPro;$("homeProBtn").onclick=openPro;$("footerProBtn").onclick=openPro;$("bannerProBtn").onclick=openPro;$("proActivateBtn").onclick=activatePro;
+$("proOpenBtn").onclick=openPro;$("homeProBanner").onclick=openPro;$("footerProBtn").onclick=openPro;$("bannerProBtn").onclick=openPro;$("proActivateBtn").onclick=activatePro;
 $("proCodeInput").addEventListener("keydown",e=>{if(e.key==="Enter")activatePro();});
 let brandLogoDraft="";
 function showLogoDraft(){const pv=$("brandLogoPreview");pv.style.backgroundImage=brandLogoDraft?`url("${driveToImageUrl(brandLogoDraft).replace(/"/g,'%22')}")`:"";pv.textContent=brandLogoDraft?"":UX("br_none","لا يوجد");$("brandLogoRemove").classList.toggle("hidden",!brandLogoDraft);}

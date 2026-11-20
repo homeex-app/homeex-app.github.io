@@ -2194,5 +2194,29 @@
   "ur": "ہر سبسکرائبر کے بنائے پروٹوکول یہاں نظر آتے ہیں۔",
   "id": "Protokol buatan setiap pelanggan muncul di sini.",
   "ms": "Protokol yang dibina setiap pelanggan dipaparkan di sini."
+ },
+ "hp_title": {
+  "en": "Unlock Pro",
+  "es": "Desbloquea Pro",
+  "pt": "Desbloqueie o Pro",
+  "fr": "Débloquer Pro",
+  "de": "Pro freischalten",
+  "tr": "Pro'yu aç",
+  "hi": "Pro अनलॉक करें",
+  "ur": "Pro کھولیں",
+  "id": "Buka Pro",
+  "ms": "Buka Pro"
+ },
+ "hp_text": {
+  "en": "Sets & reps, your clinic name, ready protocols",
+  "es": "Series y repeticiones, nombre de tu clínica, protocolos listos",
+  "pt": "Séries e repetições, nome da sua clínica, protocolos prontos",
+  "fr": "Séries et répétitions, nom de votre cabinet, protocoles prêts",
+  "de": "Sätze & Wiederholungen, Ihr Praxisname, fertige Protokolle",
+  "tr": "Set ve tekrar, klinik adınız, hazır protokoller",
+  "hi": "सेट और रेप्स, आपके क्लिनिक का नाम, तैयार प्रोटोकॉल",
+  "ur": "سیٹس اور ریپس، آپ کے کلینک کا نام، تیار پروٹوکول",
+  "id": "Set & repetisi, nama klinik Anda, protokol siap pakai",
+  "ms": "Set & ulangan, nama klinik anda, protokol sedia"
  }
 }
