@@ -235,7 +235,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="search-help" data-i18n="searchHelp">Write exercise numbers separated by commas, or part of the exercise name (any language).</div>
 </div>
 
-<button id="homeProBanner" class="home-pro hidden" type="button"><span class="hp-star">⭐</span><b id="hpTitle">افتح <bdi>Pro</bdi></b><span class="hp-t" id="hpText">· <bdi>Sets</bdi> و<bdi>Reps</bdi>، اسم عيادتك، بروتوكولات جاهزة</span><span class="hp-go">›</span></button>
+<button id="homeProBanner" class="home-pro hidden" type="button"><span class="hp-star">⭐</span><b id="hpTitle">حوّل لـ <bdi>Pro</bdi></b><span class="hp-t" id="hpText">· وافتح مميزات أكتر ليك ولمرضاك</span><span class="hp-go">›</span></button>
 
 <div class="section-head"><div><h2 data-i18n="regionsTitle">Body regions</h2><p data-i18n="regionsSub">Select one or more areas to see suitable home exercises.</p></div><button class="btn btn-outline no-print" id="clearFilters" data-i18n="clear">Clear</button></div>
 <div class="regions" id="regions"></div>
@@ -472,7 +472,7 @@ if(rerender&&exercises.length){renderRegions();renderExercises();renderSend();re
 async function setUiLang(l){
 uiLang=l;lsSet("homeex_ui_lang",l);
 progLang=l;lsSet("homeex_prog_lang",l);const ps=$("progLang");if(ps)ps.value=l;
-await loadLangs(l);applyUiLang();
+await loadLangs(l);applyUiLang();renderHpChip();
 }
 function buildLangMenu(){
 const btn=$("uiLangBtn"),menu=$("uiLangMenu");if(!btn||!menu)return;
@@ -686,6 +686,9 @@ function fmtDate(ms){return ms?new Date(ms).toLocaleDateString("en-GB",{day:"2-d
 function getBrand(){let b={};try{b=JSON.parse(lsGet(BRAND_KEY)||"{}")||{};}catch(e){b={};}
 const c=proActive&&proInfo&&proInfo.clinic;if(c&&c.name)return{...b,clinic:c.name,phone:c.phone||b.phone||"",logo:c.logo||b.logo||""};return b;}
 function clinicLocked(){return!!(proActive&&proInfo&&proInfo.clinic&&proInfo.clinic.name);}
+function renderHpChip(){const b=$("homeProBanner");if(!b)return;b.dir=uiLang==="ar"||uiLang==="ur"?"rtl":"ltr";
+if(uiLang==="ar")$("hpTitle").innerHTML="حوّل لـ <bdi>Pro</bdi>";else $("hpTitle").textContent=UX("hp_title","Upgrade to Pro");
+$("hpText").textContent="· "+UX("hp_text","وافتح مميزات أكتر ليك ولمرضاك");}
 function applyFeatures(){
 const showPro=subsOn();
 $("proOpenBtn").classList.toggle("hidden",!showPro);
@@ -693,7 +696,7 @@ $("footerProBtn").classList.toggle("hidden",!showPro);
 $("footerProSep").classList.toggle("hidden",!showPro);
 $("proOpenBtn").textContent=proActive||isPreview()||GP.pro||reviewOn()?"👤 My account":(hasPro()?"⭐ Pro ✓":"⭐ Pro");
 renderSendsLeft();
-$("homeProBanner").classList.toggle("hidden",!showPro||hasPro());$("homeProBanner").dir=uiLang==="ar"||uiLang==="ur"?"rtl":"ltr";if(uiLang!=="ar"){$("hpTitle").textContent=UX("hp_title","افتح Pro");$("hpText").textContent="· "+UX("hp_text","");}
+$("homeProBanner").classList.toggle("hidden",!showPro||hasPro());renderHpChip();
 $("protoProTag").classList.toggle("hidden",!showPro);
 renderViewAs();
 $("proBanner").classList.toggle("hidden",!["dosage","branding","templates"].some(featureLocked));
