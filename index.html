@@ -2075,19 +2075,13 @@ loadSettings().then(async()=>{await loadShare();await loadLangs(document.body.cl
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(e=>console.warn("Service worker registration failed",e)));}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.__hxInstallPrompt=e;});
 
+// Counts each device once per day (stats/d-YYYY-MM-DD), shown only in Admin. One write per device per day.
 async function homeexTrackVisit(){
   try{
-    const el=document.getElementById("visitCount");
-    const today=new Date().toISOString().slice(0,10),last=lsGet("homeex_visit_day"),known=Number(lsGet("homeex_visit_count"))||0;
-    if(last===today&&known){if(el)el.textContent=known.toLocaleString("en-US");return;}
-    const ref=doc(db,"stats","usage");
-    await setDoc(ref,{visits:increment(1)},{merge:true});
+    const today=new Date().toISOString().slice(0,10);
+    if(lsGet("homeex_visit_day")===today)return;
+    await setDoc(doc(db,"stats","d-"+today),{n:increment(1)},{merge:true});
     lsSet("homeex_visit_day",today);
-    setDoc(doc(db,"stats","d-"+today),{n:increment(1)},{merge:true}).catch(()=>{});
-    const snap=await getDoc(ref);
-    const current=snap.exists()?Number(snap.data().visits||0):known;
-    lsSet("homeex_visit_count",String(current));
-    if(el)el.textContent=current.toLocaleString("en-US");
   }catch(e){
     console.warn("Visit counter unavailable:",e);
   }
@@ -2176,8 +2170,7 @@ async function homeexTrackVisit(){
   <a href="privacy.html">Privacy</a>
   <span style="margin:0 7px">•</span>
   <a href="mailto:ahmed4nassef@gmail.com">ahmed4nassef@gmail.com</a>
-  <span style="margin:0 7px">•</span>
-  <span>Visits: <b id="visitCount">—</b></span>
+
   <span id="footerProSep" class="hidden" style="margin:0 7px">•</span>
   <button id="footerProBtn" class="hidden" type="button" style="border:0;background:none;padding:0;color:inherit;font:inherit;cursor:pointer">Pro</button>
   <span id="footerAdminSep" style="margin:0 7px">•</span>
