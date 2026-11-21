@@ -189,7 +189,7 @@ body:not(.in-app) #homeProBanner{display:none!important} /* website: no "see off
 .gpx-plan{position:relative;border:1.5px solid var(--gx-line);border-radius:16px;padding:14px 10px 12px;text-align:center;background:#fff;cursor:pointer;font:inherit;color:inherit}
 .gpx-plan[aria-checked="true"]{border-color:var(--gx-ink);box-shadow:0 0 0 3px rgba(19,39,94,.12)}
 .gpx-plan:focus-visible{outline:3px solid #93c5fd;outline-offset:2px}
-.gpx-plan .per{font-size:13px;color:var(--gx-muted)}.gpx-plan .amt{display:block;font-size:18px;font-weight:700;margin:4px 0 2px;direction:ltr;white-space:nowrap}
+.gpx-plan .per{font-size:13px;color:var(--gx-muted)}.gpx-plan .amt{display:block;font-size:18px;font-weight:700;margin:4px 0 2px;unicode-bidi:plaintext;white-space:nowrap}
 .gpx-plan .sub{font-size:12px;color:var(--gx-muted)}
 .gpx-save{position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:var(--gx-amber);color:#fff;font-size:11.5px;font-weight:600;border-radius:999px;padding:2px 10px;white-space:nowrap}
 .gpx-cta{width:100%;border:0;border-radius:14px;background:var(--gx-ink);color:#fff;font:inherit;font-size:16px;font-weight:600;padding:14px;cursor:pointer}
@@ -985,7 +985,7 @@ $("proModalTitle").textContent=acct?"👤 My account":"⭐ HomeEx Pro";
 $("proStatus").innerHTML=acct?"":proStatusHtml();renderOffer();$("proNotice").innerHTML="";
 $("proCodeInput").value=lsGet(PRO_KEY)||"";
 // Inside the app there is no code box: Pro is sold only through Google Play
-$("proCodeArea").classList.toggle("hidden",!!acct||IN_APP);
+$("proCodeArea").classList.toggle("hidden",!!acct||IN_APP);$("proCodeArea").dir=gxRtl()?"rtl":"ltr";
 $("proModal").classList.remove("hidden");
 }
 async function ensureDeviceUser(){
@@ -1111,7 +1111,7 @@ box.querySelectorAll("[data-delcode]").forEach(b=>b.onclick=()=>{if(confirm(`ح�
 /* ---------- Clinic packages: one clinic, several doctor codes, shared name/phone/logo ---------- */
 function clinicOfferHtml(){
 const n=waPhone(PRO_PAGE.whatsapp),link=n?`https://wa.me/${n}?text=${encodeURIComponent("السلام عليكم، عايز أعرف سعر باقة العيادات في HomeEx Pro")}`:"";
-return`<div class="clinic-offer"><b>🏥 باقة العيادات والمراكز</b>
+return`<div class="clinic-offer" dir="rtl"><b>🏥 باقة العيادات والمراكز</b>
 <ul class="offer-list"><li>✅ كود لكل دكتور في العيادة، بعدد الدكاترة اللي تحتاجه</li><li>✅ نفس اللوجو واسم العيادة ورقمها عند كل الدكاترة، على الواتساب ولينك المريض والـ PDF</li><li>✅ بيانات العيادة محفوظة عندنا، مش بتضيع لو حد غيّر موبايله</li><li>✅ كل دكتور يعمل بروتوكولاته الخاصة، ويطلب تمارين وفيديوهات مخصوصة تظهر له ولمرضاه بس</li><li>✅ كل مميزات Pro لكل دكتور</li></ul>
 ${link?`<a class="btn btn-dark" href="${escapeHtml(link)}" target="_blank" rel="noopener">اسأل عن السعر</a>`:`<div class="code-meta">كلمنا عشان تعرف السعر.</div>`}</div>`;
 }
@@ -2103,7 +2103,7 @@ async function homeexTrackVisit(){
       const id=ids[k],lk="homeex_seen_"+k;
       if(lsGet(lk)===id)continue;
       try{await setDoc(doc(db,"stats",id),{n:increment(1),[kind]:increment(1)},{merge:true});}
-      catch(e){if(k!=="d")continue;await setDoc(doc(db,"stats",id),{n:increment(1)},{merge:true});}// old rules: day total only
+      catch(e){if(k!=="d"){lsSet(lk,id);continue;}await setDoc(doc(db,"stats",id),{n:increment(1)},{merge:true});}// old rules: day total only
       lsSet(lk,id);
     }
   }catch(e){
