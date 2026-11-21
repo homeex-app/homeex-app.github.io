@@ -1278,7 +1278,7 @@ box.innerHTML=days.map((d,i)=>`<div style="display:flex;justify-content:space-be
 }catch(e){box.textContent="العداد لسه مش شغال (محتاج تنشر قواعد Firestore الجديدة).";}
 }
 function featuresCardHtml(){
-const modes=k=>["subscriptions","exAd","protoAd"].includes(k)?[["off","مقفول"],["on","شغال"]]:[["off","مقفول"],["all","للكل مجاناً"],["pro","للمشتركين بس"]];
+const modes=k=>["subscriptions","exAd","protoAd"].includes(k)?[["off","مقفول"],["on","شغال"]]:k==="templates"?[["off","مقفول"],["all","المجاني للكل + اللي آخره | pro للمشتركين"],["pro","كلها للمشتركين بس (مفيش مجاني)"]]:[["off","مقفول"],["all","للكل مجاناً"],["pro","للمشتركين بس"]];
 const rows=[["subscriptions","نظام الاشتراكات (زرار Pro + تفعيل الأكواد)"],["templates","البروتوكولات الجاهزة"],["dosage","Sets / Reps / Hold لكل تمرين"],["branding","بيانات الأخصائي والعيادة على الـ PDF والواتساب"],["exAd","صورة الإعلان في صفحة التمارين"],["protoAd","صورة الإعلان في تاب البروتوكولات"]];
 return`<div class="settings-card"><h3>المزايا (Features)</h3><p>لو كله "مقفول" الموقع بيفضل زي ما هو بالظبط. "للمشتركين بس" محتاجة نظام الاشتراكات يبقى شغال. انت كأدمن بتشوف كل المزايا اللي مش مقفولة.</p>
 ${rows.map(([k,l])=>`<div class="feature-row"><span>${l}</span><select data-feature="${k}">${modes(k).map(([v,t])=>`<option value="${v}" ${FEATURES[k]===v?"selected":""}>${t}</option>`).join("")}</select></div>`).join("")}
