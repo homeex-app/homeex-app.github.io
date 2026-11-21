@@ -24,11 +24,11 @@ service cloud.firestore {
                              && request.resource.data.visits is int;
     }
 
-    // Usage counter shown in Admin: devices per day (d-YYYY-MM-DD), week (w-YYYY-Www), month (m-YYYY-MM)
-    match /stats/{id} {
+    // Devices that opened the site per day (stats/d-YYYY-MM-DD), shown in Admin
+    match /stats/{day} {
       allow read: if true;
-      allow create, update: if id.matches('(d-[0-9]{4}-[0-9]{2}-[0-9]{2}|w-[0-9]{4}-W[0-9]{2}|m-[0-9]{4}-[0-9]{2})')
-                             && request.resource.data.keys().hasOnly(['n', 'ios', 'and', 'app', 'pc', 'pt'])
+      allow create, update: if day.matches('d-[0-9]{4}-[0-9]{2}-[0-9]{2}')
+                             && request.resource.data.keys().hasOnly(['n'])
                              && request.resource.data.n is int;
     }
 

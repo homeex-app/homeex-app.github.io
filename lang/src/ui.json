@@ -2326,5 +2326,89 @@
   "ur": "السلام علیکم، میں HomeEx Pro کلینک پیکج کی قیمت جاننا چاہتا/چاہتی ہوں",
   "id": "Halo, saya ingin tahu harga paket klinik HomeEx Pro",
   "ms": "Helo, saya ingin tahu harga pakej klinik HomeEx Pro"
+ },
+ "pp:شهري": {
+  "en": "Monthly",
+  "es": "Mensual",
+  "pt": "Mensal",
+  "fr": "Mensuel",
+  "de": "Monatlich",
+  "tr": "Aylık",
+  "hi": "मासिक",
+  "ur": "ماہانہ",
+  "id": "Bulanan",
+  "ms": "Bulanan"
+ },
+ "pp:سنوي": {
+  "en": "Yearly",
+  "es": "Anual",
+  "pt": "Anual",
+  "fr": "Annuel",
+  "de": "Jährlich",
+  "tr": "Yıllık",
+  "hi": "सालाना",
+  "ur": "سالانہ",
+  "id": "Tahunan",
+  "ms": "Tahunan"
+ },
+ "pp:في الشهر": {
+  "en": "per month",
+  "es": "al mes",
+  "pt": "por mês",
+  "fr": "par mois",
+  "de": "pro Monat",
+  "tr": "aylık",
+  "hi": "प्रति माह",
+  "ur": "فی مہینہ",
+  "id": "per bulan",
+  "ms": "sebulan"
+ },
+ "pp:شهرين ببلاش": {
+  "en": "2 months free",
+  "es": "2 meses gratis",
+  "pt": "2 meses grátis",
+  "fr": "2 mois offerts",
+  "de": "2 Monate gratis",
+  "tr": "2 ay bedava",
+  "hi": "2 महीने मुफ़्त",
+  "ur": "2 مہینے مفت",
+  "id": "Gratis 2 bulan",
+  "ms": "2 bulan percuma"
+ },
+ "pp:في السنة": {
+  "en": "per year",
+  "es": "al año",
+  "pt": "por ano",
+  "fr": "par an",
+  "de": "pro Jahr",
+  "tr": "yıllık",
+  "hi": "प्रति वर्ष",
+  "ur": "فی سال",
+  "id": "per tahun",
+  "ms": "setahun"
+ },
+ "pb_text": {
+  "en": "🔒 With Pro: sets & reps for every exercise, your clinic details on the PDF, and ready-made protocols.",
+  "es": "🔒 Con Pro: series y repeticiones en cada ejercicio, los datos de tu clínica en el PDF y protocolos listos.",
+  "pt": "🔒 Com o Pro: séries e repetições em cada exercício, os dados da sua clínica no PDF e protocolos prontos.",
+  "fr": "🔒 Avec Pro : séries et répétitions pour chaque exercice, les infos de votre cabinet sur le PDF et des protocoles prêts.",
+  "de": "🔒 Mit Pro: Sätze und Wiederholungen für jede Übung, Ihre Praxisdaten im PDF und fertige Protokolle.",
+  "tr": "🔒 Pro ile: her egzersiz için set ve tekrar, PDF’te klinik bilgileriniz ve hazır protokoller.",
+  "hi": "🔒 Pro के साथ: हर एक्सरसाइज़ के सेट और रेप्स, PDF पर आपके क्लिनिक की जानकारी, और तैयार प्रोटोकॉल।",
+  "ur": "🔒 Pro کے ساتھ: ہر ورزش کے سیٹ اور ریپس، PDF پر آپ کے کلینک کی معلومات، اور تیار پروٹوکول۔",
+  "id": "🔒 Dengan Pro: set & repetisi tiap latihan, data klinik Anda di PDF, dan protokol siap pakai.",
+  "ms": "🔒 Dengan Pro: set & ulangan untuk setiap latihan, butiran klinik anda pada PDF, dan protokol sedia ada."
+ },
+ "pb_more": {
+  "en": "Learn more",
+  "es": "Más información",
+  "pt": "Saiba mais",
+  "fr": "En savoir plus",
+  "de": "Mehr erfahren",
+  "tr": "Daha fazla",
+  "hi": "और जानें",
+  "ur": "مزید جانیں",
+  "id": "Selengkapnya",
+  "ms": "Ketahui lagi"
  }
 }

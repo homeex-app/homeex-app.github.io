@@ -74,7 +74,6 @@ body.direct-mode #requestExBtn,body.direct-mode #saveProtoBtn,body.direct-mode #
 .lang-menu button b{min-width:26px;color:#1e3a8a;font-size:12px}
 .lang-menu button.on,.lang-menu button:hover{background:#eef2ff}
 body.direct-mode #uiLangBtn,body.direct-mode #uiLangMenu{display:none!important}
-body.ui-foreign #proBanner{display:none!important}
 .patient-disc{font-size:12px;color:#667085;margin-top:6px;font-weight:500;line-height:1.5}
 .dose-pill{display:inline-block;background:#fef3c7;color:#92400e;font-weight:800;font-size:13px;border-radius:8px;padding:5px 10px;margin:4px 0 2px}
 </style>
@@ -259,7 +258,7 @@ body.direct-mode #protocolsTabBtn,body.direct-mode .pro-btn,body.direct-mode #fo
 <div class="section-head"><div><h2 data-i18n="sendTitle">Send prescription</h2><p data-i18n="sendSub">The WhatsApp message will contain exercise numbers, names and descriptions.</p></div></div>
 <div class="send-panel" id="pdfArea">
 <div class="no-print">
-<div id="proBanner" class="pro-banner hidden"><span dir="rtl">🔒 مع <b>Pro</b>: Sets و Reps لكل تمرين، وبيانات عيادتك على الـ PDF، وبروتوكولات جاهزة.</span><button class="btn btn-dark" type="button" id="bannerProBtn">اعرف أكتر</button></div>
+<div id="proBanner" class="pro-banner hidden"><span dir="auto" data-i18n="pb_text">🔒 مع <b>Pro</b>: Sets و Reps لكل تمرين، وبيانات عيادتك على الـ PDF، وبروتوكولات جاهزة.</span><button class="btn btn-dark" type="button" id="bannerProBtn" data-i18n="pb_more">اعرف أكتر</button></div>
 <div class="field"><label for="patientName" data-i18n="patientName">Patient name (optional)</label><input id="patientName" placeholder="e.g. Ahmed Mohamed" data-i18n-ph="patientPh"></div>
 <div class="field"><label for="progLang" data-i18n="progLang">Program language · لغة البرنامج</label><select id="progLang"><option value="ar">العربية</option><option value="en">English</option><option value="es">Español</option><option value="pt">Português</option><option value="fr">Français</option><option value="de">Deutsch</option><option value="tr">Türkçe</option><option value="hi">हिन्दी</option><option value="ur">اردو</option><option value="id">Bahasa Indonesia</option><option value="ms">Bahasa Melayu</option></select></div>
 <div id="brandBox" class="brand-box hidden" dir="rtl">
@@ -885,20 +884,22 @@ ${rest.map(r=>`<li><div>${escapeHtml(r.label)}</div>${cellF(r.free)}${cellP(r.pr
 }
 // Website Pro window: same design as the app; plans and prices come from Admin (Pro page); paying = WhatsApp, then the code.
 let webSel=-1;
+// Plan texts are typed in Arabic in Admin; other screen languages use "pp:<text>" keys from lang/src/ui.json, and "جنيه" becomes EGP.
+function ppT(t){t=String(t||"");if(uiLang==="ar"||!t)return t;return U("pp:"+t.trim())||t.replace(/جنيه/g,"EGP").replace(/ج\.م/g,"EGP");}
 function webPanelHtml(){
 const rtl=gxRtl(),plans=(PRO_PAGE.plans||[]).filter(x=>x&&x.name);
 if(!(webSel>=0&&webSel<plans.length)){const b=plans.findIndex(x=>x.best);webSel=b>=0?b:0;}
 const wa=!!proWaLink("");
 return`<div class="gpx" dir="${rtl?"rtl":"ltr"}">
 ${gpxTopHtml()}
-${plans.length?`<div class="gpx-plans" role="radiogroup" aria-label="${escapeHtml(UX("gx_pick","اختار الباقة"))}">${plans.map((x,i)=>`<button type="button" class="gpx-plan" role="radio" aria-checked="${i===webSel}" data-websel="${i}">${x.best?`<span class="gpx-save">${escapeHtml(UX("gx_best","الأوفر"))}</span>`:""}<span class="per">${escapeHtml(x.name)}</span><span class="amt" dir="auto">${escapeHtml(x.price||"")}</span><span class="sub">${escapeHtml(x.note||"")}</span></button>`).join("")}</div>
+${plans.length?`<div class="gpx-plans" role="radiogroup" aria-label="${escapeHtml(UX("gx_pick","اختار الباقة"))}">${plans.map((x,i)=>`<button type="button" class="gpx-plan" role="radio" aria-checked="${i===webSel}" data-websel="${i}">${x.best?`<span class="gpx-save">${escapeHtml(UX("gx_best","الأوفر"))}</span>`:""}<span class="per">${escapeHtml(ppT(x.name))}</span><span class="amt" dir="auto">${escapeHtml(ppT(x.price))}</span><span class="sub">${escapeHtml(ppT(x.note))}</span></button>`).join("")}</div>
 ${wa?`<button type="button" class="gpx-cta" id="webCta"></button>`:""}`:(wa?`<button type="button" class="gpx-cta" id="webCta"></button>`:"")}
 <p class="gpx-fine">${escapeHtml(UX("gx_payWeb","الدفع بـ InstaPay أو فودافون كاش، وبعدها بيوصلك كود التفعيل على الواتساب تكتبه تحت."))}</p>
 </div>${clinicOfferHtml()}`;
 }
 function bindWebPanel(){
 const plans=(PRO_PAGE.plans||[]).filter(x=>x&&x.name);
-const upd=()=>{document.querySelectorAll("[data-websel]").forEach(b=>b.setAttribute("aria-checked",String(Number(b.dataset.websel)===webSel)));const c=$("webCta"),x=plans[webSel];if(c)c.textContent=x?UX("gx_ctaWa",`اشترك ${x.name} على واتساب — ${x.price||""}`,{plan:x.name,p:x.price||""}):UX("gx_ctaWa0","اشترك على واتساب");};
+const upd=()=>{document.querySelectorAll("[data-websel]").forEach(b=>b.setAttribute("aria-checked",String(Number(b.dataset.websel)===webSel)));const c=$("webCta"),x=plans[webSel];if(c)c.textContent=x?UX("gx_ctaWa",`اشترك ${x.name} على واتساب — ${x.price||""}`,{plan:ppT(x.name),p:ppT(x.price)}):UX("gx_ctaWa0","اشترك على واتساب");};
 document.querySelectorAll("[data-websel]").forEach(b=>b.onclick=()=>{webSel=Number(b.dataset.websel);upd();});
 const c=$("webCta");if(c)c.onclick=()=>{const x=plans[webSel],l=proWaLink(x?x.name:"");if(l)window.open(l,"_blank","noopener");};
 upd();
@@ -1256,8 +1257,8 @@ return`<div class="settings-card" dir="rtl"><h3>📱 الحد المجاني و�
 </div>
 <div class="field full" style="margin-top:10px"><label>🔑 رمز مراجعة جوجل (اختياري)</label><input id="reviewCodeIn" placeholder="${REVIEW_HASH?"فيه رمز شغال — اكتب رمز جديد لتغييره أو امسح الخانة واكتب - لإلغائه":"مثلاً HOMEEX-REVIEW-2026"}" autocomplete="off"><small style="display:block;margin-top:6px;color:#667085;line-height:1.7">الرمز ده بتديه لجوجل في Play Console (Sign-in details). اللي يكتبه في الأبلكيشن (زرار "رمز المراجعة" تحت في شاشة Pro) بيتفتح له Pro 30 يوم على موبايله. بيتحفظ مشفّر ومحدش يقدر يقراه. اكتب <b>-</b> واحفظ عشان تلغيه بعد القبول.</small></div>
 <div style="margin-top:12px"><button class="btn btn-primary" id="saveLimitsBtn">حفظ</button></div><div id="limitsNotice"></div>
-<h3 style="margin-top:18px">👥 الاستخدام (عدد الأجهزة)</h3><div id="dailyUsers" class="code-meta">Loading…</div>
-<small style="display:block;margin-top:6px;color:#667085;line-height:1.7">كل جهاز بيتحسب مرة واحدة في اليوم، ومرة في الأسبوع، ومرة في الشهر — فرقم الأسبوع والشهر = أجهزة مختلفة. "دكاترة" = الكل ناقص العيانين اللي فتحوا لينك برنامج. ▲▼ = التغيير عن اللي قبله. الأسبوع والشهر بدأوا يتعدوا من 22 نوفمبر 2026. لو الأجهزة في اليوم عدّت 5,000 كلمني.</small></div>`;
+<h3 style="margin-top:18px">👥 الأجهزة اللي فتحت</h3><div id="dailyUsers" class="code-meta">Loading…</div>
+<small style="display:block;margin-top:6px;color:#667085;line-height:1.7">كل جهاز بيتحسب مرة واحدة في اليوم (دكاترة + عيانين فتحوا لينك). ▲▼ = التغيير عن اليوم اللي قبله. لو الأجهزة في اليوم عدّت 5,000 كلمني.</small></div>`;
 }
 async function saveLimits(){
 const limits={web:Math.max(0,Math.floor(Number($("limWeb").value)||0)),app:Math.max(0,Math.floor(Number($("limApp").value)||0))};
@@ -1272,26 +1273,36 @@ $("limitsNotice").innerHTML=`<div class="notice ok">اتحفظ. التغيير �
 }catch(e){$("limitsNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
 }
 function utcDay(offset){return new Date(Date.now()-offset*864e5).toISOString().slice(0,10);}
-const USAGE_COLS=[["n","الكل"],["dr","دكاترة"],["ios","🍎 آيفون"],["app","🤖 الأبلكيشن"],["and","🌐 أندرويد متصفح"],["pc","💻 كمبيوتر"],["pt","🧑 عيانين"]];
-function usageRow(label,d,prev){
-if(!d)return`<tr><td dir="ltr">${label}</td>${USAGE_COLS.map(()=>"<td>—</td>").join("")}</tr>`;
-const has=["ios","app","and","pc","pt"].some(k=>k in d),v={...d,dr:has?(Number(d.n)||0)-(Number(d.pt)||0):undefined};
-const cell=k=>{const x=v[k];if(x===undefined||x===null)return"—";let t=Number(x).toLocaleString("en-US");if(k==="n"&&prev&&Number(prev.n)>0){const ch=Math.round((Number(x)-Number(prev.n))/Number(prev.n)*100);t+=` <small style="color:${ch>=0?"#047857":"#b91c1c"}">${ch>=0?"▲":"▼"}${Math.abs(ch)}%</small>`;}return t;};
-return`<tr><td dir="ltr">${label}</td>${USAGE_COLS.map(([k])=>`<td>${cell(k)}</td>`).join("")}</tr>`;
-}
-function usageTable(title,rows){return`<h4 style="margin:14px 0 6px">${title}</h4><div style="overflow-x:auto"><table class="usage-tbl"><tr><th></th>${USAGE_COLS.map(([,l])=>`<th>${l}</th>`).join("")}</tr>${rows}</table></div>`;}
+function pctTag(cur,prev){if(!(prev>0))return"";const ch=Math.round((cur-prev)/prev*100);return` <small style="color:${ch>=0?"#047857":"#b91c1c"}">${ch>=0?"▲":"▼"}${Math.abs(ch)}%</small>`;}
 async function loadDailyUsers(){
 const box=$("dailyUsers");if(!box)return;
 try{
-const now=new Date(),get=async id=>{const s=await getDoc(doc(db,"stats",id));return s.exists()?s.data():null;};
-const days=[0,1,2,3,4,5,6].map(utcDay);
-const weeks=[0,1,2,3,4].map(i=>hxIsoWeek(new Date(now.getTime()-i*7*864e5)));
-const months=[0,1,2,3,4,5,6].map(i=>{const d=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()-i,1));return d.toISOString().slice(0,7);});
-const [D,W,M]=await Promise.all([days.map(d=>get("d-"+d)),weeks.map(w=>get("w-"+w)),months.map(m=>get("m-"+m))].map(x=>Promise.all(x)));
-box.innerHTML=usageTable("📅 كل يوم (آخر 7 أيام)",days.map((d,i)=>usageRow(d+(i===0?" (النهارده)":""),D[i],D[i+1])).join(""))
-+usageTable("🗓️ كل أسبوع",weeks.slice(0,4).map((w,i)=>usageRow(w+(i===0?" (الأسبوع ده)":""),W[i],W[i+1])).join(""))
-+usageTable("📆 كل شهر",months.slice(0,6).map((m,i)=>usageRow(m+(i===0?" (الشهر ده)":""),M[i],M[i+1])).join(""));
+const days=[0,1,2,3,4,5,6,7].map(utcDay);
+const snaps=await Promise.all(days.map(d=>getDoc(doc(db,"stats","d-"+d))));
+const v=snaps.map(s=>s.exists()?Number(s.data().n||0):null);
+box.innerHTML=`<div style="overflow-x:auto"><table class="usage-tbl"><tr><th>اليوم</th><th>أجهزة</th></tr>${days.slice(0,7).map((d,i)=>`<tr><td dir="ltr">${d}${i===0?" (النهارده)":""}</td><td>${v[i]==null?"—":v[i].toLocaleString("en-US")+pctTag(v[i],v[i+1])}</td></tr>`).join("")}</table></div>
+<button class="btn btn-outline" id="monthReportBtn" type="button" style="margin-top:10px">📊 تقرير الشهور</button><div id="monthReport"></div>`;
+$("monthReportBtn").onclick=loadMonthReport;
 }catch(e){console.warn(e);box.textContent="العداد مش شغال دلوقتي.";}
+}
+// Monthly report built from the daily counters (no extra data saved): reads up to 31 small docs per month, only when the admin asks.
+async function loadMonthReport(){
+const box=$("monthReport"),btn=$("monthReportBtn");if(!box)return;btn.disabled=true;box.innerHTML=`<div class="code-meta">بيحسب…</div>`;
+try{
+const now=new Date(),today=now.toISOString().slice(0,10),months=[];
+for(let i=0;i<6;i++){const f=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()-i,1));if(f.toISOString().slice(0,7)<"2026-11")break;months.push(f);}
+const rows=await Promise.all(months.map(async f=>{
+const y=f.getUTCFullYear(),m=f.getUTCMonth(),dim=new Date(Date.UTC(y,m+1,0)).getUTCDate(),ids=[];
+for(let d=1;d<=dim;d++){const id=new Date(Date.UTC(y,m,d)).toISOString().slice(0,10);if(id>today)break;ids.push(id);}
+const snaps=await Promise.all(ids.map(id=>getDoc(doc(db,"stats","d-"+id))));
+const vals=snaps.map((s,i)=>({d:ids[i],n:s.exists()?Number(s.data().n||0):null})).filter(x=>x.n!=null);
+const total=vals.reduce((a,x)=>a+x.n,0),best=vals.reduce((a,x)=>x.n>(a?a.n:-1)?x:a,null);
+return {key:f.toISOString().slice(0,7),days:vals.length,total,avg:vals.length?Math.round(total/vals.length):0,best};
+}));
+box.innerHTML=`<div style="overflow-x:auto;margin-top:8px"><table class="usage-tbl"><tr><th>الشهر</th><th>متوسط الأجهزة في اليوم</th><th>إجمالي (جهاز × يوم)</th><th>أعلى يوم</th><th>أيام متسجلة</th></tr>${rows.map((r,i)=>{const p=rows[i+1];return`<tr><td dir="ltr">${r.key}${i===0?" (الشهر ده)":""}</td><td><b>${r.avg.toLocaleString("en-US")}</b>${p?pctTag(r.avg,p.avg):""}</td><td>${r.total.toLocaleString("en-US")}</td><td>${r.best?`${r.best.n} <small dir="ltr">(${r.best.d.slice(5)})</small>`:"—"}</td><td>${r.days}</td></tr>`;}).join("")}</table></div>
+<small style="display:block;margin-top:6px;color:#667085;line-height:1.7">قارن الشهور بـ <b>متوسط الأجهزة في اليوم</b> (عادل حتى لو الشهر لسه مخلصش). الأرقام فيها الدكاترة والعيانين اللي فتحوا لينك. عدد مستخدمين الأبلكيشن في الشهر بدقة: Play Console ← Statistics.</small>`;
+}catch(e){console.warn(e);box.innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
+btn.disabled=false;
 }
 function featuresCardHtml(){
 const modes=k=>["subscriptions","exAd","protoAd"].includes(k)?[["off","مقفول"],["on","شغال"]]:k==="templates"?[["off","مقفول"],["all","المجاني للكل + اللي آخره | pro للمشتركين"],["pro","كلها للمشتركين بس (مفيش مجاني)"]]:[["off","مقفول"],["all","للكل مجاناً"],["pro","للمشتركين بس"]];
@@ -2091,23 +2102,13 @@ loadSettings().then(async()=>{await loadShare();await loadLangs(document.body.cl
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(e=>console.warn("Service worker registration failed",e)));}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.__hxInstallPrompt=e;});
 
-// Usage counter: each device is counted once per day (stats/d-YYYY-MM-DD), once per week (stats/w-YYYY-Www)
-// and once per month (stats/m-YYYY-MM), split by kind: ios / and (Android browser) / app (Play app) / pc / pt (patient link).
-// Shown only in Admin. About one write per device per day.
-function hxIsoWeek(d){const t=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));const wd=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-wd);const y=t.getUTCFullYear();return y+"-W"+String(Math.ceil(((t-Date.UTC(y,0,1))/864e5+1)/7)).padStart(2,"0");}
-function hxKind(){if(document.body.classList.contains("direct-mode")||getShareParams())return"pt";if(IN_APP)return"app";const ua=navigator.userAgent;if(/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1))return"ios";if(/Android/.test(ua))return"and";return"pc";}
+// Counts each device once per day (stats/d-YYYY-MM-DD), shown only in Admin (daily table + monthly report). One write per device per day.
 async function homeexTrackVisit(){
   try{
-    const now=new Date(),day=now.toISOString().slice(0,10),kind=hxKind();
-    if(lsGet("homeex_visit_day")===day&&!lsGet("homeex_seen_d"))lsSet("homeex_seen_d","d-"+day);// already counted today by the old counter
-    const ids={d:"d-"+day,w:"w-"+hxIsoWeek(now),m:"m-"+day.slice(0,7)};
-    for(const k of ["d","w","m"]){
-      const id=ids[k],lk="homeex_seen_"+k;
-      if(lsGet(lk)===id)continue;
-      try{await setDoc(doc(db,"stats",id),{n:increment(1),[kind]:increment(1)},{merge:true});}
-      catch(e){if(k!=="d"){lsSet(lk,id);continue;}await setDoc(doc(db,"stats",id),{n:increment(1)},{merge:true});}// old rules: day total only
-      lsSet(lk,id);
-    }
+    const today=new Date().toISOString().slice(0,10);
+    if(lsGet("homeex_visit_day")===today)return;
+    await setDoc(doc(db,"stats","d-"+today),{n:increment(1)},{merge:true});
+    lsSet("homeex_visit_day",today);
   }catch(e){
     console.warn("Visit counter unavailable:",e);
   }
