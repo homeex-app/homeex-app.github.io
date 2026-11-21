@@ -25,6 +25,7 @@
 button,input,textarea,select{font:inherit}button{cursor:pointer}.hidden{display:none!important}
 .req-badge{display:inline-block;background:#dc2626;color:#fff;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:800;vertical-align:middle}.req-alert{display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-weight:600}
 .clinic-offer{border:1px solid #c7d2fe;background:#eef2ff;border-radius:14px;padding:14px 16px;margin:14px 0}.clinic-offer>b{font-size:17px;color:#1e3a8a}.clinic-offer .offer-list{margin:8px 0 12px}
+.usage-tbl{border-collapse:collapse;font-size:12.5px;white-space:nowrap}.usage-tbl th,.usage-tbl td{border-bottom:1px solid #eef2f7;padding:5px 8px;text-align:center}.usage-tbl th{color:#667085;font-weight:700}.usage-tbl td:first-child{text-align:start;font-weight:600}
 .proto-tiers{display:inline-flex;gap:4px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:4px;margin:0 0 14px}.proto-tier{border:0;background:none;padding:8px 18px;border-radius:9px;font-weight:800;color:#667085;cursor:pointer}.proto-tier.active{background:#1e3a8a;color:#fff}.pro-upsell{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:10px;justify-content:space-between;background:#fffbeb;border:1px solid #fde68a;border-radius:14px;padding:14px 16px;margin-bottom:14px}.pro-upsell b{display:block;font-size:16px;color:#92400e}.pro-upsell span{color:#78350f;font-size:14px}.account{display:grid;gap:12px;margin-top:8px}.acc-sec{border:1px solid var(--border);border-radius:14px;padding:12px 14px;background:#fff;line-height:1.8}.acc-sec h4{margin:0 0 6px;font-size:16px;color:#1e3a8a}.acc-btn{margin-top:8px}.acc-count{display:inline-block;background:#eef2ff;color:#3730a3;border-radius:999px;padding:0 9px;font-size:13px}.acc-days{display:inline-block;background:#dcfce7;color:#166534;border-radius:999px;padding:0 9px;font-size:13px;font-weight:700}.acc-days.warn{background:#fee2e2;color:#b91c1c}
 .private-badge{background:#fef3c7!important;color:#92400e!important}.my-proto-head{display:flex;justify-content:space-between;align-items:end;gap:10px;margin:6px 0 12px}.my-proto-head h3{margin:0;font-size:19px}.req-item{border:1px solid var(--border);border-radius:10px;padding:9px 11px;margin-bottom:8px;background:#fff}.req-item b{color:#172033}.req-st{display:inline-block;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;margin-inline-start:6px}.req-st.new{background:#eff6ff;color:#1d4ed8}.req-st.done{background:#dcfce7;color:#166534}.app{min-height:100vh}
 header{position:relative;overflow:hidden;background:linear-gradient(135deg,#0f172a,#1e3a8a);color:#fff;padding:28px 20px 92px;min-height:190px}.header-inner{max-width:1180px;margin:auto;position:relative;z-index:2}.hero-slides{position:absolute;inset:0;z-index:0}.hero-slide{position:absolute;inset:0;background-position:center;background-size:cover;background-repeat:no-repeat;opacity:0;transition:opacity .8s ease}.hero-slide.active{opacity:1}.hero-overlay{position:absolute;inset:0;background:linear-gradient(135deg,rgba(15,23,42,.78),rgba(30,58,138,.58))}.brand{display:flex;align-items:flex-start;justify-content:space-between;gap:20px}.brand h1{font-size:28px;margin:0 0 7px}.brand p{margin:0;color:#e2e8f0}
@@ -1253,8 +1254,8 @@ return`<div class="settings-card" dir="rtl"><h3>📱 الحد المجاني و�
 </div>
 <div class="field full" style="margin-top:10px"><label>🔑 رمز مراجعة جوجل (اختياري)</label><input id="reviewCodeIn" placeholder="${REVIEW_HASH?"فيه رمز شغال — اكتب رمز جديد لتغييره أو امسح الخانة واكتب - لإلغائه":"مثلاً HOMEEX-REVIEW-2026"}" autocomplete="off"><small style="display:block;margin-top:6px;color:#667085;line-height:1.7">الرمز ده بتديه لجوجل في Play Console (Sign-in details). اللي يكتبه في الأبلكيشن (زرار "رمز المراجعة" تحت في شاشة Pro) بيتفتح له Pro 30 يوم على موبايله. بيتحفظ مشفّر ومحدش يقدر يقراه. اكتب <b>-</b> واحفظ عشان تلغيه بعد القبول.</small></div>
 <div style="margin-top:12px"><button class="btn btn-primary" id="saveLimitsBtn">حفظ</button></div><div id="limitsNotice"></div>
-<h3 style="margin-top:18px">👥 الأجهزة اللي فتحت (آخر 7 أيام)</h3><div id="dailyUsers" class="code-meta">Loading…</div>
-<small style="display:block;margin-top:6px;color:#667085;line-height:1.7">Firebase المجاني بيستحمل حوالي 50,000 قراءة في اليوم. لو العدد ده عدّى 2,000 جهاز في اليوم كلمني نشوف باقة Blaze.</small></div>`;
+<h3 style="margin-top:18px">👥 الاستخدام (عدد الأجهزة)</h3><div id="dailyUsers" class="code-meta">Loading…</div>
+<small style="display:block;margin-top:6px;color:#667085;line-height:1.7">كل جهاز بيتحسب مرة واحدة في اليوم، ومرة في الأسبوع، ومرة في الشهر — فرقم الأسبوع والشهر = أجهزة مختلفة. "دكاترة" = الكل ناقص العيانين اللي فتحوا لينك برنامج. ▲▼ = التغيير عن اللي قبله. الأسبوع والشهر بدأوا يتعدوا من 22 نوفمبر 2026. لو الأجهزة في اليوم عدّت 5,000 كلمني.</small></div>`;
 }
 async function saveLimits(){
 const limits={web:Math.max(0,Math.floor(Number($("limWeb").value)||0)),app:Math.max(0,Math.floor(Number($("limApp").value)||0))};
@@ -1269,13 +1270,26 @@ $("limitsNotice").innerHTML=`<div class="notice ok">اتحفظ. التغيير �
 }catch(e){$("limitsNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
 }
 function utcDay(offset){return new Date(Date.now()-offset*864e5).toISOString().slice(0,10);}
+const USAGE_COLS=[["n","الكل"],["dr","دكاترة"],["ios","🍎 آيفون"],["app","🤖 الأبلكيشن"],["and","🌐 أندرويد متصفح"],["pc","💻 كمبيوتر"],["pt","🧑 عيانين"]];
+function usageRow(label,d,prev){
+if(!d)return`<tr><td dir="ltr">${label}</td>${USAGE_COLS.map(()=>"<td>—</td>").join("")}</tr>`;
+const has=["ios","app","and","pc","pt"].some(k=>k in d),v={...d,dr:has?(Number(d.n)||0)-(Number(d.pt)||0):undefined};
+const cell=k=>{const x=v[k];if(x===undefined||x===null)return"—";let t=Number(x).toLocaleString("en-US");if(k==="n"&&prev&&Number(prev.n)>0){const ch=Math.round((Number(x)-Number(prev.n))/Number(prev.n)*100);t+=` <small style="color:${ch>=0?"#047857":"#b91c1c"}">${ch>=0?"▲":"▼"}${Math.abs(ch)}%</small>`;}return t;};
+return`<tr><td dir="ltr">${label}</td>${USAGE_COLS.map(([k])=>`<td>${cell(k)}</td>`).join("")}</tr>`;
+}
+function usageTable(title,rows){return`<h4 style="margin:14px 0 6px">${title}</h4><div style="overflow-x:auto"><table class="usage-tbl"><tr><th></th>${USAGE_COLS.map(([,l])=>`<th>${l}</th>`).join("")}</tr>${rows}</table></div>`;}
 async function loadDailyUsers(){
 const box=$("dailyUsers");if(!box)return;
 try{
+const now=new Date(),get=async id=>{const s=await getDoc(doc(db,"stats",id));return s.exists()?s.data():null;};
 const days=[0,1,2,3,4,5,6].map(utcDay);
-const snaps=await Promise.all(days.map(d=>getDoc(doc(db,"stats","d-"+d))));
-box.innerHTML=days.map((d,i)=>`<div style="display:flex;justify-content:space-between;max-width:260px"><span dir="ltr">${d}${i===0?" (النهارده)":""}</span><b>${snaps[i].exists()?Number(snaps[i].data().n||0).toLocaleString("en-US"):"—"}</b></div>`).join("");
-}catch(e){box.textContent="العداد لسه مش شغال (محتاج تنشر قواعد Firestore الجديدة).";}
+const weeks=[0,1,2,3,4].map(i=>hxIsoWeek(new Date(now.getTime()-i*7*864e5)));
+const months=[0,1,2,3,4,5,6].map(i=>{const d=new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth()-i,1));return d.toISOString().slice(0,7);});
+const [D,W,M]=await Promise.all([days.map(d=>get("d-"+d)),weeks.map(w=>get("w-"+w)),months.map(m=>get("m-"+m))].map(x=>Promise.all(x)));
+box.innerHTML=usageTable("📅 كل يوم (آخر 7 أيام)",days.map((d,i)=>usageRow(d+(i===0?" (النهارده)":""),D[i],D[i+1])).join(""))
++usageTable("🗓️ كل أسبوع",weeks.slice(0,4).map((w,i)=>usageRow(w+(i===0?" (الأسبوع ده)":""),W[i],W[i+1])).join(""))
++usageTable("📆 كل شهر",months.slice(0,6).map((m,i)=>usageRow(m+(i===0?" (الشهر ده)":""),M[i],M[i+1])).join(""));
+}catch(e){console.warn(e);box.textContent="العداد مش شغال دلوقتي.";}
 }
 function featuresCardHtml(){
 const modes=k=>["subscriptions","exAd","protoAd"].includes(k)?[["off","مقفول"],["on","شغال"]]:k==="templates"?[["off","مقفول"],["all","المجاني للكل + اللي آخره | pro للمشتركين"],["pro","كلها للمشتركين بس (مفيش مجاني)"]]:[["off","مقفول"],["all","للكل مجاناً"],["pro","للمشتركين بس"]];
@@ -2075,13 +2089,23 @@ loadSettings().then(async()=>{await loadShare();await loadLangs(document.body.cl
 if("serviceWorker" in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(e=>console.warn("Service worker registration failed",e)));}
 window.addEventListener("beforeinstallprompt",e=>{e.preventDefault();window.__hxInstallPrompt=e;});
 
-// Counts each device once per day (stats/d-YYYY-MM-DD), shown only in Admin. One write per device per day.
+// Usage counter: each device is counted once per day (stats/d-YYYY-MM-DD), once per week (stats/w-YYYY-Www)
+// and once per month (stats/m-YYYY-MM), split by kind: ios / and (Android browser) / app (Play app) / pc / pt (patient link).
+// Shown only in Admin. About one write per device per day.
+function hxIsoWeek(d){const t=new Date(Date.UTC(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate()));const wd=t.getUTCDay()||7;t.setUTCDate(t.getUTCDate()+4-wd);const y=t.getUTCFullYear();return y+"-W"+String(Math.ceil(((t-Date.UTC(y,0,1))/864e5+1)/7)).padStart(2,"0");}
+function hxKind(){if(document.body.classList.contains("direct-mode")||getShareParams())return"pt";if(IN_APP)return"app";const ua=navigator.userAgent;if(/iPhone|iPad|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1))return"ios";if(/Android/.test(ua))return"and";return"pc";}
 async function homeexTrackVisit(){
   try{
-    const today=new Date().toISOString().slice(0,10);
-    if(lsGet("homeex_visit_day")===today)return;
-    await setDoc(doc(db,"stats","d-"+today),{n:increment(1)},{merge:true});
-    lsSet("homeex_visit_day",today);
+    const now=new Date(),day=now.toISOString().slice(0,10),kind=hxKind();
+    if(lsGet("homeex_visit_day")===day&&!lsGet("homeex_seen_d"))lsSet("homeex_seen_d","d-"+day);// already counted today by the old counter
+    const ids={d:"d-"+day,w:"w-"+hxIsoWeek(now),m:"m-"+day.slice(0,7)};
+    for(const k of ["d","w","m"]){
+      const id=ids[k],lk="homeex_seen_"+k;
+      if(lsGet(lk)===id)continue;
+      try{await setDoc(doc(db,"stats",id),{n:increment(1),[kind]:increment(1)},{merge:true});}
+      catch(e){if(k!=="d")continue;await setDoc(doc(db,"stats",id),{n:increment(1)},{merge:true});}// old rules: day total only
+      lsSet(lk,id);
+    }
   }catch(e){
     console.warn("Visit counter unavailable:",e);
   }
