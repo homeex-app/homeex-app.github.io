@@ -1237,7 +1237,7 @@ async function saveFeatures(){
 const f={gplay:FEATURES.gplay==="on"?"on":"off"};document.querySelectorAll("[data-feature]").forEach(s=>f[s.dataset.feature]=s.value);
 const tpl=parseLines($("templatesInput").value).map(parseTemplateLine).filter(Boolean);
 try{
-await setDoc(doc(db,"settings","main"),{features:f,templates:tpl,updatedAt:serverTimestamp()},{merge:true});
+await setDoc(doc(db,"settings","main"),{features:f,templates:tpl,updatedAt:serverTimestamp()},{merge:true});await bumpSettingsVer();
 FEATURES={...FEATURES,...f};TEMPLATES=tpl.length?tpl:DEFAULT_TEMPLATES;await refreshPro();
 $("featuresNotice").innerHTML=`<div class="notice ok">اتحفظ. التغيير وصل لكل المستخدمين.</div>`;
 }catch(e){$("featuresNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
@@ -1262,7 +1262,7 @@ const gplay=$("gplaySel").value==="on"?"on":"off";
 try{
 const rc=($("reviewCodeIn")?.value||"").trim();const upd={limits,features:{gplay},updatedAt:serverTimestamp()};
 if(rc==="-")upd.reviewHash="";else if(rc){if(rc.length<8){$("limitsNotice").innerHTML=`<div class="notice error">رمز المراجعة لازم يبقى 8 حروف على الأقل.</div>`;return;}upd.reviewHash=await sha256hex(rc.toUpperCase());}
-await setDoc(doc(db,"settings","main"),upd,{merge:true});
+await setDoc(doc(db,"settings","main"),upd,{merge:true});await bumpSettingsVer();
 if("reviewHash" in upd)REVIEW_HASH=upd.reviewHash;
 LIMITS=limits;FEATURES={...FEATURES,gplay};applyFeatures();
 $("limitsNotice").innerHTML=`<div class="notice ok">اتحفظ. التغيير وصل لكل المستخدمين.</div>`;
@@ -1300,7 +1300,7 @@ async function saveProPage(){
 const plans=parseLines($("ppPlans").value).map(line=>{const[name,price,note,best]=line.split("|").map(s=>(s||"").trim());return{name,price:price||"",note:note||"",best:best==="*"};}).filter(x=>x.name);
 const proPage={headline:$("ppHeadline").value.trim(),features:parseLines($("ppFeatures").value),plans,whatsapp:$("ppWhatsapp").value.trim()};
 try{
-await setDoc(doc(db,"settings","main"),{proPage,updatedAt:serverTimestamp()},{merge:true});
+await setDoc(doc(db,"settings","main"),{proPage,updatedAt:serverTimestamp()},{merge:true});await bumpSettingsVer();
 PRO_PAGE=proPage;
 $("proPageNotice").innerHTML=`<div class="notice ok">اتحفظ.</div>`;
 }catch(e){$("proPageNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</div>`;}
@@ -1456,15 +1456,28 @@ setTimeout(()=>$("loginEmail").focus(),50);
 }
 // The last settings are kept on the device, so the site keeps working if Firestore is unreachable or over its daily quota.
 const SETTINGS_CACHE_KEY="homeex_settings_cache";
+// Settings are big (protocols, Pro page…), so each open reads only the tiny settings/ver doc.
+// The full settings come from the device copy or data/settings.json (exported by a GitHub Action)
+// when their version matches; settings/main is read from Firestore only when both are behind.
+const SETTINGS_V_KEY="homeex_settings_v2";
+let settingsVer=null;
+function readSettingsCopy(){try{const c=JSON.parse(lsGet(SETTINGS_V_KEY)||"null");if(c&&c.d)return c;}catch(e){}try{const d=JSON.parse(lsGet(SETTINGS_CACHE_KEY)||"null");if(d)return {s:0,d};}catch(e){}return null;}
+async function bumpSettingsVer(field){if(!isAdmin)return;const v=Date.now();try{await setDoc(doc(db,"settings","ver"),{[field||"s"]:v},{merge:true});if(settingsVer)settingsVer[field||"s"]=v;}catch(e){console.warn("Settings version:",e);}}
+async function ensureSettingsVer(){if(!isAdmin)return;try{const snap=await getDoc(doc(db,"settings","ver"));if(!snap.exists()||!snap.data().s)await setDoc(doc(db,"settings","ver"),{s:Date.now(),ex:Number(exVersion)||0},{merge:true});}catch(e){console.warn("Settings version:",e);}}
 async function loadSettings(){
-let d=null;
+let d=null,copy=readSettingsCopy();
 try{
-const snap=await getDoc(doc(db,"settings","main"));
-if(snap.exists()){d=snap.data();try{lsSet(SETTINGS_CACHE_KEY,JSON.stringify(d));}catch(e){}}
-}catch(e){console.warn("Settings load failed, using the saved copy:",e);try{d=JSON.parse(lsGet(SETTINGS_CACHE_KEY)||"null");}catch(x){d=null;}}
+const vs=await getDoc(doc(db,"settings","ver"));
+settingsVer=vs.exists()?vs.data():null;
+const sv=Number(settingsVer?.s)||0;
+if(sv&&copy&&Number(copy.s)===sv)d=copy.d;
+if(!d&&sv){try{const r=await fetch(`./data/settings.json?s=${sv}`);if(r.ok){const j=await r.json();if(j&&j.d&&Number(j.s)===sv)d=j.d;}}catch(e){console.warn("Settings file:",e);}}
+if(!d){const snap=await getDoc(doc(db,"settings","main"));if(snap.exists())d=snap.data();}
+if(d){try{lsSet(SETTINGS_V_KEY,JSON.stringify({s:sv,d}));}catch(e){}}
+}catch(e){console.warn("Settings load failed, using the saved copy:",e);d=copy?copy.d:null;}
 try{
 if(d){
-exVersion=Number(d.exVersion)||0;
+exVersion=Number(settingsVer?.ex)||Number(d.exVersion)||0;
 heroImageLinks=Array.isArray(d.heroImages)?d.heroImages.filter(Boolean):[];
 appHeroImage=typeof d.appHeroImage==="string"?d.appHeroImage.trim():"";
 adImageLinks=Array.isArray(d.adImages)?d.adImages.map(x=>typeof x==="string"?{img:x,link:x}:{img:String(x?.img||"").trim(),link:String(x?.link||x?.img||"").trim()}).filter(x=>x.img):[];
@@ -1500,7 +1513,7 @@ const adSeconds=Math.max(2,Number($("adIntervalSeconds")?.value)||5);
 const regions=[...new Set(parseLines($("regionsList")?.value))];
 if(!regions.length){$("siteSettingsNotice").innerHTML=`<div class="notice error">أضف قسم واحد على الأقل قبل الحفظ.</div>`;return;}
 try{
-await setDoc(doc(db,"settings","main"),{heroImages:hero,appHeroImage:appHero,adImages:ads,headerIntervalSeconds:headerSeconds,adIntervalSeconds:adSeconds,regions,updatedAt:serverTimestamp()},{merge:true});
+await setDoc(doc(db,"settings","main"),{heroImages:hero,appHeroImage:appHero,adImages:ads,headerIntervalSeconds:headerSeconds,adIntervalSeconds:adSeconds,regions,updatedAt:serverTimestamp()},{merge:true});await bumpSettingsVer();
 heroImageLinks=hero;appHeroImage=appHero;adImageLinks=ads;headerIntervalSeconds=headerSeconds;adIntervalSeconds=adSeconds;REGIONS=regions;
 activeRegions=new Set([...activeRegions].filter(r=>REGIONS.includes(r)));
 renderHero();renderAd();renderRegions();renderExercises();
@@ -1672,7 +1685,7 @@ $("formNotice").innerHTML=`<div class="notice error">${escapeHtml(e.message)}</d
 }
 }
 async function bumpExVersion(){
-try{exVersion=Date.now();await setDoc(doc(db,"settings","main"),{exVersion},{merge:true});}catch(e){console.warn("exVersion:",e);}
+try{exVersion=Date.now();await setDoc(doc(db,"settings","main"),{exVersion},{merge:true});await setDoc(doc(db,"settings","ver"),{ex:exVersion},{merge:true});}catch(e){console.warn("exVersion:",e);}
 }
 async function deleteExercise(id){
 if(!isAdmin||!confirm("Delete this exercise?"))return;
@@ -1692,7 +1705,7 @@ btn.textContent="Logging in...";
 try{
 const cred=await signInWithEmailAndPassword(auth,email,password);
 currentUser=cred.user;
-isAdmin=await checkAdmin(currentUser);
+isAdmin=await checkAdmin(currentUser);if(isAdmin)ensureSettingsVer();
 if(isAdmin){
 $("loginModal").classList.add("hidden");
 switchTab("adminTab");
@@ -2036,7 +2049,7 @@ const loader=$("bootLoader");if(loader)loader.remove();
 onAuthStateChanged(auth,async user=>{
 currentUser=user;
 if(!user){isAdmin=false;applyFeatures();revealApp();return;}
-isAdmin=user.isAnonymous?false:await checkAdmin(user);
+isAdmin=user.isAnonymous?false:await checkAdmin(user);if(isAdmin)ensureSettingsVer();
 if(isAdmin && !directExerciseNumbers && !getShareParams()){
 $("loginModal").classList.add("hidden");
 switchTab("adminTab");
