@@ -2218,5 +2218,113 @@
   "ur": "اور اپنے اور اپنے مریضوں کے لیے مزید فیچرز کھولیں",
   "id": "dan buka lebih banyak fitur untuk Anda dan pasien Anda",
   "ms": "dan buka lebih banyak ciri untuk anda dan pesakit anda"
+ },
+ "co_title": {
+  "en": "🏥 Clinics & centers package",
+  "es": "🏥 Paquete para clínicas y centros",
+  "pt": "🏥 Pacote para clínicas e centros",
+  "fr": "🏥 Offre cabinets et centres",
+  "de": "🏥 Paket für Praxen und Zentren",
+  "tr": "🏥 Klinik ve merkez paketi",
+  "hi": "🏥 क्लिनिक और सेंटर पैकेज",
+  "ur": "🏥 کلینک اور سینٹر پیکج",
+  "id": "🏥 Paket klinik & pusat terapi",
+  "ms": "🏥 Pakej klinik & pusat"
+ },
+ "co_1": {
+  "en": "A code for every doctor in the clinic — as many as you need",
+  "es": "Un código para cada médico de la clínica, los que necesites",
+  "pt": "Um código para cada profissional da clínica, quantos precisar",
+  "fr": "Un code pour chaque praticien du cabinet, autant qu’il en faut",
+  "de": "Ein Code für jede Therapeutin und jeden Therapeuten – so viele Sie brauchen",
+  "tr": "Klinikteki her doktor için bir kod — ihtiyacınız kadar",
+  "hi": "क्लिनिक के हर डॉक्टर के लिए एक कोड — जितने चाहिए",
+  "ur": "کلینک کے ہر ڈاکٹر کے لیے ایک کوڈ — جتنے چاہیے",
+  "id": "Satu kode untuk setiap dokter di klinik — sebanyak yang Anda butuhkan",
+  "ms": "Satu kod untuk setiap doktor di klinik — seberapa banyak yang perlu"
+ },
+ "co_2": {
+  "en": "The same clinic logo, name and phone for every doctor — on WhatsApp, the patient link and the PDF",
+  "es": "El mismo logo, nombre y teléfono de la clínica para todos: en WhatsApp, el enlace del paciente y el PDF",
+  "pt": "O mesmo logo, nome e telefone da clínica para todos: no WhatsApp, no link do paciente e no PDF",
+  "fr": "Le même logo, nom et téléphone du cabinet pour tous : sur WhatsApp, le lien patient et le PDF",
+  "de": "Gleiches Logo, gleicher Name und gleiche Nummer der Praxis bei allen – auf WhatsApp, im Patientenlink und im PDF",
+  "tr": "Tüm doktorlarda aynı klinik logosu, adı ve telefonu — WhatsApp’ta, hasta linkinde ve PDF’te",
+  "hi": "हर डॉक्टर के लिए क्लिनिक का वही लोगो, नाम और फ़ोन — WhatsApp, मरीज़ लिंक और PDF पर",
+  "ur": "ہر ڈاکٹر کے لیے کلینک کا وہی لوگو، نام اور فون — WhatsApp، مریض کے لنک اور PDF پر",
+  "id": "Logo, nama, dan nomor klinik yang sama untuk semua dokter — di WhatsApp, tautan pasien, dan PDF",
+  "ms": "Logo, nama dan telefon klinik yang sama untuk semua doktor — di WhatsApp, pautan pesakit dan PDF"
+ },
+ "co_3": {
+  "en": "Clinic details are saved with us — nothing is lost if someone changes phones",
+  "es": "Los datos de la clínica quedan guardados con nosotros; no se pierden si alguien cambia de móvil",
+  "pt": "Os dados da clínica ficam salvos conosco; nada se perde se alguém trocar de celular",
+  "fr": "Les infos du cabinet sont enregistrées chez nous : rien n’est perdu en cas de changement de téléphone",
+  "de": "Die Praxisdaten sind bei uns gespeichert – nichts geht verloren, wenn jemand das Handy wechselt",
+  "tr": "Klinik bilgileri bizde kayıtlı — biri telefon değiştirse de kaybolmaz",
+  "hi": "क्लिनिक की जानकारी हमारे पास सेव रहती है — फ़ोन बदलने पर भी नहीं खोती",
+  "ur": "کلینک کی معلومات ہمارے پاس محفوظ رہتی ہیں — فون بدلنے پر بھی ضائع نہیں ہوتیں",
+  "id": "Data klinik tersimpan di kami — tidak hilang meski ada yang ganti HP",
+  "ms": "Butiran klinik disimpan oleh kami — tidak hilang walaupun seseorang tukar telefon"
+ },
+ "co_4": {
+  "en": "Each doctor makes their own protocols and can request custom exercises and videos, shown only to them and their patients",
+  "es": "Cada médico crea sus propios protocolos y puede pedir ejercicios y vídeos a medida, visibles solo para él y sus pacientes",
+  "pt": "Cada profissional cria seus próprios protocolos e pode pedir exercícios e vídeos sob medida, visíveis só para ele e seus pacientes",
+  "fr": "Chaque praticien crée ses propres protocoles et peut demander des exercices et vidéos sur mesure, visibles seulement par lui et ses patients",
+  "de": "Alle erstellen eigene Protokolle und können individuelle Übungen und Videos anfragen – nur für sie und ihre Patienten sichtbar",
+  "tr": "Her doktor kendi protokollerini oluşturur, yalnızca kendisine ve hastalarına görünen özel egzersiz ve video isteyebilir",
+  "hi": "हर डॉक्टर अपने प्रोटोकॉल बनाता है और खास एक्सरसाइज़ व वीडियो मंगवा सकता है, जो सिर्फ़ उसे और उसके मरीज़ों को दिखते हैं",
+  "ur": "ہر ڈاکٹر اپنے پروٹوکول بناتا ہے اور خاص ورزشیں اور ویڈیوز منگوا سکتا ہے، جو صرف اسے اور اس کے مریضوں کو نظر آتی ہیں",
+  "id": "Setiap dokter membuat protokolnya sendiri dan bisa meminta latihan serta video khusus, hanya terlihat olehnya dan pasiennya",
+  "ms": "Setiap doktor membuat protokol sendiri dan boleh meminta latihan serta video khas, hanya dilihat olehnya dan pesakitnya"
+ },
+ "co_5": {
+  "en": "All Pro features for every doctor",
+  "es": "Todas las funciones Pro para cada médico",
+  "pt": "Todos os recursos Pro para cada profissional",
+  "fr": "Toutes les fonctions Pro pour chaque praticien",
+  "de": "Alle Pro-Funktionen für alle",
+  "tr": "Her doktor için tüm Pro özellikleri",
+  "hi": "हर डॉक्टर के लिए सभी Pro सुविधाएँ",
+  "ur": "ہر ڈاکٹر کے لیے Pro کی تمام سہولیات",
+  "id": "Semua fitur Pro untuk setiap dokter",
+  "ms": "Semua ciri Pro untuk setiap doktor"
+ },
+ "co_ask": {
+  "en": "Ask for the price",
+  "es": "Pedir precio",
+  "pt": "Pedir preço",
+  "fr": "Demander le prix",
+  "de": "Preis anfragen",
+  "tr": "Fiyat sor",
+  "hi": "कीमत पूछें",
+  "ur": "قیمت پوچھیں",
+  "id": "Tanya harga",
+  "ms": "Tanya harga"
+ },
+ "co_call": {
+  "en": "Contact us for the price.",
+  "es": "Contáctanos para conocer el precio.",
+  "pt": "Fale conosco para saber o preço.",
+  "fr": "Contactez-nous pour connaître le prix.",
+  "de": "Kontaktieren Sie uns für den Preis.",
+  "tr": "Fiyat için bize ulaşın.",
+  "hi": "कीमत जानने के लिए हमसे संपर्क करें।",
+  "ur": "قیمت جاننے کے لیے ہم سے رابطہ کریں۔",
+  "id": "Hubungi kami untuk harganya.",
+  "ms": "Hubungi kami untuk harga."
+ },
+ "co_wa": {
+  "en": "Hello, I'd like to know the price of the HomeEx Pro clinic package",
+  "es": "Hola, quisiera saber el precio del paquete para clínicas de HomeEx Pro",
+  "pt": "Olá, gostaria de saber o preço do pacote para clínicas do HomeEx Pro",
+  "fr": "Bonjour, je voudrais connaître le prix de l’offre cabinets HomeEx Pro",
+  "de": "Hallo, ich möchte den Preis des HomeEx Pro Praxispakets erfahren",
+  "tr": "Merhaba, HomeEx Pro klinik paketinin fiyatını öğrenmek istiyorum",
+  "hi": "नमस्ते, मैं HomeEx Pro क्लिनिक पैकेज की कीमत जानना चाहता/चाहती हूँ",
+  "ur": "السلام علیکم، میں HomeEx Pro کلینک پیکج کی قیمت جاننا چاہتا/چاہتی ہوں",
+  "id": "Halo, saya ingin tahu harga paket klinik HomeEx Pro",
+  "ms": "Helo, saya ingin tahu harga pakej klinik HomeEx Pro"
  }
 }

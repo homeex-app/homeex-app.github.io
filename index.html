@@ -1110,10 +1110,11 @@ box.querySelectorAll("[data-delcode]").forEach(b=>b.onclick=()=>{if(confirm(`ح�
 
 /* ---------- Clinic packages: one clinic, several doctor codes, shared name/phone/logo ---------- */
 function clinicOfferHtml(){
-const n=waPhone(PRO_PAGE.whatsapp),link=n?`https://wa.me/${n}?text=${encodeURIComponent("السلام عليكم، عايز أعرف سعر باقة العيادات في HomeEx Pro")}`:"";
-return`<div class="clinic-offer" dir="rtl"><b>🏥 باقة العيادات والمراكز</b>
-<ul class="offer-list"><li>✅ كود لكل دكتور في العيادة، بعدد الدكاترة اللي تحتاجه</li><li>✅ نفس اللوجو واسم العيادة ورقمها عند كل الدكاترة، على الواتساب ولينك المريض والـ PDF</li><li>✅ بيانات العيادة محفوظة عندنا، مش بتضيع لو حد غيّر موبايله</li><li>✅ كل دكتور يعمل بروتوكولاته الخاصة، ويطلب تمارين وفيديوهات مخصوصة تظهر له ولمرضاه بس</li><li>✅ كل مميزات Pro لكل دكتور</li></ul>
-${link?`<a class="btn btn-dark" href="${escapeHtml(link)}" target="_blank" rel="noopener">اسأل عن السعر</a>`:`<div class="code-meta">كلمنا عشان تعرف السعر.</div>`}</div>`;
+const n=waPhone(PRO_PAGE.whatsapp),link=n?`https://wa.me/${n}?text=${encodeURIComponent(UX("co_wa","السلام عليكم، عايز أعرف سعر باقة العيادات في HomeEx Pro"))}`:"";
+const items=[["co_1","كود لكل دكتور في العيادة، بعدد الدكاترة اللي تحتاجه"],["co_2","نفس اللوجو واسم العيادة ورقمها عند كل الدكاترة، على الواتساب ولينك المريض والـ PDF"],["co_3","بيانات العيادة محفوظة عندنا، مش بتضيع لو حد غيّر موبايله"],["co_4","كل دكتور يعمل بروتوكولاته الخاصة، ويطلب تمارين وفيديوهات مخصوصة تظهر له ولمرضاه بس"],["co_5","كل مميزات Pro لكل دكتور"]];
+return`<div class="clinic-offer" dir="${gxRtl()?"rtl":"ltr"}"><b>${escapeHtml(UX("co_title","🏥 باقة العيادات والمراكز"))}</b>
+<ul class="offer-list">${items.map(([k,t])=>`<li>✅ ${escapeHtml(UX(k,t))}</li>`).join("")}</ul>
+${link?`<a class="btn btn-dark" href="${escapeHtml(link)}" target="_blank" rel="noopener">${escapeHtml(UX("co_ask","اسأل عن السعر"))}</a>`:`<div class="code-meta">${escapeHtml(UX("co_call","كلمنا عشان تعرف السعر."))}</div>`}</div>`;
 }
 let clinicLogoDraft="";
 function pickClinicLogo(e){const f=e.target.files[0];e.target.value="";if(!f)return;const img=new Image(),url=URL.createObjectURL(f);
